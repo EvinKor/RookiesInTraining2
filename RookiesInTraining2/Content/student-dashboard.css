@@ -1,0 +1,579 @@
+/* ================================================
+   Student Dashboard - Story Mode Styles
+   ================================================ */
+
+/* ===== Variables (Colors & Sizes) ===== */
+:root {
+    --level-card-width: 340px;
+    --level-card-width-mobile: 90vw;
+    --level-gap: 1.5rem;
+    --border-radius: 1rem;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.16);
+    
+    --status-locked: #6c757d;
+    --status-available: #0d6efd;
+    --status-in-progress: #fd7e14;
+    --status-completed: #198754;
+}
+
+/* ===== Dashboard Header ===== */
+.dashboard-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 0 0 1.5rem 1.5rem;
+    box-shadow: var(--shadow-md);
+}
+
+.dashboard-header h1 {
+    font-weight: 700;
+    font-size: 2rem;
+}
+
+.stat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.stat-badge i {
+    font-size: 1.25rem;
+}
+
+.stat-value {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+/* ===== Module Grid ===== */
+.module-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.module-card {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+}
+
+.module-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.module-card-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--module-color, #6c5ce7), var(--module-color-dark, #5f3dc4));
+    color: white;
+    position: relative;
+}
+
+.module-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.module-card-body {
+    padding: 1.5rem;
+}
+
+.module-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+.module-summary {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.module-progress-ring {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    width: 60px;
+    height: 60px;
+}
+
+.module-progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: white;
+}
+
+.module-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.module-stat {
+    text-align: center;
+}
+
+.module-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.module-stat-label {
+    font-size: 0.75rem;
+    color: #7f8c8d;
+    margin-top: 0.25rem;
+}
+
+.module-action-btn {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    border: none;
+    background: var(--module-color, #6c5ce7);
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.module-action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.module-action-btn i {
+    margin-right: 0.5rem;
+}
+
+/* ===== Story Rail Container ===== */
+.rail-container {
+    position: relative;
+    margin: 0 -0.75rem;
+    padding: 0 0.75rem;
+}
+
+.quiz-rail-header {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.rail-mask {
+    position: relative;
+}
+
+/* Gradient mask to hint overflow */
+.rail-mask::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    pointer-events: none;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.95));
+    z-index: 1;
+}
+
+/* ===== Story Rail (Horizontal Scroll) ===== */
+.story-rail {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: var(--level-card-width);
+    gap: var(--level-gap);
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 1rem 0 1.5rem;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 1rem;
+    scrollbar-gutter: stable;
+}
+
+/* Custom scrollbar */
+.story-rail::-webkit-scrollbar {
+    height: 10px;
+}
+
+.story-rail::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.story-rail::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.story-rail::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* ===== Level Card ===== */
+.level-card {
+    scroll-snap-align: start;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    height: 420px;
+    display: flex;
+    flex-direction: column;
+}
+
+.level-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-4px);
+}
+
+.level-card:focus {
+    outline: 3px solid var(--status-available);
+    outline-offset: 2px;
+}
+
+/* Card Header with Progress Ring */
+.card-header-progress {
+    position: relative;
+    padding: 2rem;
+    text-align: center;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+}
+
+.progress-ring {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 1rem;
+}
+
+.progress-ring-circle {
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+}
+
+.progress-ring-bg {
+    fill: none;
+    stroke: #e9ecef;
+    stroke-width: 8;
+}
+
+.progress-ring-fill {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.5s ease;
+}
+
+.progress-ring-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* Level Order Badge */
+.level-order {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: white;
+    color: #6c757d;
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 2rem;
+    font-size: 0.85rem;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Card Body */
+.level-card-body {
+    flex: 1;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.level-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #212529;
+}
+
+.level-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.level-meta i {
+    margin-right: 0.25rem;
+}
+
+/* Status Pill */
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.status-pill.locked {
+    background: rgba(108, 117, 125, 0.1);
+    color: var(--status-locked);
+}
+
+.status-pill.available {
+    background: rgba(13, 110, 253, 0.1);
+    color: var(--status-available);
+}
+
+.status-pill.in-progress {
+    background: rgba(253, 126, 20, 0.1);
+    color: var(--status-in-progress);
+}
+
+.status-pill.completed {
+    background: rgba(25, 135, 84, 0.1);
+    color: var(--status-completed);
+}
+
+/* Badges in Card */
+.card-badges {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: auto;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.badge-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    border-radius: 50%;
+    font-size: 1rem;
+    box-shadow: var(--shadow-sm);
+    cursor: help;
+}
+
+/* Action Button */
+.level-action-btn {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.level-action-btn.btn-start {
+    background: var(--status-available);
+    color: white;
+}
+
+.level-action-btn.btn-resume {
+    background: var(--status-in-progress);
+    color: white;
+}
+
+.level-action-btn.btn-review {
+    background: var(--status-completed);
+    color: white;
+}
+
+.level-action-btn:disabled {
+    background: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.level-action-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Locked Overlay */
+.locked-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}
+
+.locked-overlay i {
+    font-size: 3rem;
+    color: var(--status-locked);
+    margin-bottom: 1rem;
+}
+
+.locked-overlay .locked-text {
+    color: var(--status-locked);
+    font-weight: 600;
+    text-align: center;
+    padding: 0 2rem;
+}
+
+/* Status-specific card styling */
+.level-card.completed .card-header-progress {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+}
+
+.level-card.in-progress .card-header-progress {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+}
+
+.level-card.locked {
+    opacity: 0.7;
+}
+
+/* ===== Badges Grid ===== */
+.badges-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.badge-item {
+    text-align: center;
+    padding: 1rem;
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+    cursor: help;
+}
+
+.badge-item:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.badge-item i {
+    font-size: 2.5rem;
+    color: #ffd700;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.badge-item .badge-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #212529;
+}
+
+/* ===== Mobile Responsive ===== */
+@media (max-width: 768px) {
+    .dashboard-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .stat-badge {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.8rem;
+    }
+    
+    .story-rail {
+        grid-auto-columns: var(--level-card-width-mobile);
+        gap: 1rem;
+    }
+    
+    .level-card {
+        height: auto;
+        min-height: 400px;
+    }
+    
+    .badges-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+}
+
+/* ===== Accessibility ===== */
+@media (prefers-reduced-motion: reduce) {
+    .level-card,
+    .level-action-btn,
+    .progress-ring-fill,
+    .badge-item {
+        transition: none;
+    }
+    
+    .story-rail {
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Focus visible for keyboard navigation */
+*:focus-visible {
+    outline: 3px solid var(--status-available);
+    outline-offset: 2px;
+}
+
+/* ===== Empty State ===== */
+#emptyState i {
+    opacity: 0.3;
+}
+
+/* ===== Game Cards ===== */
+.game-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+.game-card .game-icon i {
+    transition: transform 0.3s ease;
+}
+
+.game-card:hover .game-icon i {
+    transform: scale(1.1) rotate(5deg);
+}
+

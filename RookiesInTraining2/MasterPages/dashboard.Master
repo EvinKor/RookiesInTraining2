@@ -1,0 +1,120 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="dashboard.Master.cs"
+    Inherits="RookiesInTraining2.MasterPages.dashboard" %>
+
+<!DOCTYPE html>
+<html lang="en">
+<head runat="server">
+  <title><asp:ContentPlaceHolder ID="HeadTitle" runat="server" />Rookies — Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- (Optional) Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    body { background-color: #0f172a; color: #e5e7eb; }
+    .navbar { background-color:#0b1220; border-bottom:1px solid #1f2937; }
+    .sidebar-link { color:#cbd5e1; }
+    .sidebar-link.active, .sidebar-link:hover { background:#1f2937; color:#fff; }
+    .card { background:#111827; border-color:#1f2937; }
+    .table { --bs-table-bg: transparent; }
+    .content-wrap { padding-top: 72px; } /* space for fixed navbar */
+  </style>
+</head>
+<body>
+  <form id="form1" runat="server">
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+      <div class="container-fluid">
+        <button class="btn btn-outline-light me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar">
+          <i class="bi bi-list"></i>
+        </button>
+        <a class="navbar-brand text-light fw-semibold" href="#">Rookies in Training</a>
+
+        <div class="ms-auto d-flex align-items-center gap-3">
+          <asp:Label ID="lblUser" runat="server" CssClass="text-secondary small"></asp:Label>
+          <div id="imgAvatar" runat="server" class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold" style="width:36px;height:36px;">
+            <span class="user-initial">U</span>
+          </div>
+          <asp:Button ID="btnLogout" runat="server" Text="Logout" CssClass="btn btn-sm btn-outline-light" />
+        </div>
+      </div>
+    </nav>
+
+    <!-- SIDEBAR (Offcanvas on mobile, sidebar on desktop) -->
+    <div class="offcanvas offcanvas-start text-bg-dark" tabindex="-1" id="sidebar">
+      <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title">Menu</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body p-0">
+        <div class="list-group list-group-flush">
+          <!-- STUDENT MENU -->
+          <asp:LoginView runat="server">
+            <RoleGroups>
+              <asp:RoleGroup Roles="student">
+                <ContentTemplate>
+                  <asp:HyperLink runat="server" ID="lkStudentDash" NavigateUrl="~/Pages/Dashboard_Student.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
+                    <i class="bi bi-house me-2"></i>Dashboard
+                  </asp:HyperLink>
+                  <asp:HyperLink runat="server" NavigateUrl="~/Pages/Story.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
+                    <i class="bi bi-journal-bookmark me-2"></i>Story Mode
+                  </asp:HyperLink>
+                  <asp:HyperLink runat="server" NavigateUrl="~/Pages/Leaderboard.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
+                    <i class="bi bi-trophy me-2"></i>Leaderboard
+                  </asp:HyperLink>
+                  <asp:HyperLink runat="server" NavigateUrl="~/Pages/Profile.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
+                    <i class="bi bi-person-circle me-2"></i>Profile
+                  </asp:HyperLink>
+                </ContentTemplate>
+              </asp:RoleGroup>
+
+              <asp:RoleGroup Roles="teacher">
+                <ContentTemplate>
+                  <asp:HyperLink runat="server" ID="lkTeacherDash" NavigateUrl="~/Pages/Dashboard_Teacher.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
+                    <i class="bi bi-house me-2"></i>Dashboard
+                  </asp:HyperLink>
+                  <asp:HyperLink runat="server" NavigateUrl="~/Pages/MaterialsUpload.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
+                    <i class="bi bi-collection me-2"></i>Materials
+                  </asp:HyperLink>
+                  <asp:HyperLink runat="server" NavigateUrl="~/Pages/QuizBuilderAI.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
+                    <i class="bi bi-magic me-2"></i>Quiz Builder (AI)
+                  </asp:HyperLink>
+                  <asp:HyperLink runat="server" NavigateUrl="~/Pages/ClassPerformance.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
+                    <i class="bi bi-graph-up-arrow me-2"></i>Performance
+                  </asp:HyperLink>
+                </ContentTemplate>
+              </asp:RoleGroup>
+
+              <asp:RoleGroup Roles="admin">
+                <ContentTemplate>
+                  <asp:HyperLink runat="server" ID="lkAdminDash" NavigateUrl="~/Pages/Dashboard_Admin.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
+                    <i class="bi bi-house me-2"></i>Dashboard
+                  </asp:HyperLink>
+                  <asp:HyperLink runat="server" NavigateUrl="~/Pages/Users.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
+                    <i class="bi bi-people me-2"></i>Manage Users
+                  </asp:HyperLink>
+                  <asp:HyperLink runat="server" NavigateUrl="~/Pages/Reports.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
+                    <i class="bi bi-bar-chart me-2"></i>Reports
+                  </asp:HyperLink>
+                  <asp:HyperLink runat="server" NavigateUrl="~/Pages/Settings.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
+                    <i class="bi bi-gear me-2"></i>Settings
+                  </asp:HyperLink>
+                </ContentTemplate>
+              </asp:RoleGroup>
+            </RoleGroups>
+          </asp:LoginView>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="content-wrap container-fluid">
+      <asp:ContentPlaceHolder ID="DashboardContent" runat="server"></asp:ContentPlaceHolder>
+    </main>
+
+  </form>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

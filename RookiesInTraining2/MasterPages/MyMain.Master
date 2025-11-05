@@ -1,0 +1,22 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true"
+    CodeBehind="myMain.master.cs"
+    Inherits="RookiesInTraining2.MasterPages.MyMain" %>
+
+<!DOCTYPE html>
+<html>
+<head runat="server">
+  <title>Rookies in Training</title>
+  <!-- Bootstrap CSS -->
+ <asp:ContentPlaceHolder ID="head" runat="server" />
+</head>
+<body class="bg-light">
+  <form id="form1" runat="server"> <!-- ✅ REQUIRED for Web Forms -->
+    <header class="p-3 bg-primary text-white">Rookies in Training</header>
+    <main class="container py-4">
+      <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server" />
+    </main>
+  </form>
+
+  <!-- Bootstrap JS -->
+</body>
+</html>
