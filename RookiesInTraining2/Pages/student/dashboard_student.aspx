@@ -51,7 +51,10 @@
                     
                     <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
                         <div class="d-flex flex-column gap-2 align-items-lg-end">
-                            <button id="btnContinue" class="btn btn-primary btn-lg px-4 py-2" type="button">
+                            <a href="story.aspx" class="btn btn-primary btn-lg px-4 py-2">
+                                <i class="bi bi-journal-bookmark me-2"></i>Story Mode
+                            </a>
+                            <button id="btnContinue" class="btn btn-outline-primary btn-lg px-4 py-2" type="button">
                                 <i class="bi bi-play-circle-fill me-2"></i>Continue Learning
                             </button>
                             <asp:Button ID="btnLogout" runat="server" 

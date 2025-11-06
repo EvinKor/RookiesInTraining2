@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
 using System.Web.Script.Serialization;
@@ -42,16 +44,33 @@ namespace RookiesInTraining2.Pages
             string userSlug = Session["UserSlug"]?.ToString() ?? "";
             string fullName = Session["FullName"]?.ToString() ?? "Student";
 
-            // TODO: If you have a repository, load real data here
-            // Example: 
-            // var modules = _moduleRepository.GetByUserSlug(userSlug);
-            // var quizzes = _quizRepository.GetByUserSlug(userSlug);
+            // Load real data using ProgressService
+            var progressService = new Services.ProgressService();
+            var progress = progressService.GetProgress(userSlug);
+
+            // Load modules and quizzes from database
+            var modules = LoadModules(userSlug);
+            var quizzes = LoadQuizzes(userSlug);
             
-            // For now, use mock data
-            var modules = GetMockModules();
-            var quizzes = GetMockQuizzes();
-            var badges = GetMockBadges();
-            var summary = GetMockSummary(fullName, quizzes);
+            // Convert badges to dashboard format
+            var badges = progress.Badges.Select(b => new Badge
+            {
+                Id = b.BadgeSlug,
+                Name = b.Name,
+                Icon = b.Icon,
+                Description = b.Description
+            }).ToList();
+
+            // Create summary
+            var summary = new ProgressSummary
+            {
+                StudentName = fullName,
+                Xp = progress.TotalXP,
+                Level = progress.Level,
+                Streak = 0, // TODO: Implement streak tracking
+                Completed = progress.CompletedQuizzes,
+                Total = progress.TotalQuizzes
+            };
 
             // Serialize to JSON
             var serializer = new JavaScriptSerializer();
@@ -59,6 +78,117 @@ namespace RookiesInTraining2.Pages
             hfQuizzesJson.Value = serializer.Serialize(quizzes);
             hfSummaryJson.Value = serializer.Serialize(summary);
             hfBadgesJson.Value = serializer.Serialize(badges);
+        }
+
+        private List<Module> LoadModules(string userSlug)
+        {
+            var modules = new List<Module>();
+            var connStr = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
+            try
+            {
+                using (var con = new SqlConnection(connStr))
+                {
+                    con.Open();
+                    using (var cmd = con.CreateCommand())
+                    {
+                        cmd.CommandText = @"
+                            SELECT m.module_slug, m.title, m.summary, m.icon, m.color, m.order_no, m.total_xp,
+                                   (SELECT COUNT(*) FROM ModuleQuizzes mq WHERE mq.module_slug = m.module_slug AND mq.is_deleted = 0) AS total_quizzes,
+                                   (SELECT COUNT(DISTINCT up.quiz_slug) 
+                                    FROM ModuleQuizzes mq
+                                    INNER JOIN UserProgress up ON mq.quiz_slug = up.quiz_slug
+                                    WHERE mq.module_slug = m.module_slug 
+                                    AND up.user_slug = @userSlug 
+                                    AND up.status = 'completed') AS completed_quizzes
+                            FROM Modules m
+                            WHERE m.is_active = 1 AND m.is_deleted = 0
+                            ORDER BY m.order_no";
+
+                        cmd.Parameters.AddWithValue("@userSlug", userSlug);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                modules.Add(new Module
+                                {
+                                    ModuleSlug = reader["module_slug"].ToString(),
+                                    Title = reader["title"].ToString(),
+                                    Summary = reader["summary"]?.ToString() ?? "",
+                                    Icon = reader["icon"]?.ToString() ?? "bi-book",
+                                    Color = reader["color"]?.ToString() ?? "#667eea",
+                                    OrderNo = Convert.ToInt32(reader["order_no"]),
+                                    TotalXp = Convert.ToInt32(reader["total_xp"] ?? 0),
+                                    Total = Convert.ToInt32(reader["total_quizzes"]),
+                                    Completed = Convert.ToInt32(reader["completed_quizzes"])
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Dashboard] Error loading modules: {ex}");
+            }
+
+            return modules;
+        }
+
+        private List<Quiz> LoadQuizzes(string userSlug)
+        {
+            var quizzes = new List<Quiz>();
+            var connStr = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
+
+            try
+            {
+                using (var con = new SqlConnection(connStr))
+                {
+                    con.Open();
+                    using (var cmd = con.CreateCommand())
+                    {
+                        cmd.CommandText = @"
+                            SELECT mq.module_quiz_slug, mq.module_slug, mq.quiz_slug, mq.title, 
+                                   mq.minutes, mq.xp_reward, mq.order_no,
+                                   ISNULL(up.status, 'available') AS status,
+                                   ISNULL(up.progress_pct, 0) AS progress_pct
+                            FROM ModuleQuizzes mq
+                            LEFT JOIN UserProgress up ON mq.quiz_slug = up.quiz_slug AND up.user_slug = @userSlug
+                            WHERE mq.is_deleted = 0
+                            ORDER BY mq.module_slug, mq.order_no";
+
+                        cmd.Parameters.AddWithValue("@userSlug", userSlug);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                var status = reader["status"].ToString();
+                                quizzes.Add(new Quiz
+                                {
+                                    ModuleQuizSlug = reader["module_quiz_slug"].ToString(),
+                                    ModuleSlug = reader["module_slug"].ToString(),
+                                    QuizSlug = reader["quiz_slug"].ToString(),
+                                    Title = reader["title"].ToString(),
+                                    Minutes = Convert.ToInt32(reader["minutes"]),
+                                    XpReward = Convert.ToInt32(reader["xp_reward"]),
+                                    OrderNo = Convert.ToInt32(reader["order_no"]),
+                                    Status = status == "completed" ? "completed" : 
+                                             status == "in_progress" ? "in_progress" : "available",
+                                    ProgressPct = Convert.ToInt32(reader["progress_pct"])
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Dashboard] Error loading quizzes: {ex}");
+            }
+
+            return quizzes;
         }
 
         #region Mock Data
