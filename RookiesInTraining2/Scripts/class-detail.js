@@ -22,6 +22,7 @@
         renderLevels();
         renderStudents();
         renderQuizzes();
+        renderResources();
     }
 
     // ===== Data Loading =====
@@ -152,11 +153,41 @@
             ? '<span class="badge bg-success position-absolute top-0 end-0 m-3"><i class="bi bi-check-circle me-1"></i>Published</span>'
             : '<span class="badge bg-warning text-dark position-absolute top-0 end-0 m-3"><i class="bi bi-clock me-1"></i>Draft</span>';
 
+        // Find quiz for this level
+        const levelQuiz = quizzes.find(q => q.LevelSlug === level.LevelSlug);
+        const quizSection = levelQuiz ? `
+            <div class="alert alert-warning border-warning mt-3 mb-0">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1"><i class="bi bi-question-circle-fill me-2"></i>${escapeHtml(levelQuiz.Title)}</h6>
+                        <small class="text-muted">
+                            <i class="bi bi-${levelQuiz.Mode === 'battle' ? 'lightning' : 'book'}"></i> ${levelQuiz.Mode === 'battle' ? 'Battle' : 'Story'} Mode • 
+                            <i class="bi bi-clock"></i> ${levelQuiz.TimeLimit} min • 
+                            <i class="bi bi-bullseye"></i> ${levelQuiz.PassingScore}% to pass • 
+                            <i class="bi bi-card-list"></i> ${levelQuiz.QuestionCount} questions
+                        </small>
+                    </div>
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-warning" onclick="editQuiz('${levelQuiz.QuizSlug}')" title="Edit Quiz">
+                            <i class="bi bi-pencil"></i> Edit Quiz
+                        </button>
+                    </div>
+                </div>
+            </div>
+        ` : `
+            <div class="alert alert-danger border-danger mt-3 mb-0">
+                <i class="bi bi-exclamation-triangle me-2"></i>No quiz assigned to this level!
+                <button type="button" class="btn btn-sm btn-danger ms-2" onclick="createQuizForLevel('${level.LevelSlug}', ${level.LevelNumber}, '${escapeHtml(level.Title)}')">
+                    <i class="bi bi-plus-circle me-1"></i>Create Quiz
+                </button>
+            </div>
+        `;
+
         col.innerHTML = `
             <div class="card level-card border-0 shadow-sm mb-3 position-relative">
                 ${statusBadge}
                 <div class="card-body">
-                    <div class="row align-items-center g-3">
+                    <div class="row align-items-start g-3">
                         <div class="col-auto">
                             <div class="level-number-badge">${level.LevelNumber}</div>
                         </div>
@@ -165,7 +196,7 @@
                             <p class="card-text text-muted small mb-2">
                                 ${escapeHtml(level.Description) || 'No description'}
                             </p>
-                            <div class="d-flex flex-wrap gap-3">
+                            <div class="d-flex flex-wrap gap-3 mb-3">
                                 <span class="badge bg-light text-dark">
                                     <i class="bi bi-clock text-info me-1"></i>${level.EstimatedMinutes} min
                                 </span>
@@ -178,21 +209,19 @@
                                 ${level.SlideCount > 0 ? `<span class="badge bg-light text-dark">
                                     <i class="bi bi-file-slides text-primary me-1"></i>${level.SlideCount} slides
                                 </span>` : ''}
-                                <span class="badge bg-light text-dark">
-                                    <i class="bi bi-question-circle text-success me-1"></i>${level.QuizCount} quiz(zes)
-                                </span>
                             </div>
+                            ${quizSection}
                         </div>
                         <div class="col-auto">
-                            <div class="btn-group" role="group">
-                                <button type="button" class="btn btn-outline-primary" onclick="viewLevel('${level.LevelSlug}')" title="View">
-                                    <i class="bi bi-eye"></i>
+                            <div class="btn-group-vertical" role="group">
+                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="viewLevel('${level.LevelSlug}')" title="View Content">
+                                    <i class="bi bi-eye me-1"></i> View
                                 </button>
-                                <button type="button" class="btn btn-outline-secondary" onclick="editLevel('${level.LevelSlug}')" title="Edit">
-                                    <i class="bi bi-pencil"></i>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="editLevel('${level.LevelSlug}')" title="Edit Level">
+                                    <i class="bi bi-pencil me-1"></i> Edit
                                 </button>
-                                <button type="button" class="btn btn-outline-success" onclick="addQuizToLevel('${level.LevelSlug}')" title="Add Quiz">
-                                    <i class="bi bi-plus-circle"></i>
+                                <button type="button" class="btn btn-outline-info btn-sm" onclick="manageSlides('${level.LevelSlug}')" title="Manage Slides">
+                                    <i class="bi bi-file-slides me-1"></i> Slides
                                 </button>
                             </div>
                         </div>
@@ -269,63 +298,78 @@
     // ===== Quizzes Rendering =====
     function renderQuizzes() {
         const container = document.getElementById('quizzesContainer');
+        const noQuizzes = document.getElementById('noQuizzes');
+        
         if (!container) return;
 
         if (quizzes.length === 0) {
-            container.innerHTML = `
-                <div class="empty-state">
-                    <i class="bi bi-question-circle display-4 text-muted"></i>
-                    <h4>No Quizzes Created Yet</h4>
-                    <p class="text-muted">Create quizzes for your levels</p>
-                    <button class="btn btn-primary" onclick="openCreateQuizModal()">
-                        <i class="bi bi-plus-circle me-2"></i>Create First Quiz
-                    </button>
-                </div>
-            `;
+            container.style.display = 'none';
+            if (noQuizzes) noQuizzes.style.display = 'block';
             return;
         }
 
-        let html = '<div class="quizzes-grid">';
+        container.style.display = 'block';
+        if (noQuizzes) noQuizzes.style.display = 'none';
+
+        let html = '';
 
         quizzes.forEach(function (quiz) {
             const statusClass = quiz.Published ? 'success' : 'warning';
             const statusText = quiz.Published ? 'Published' : 'Draft';
+            const modeIcon = quiz.Mode === 'battle' ? 'bi-lightning-fill' : 'bi-book-fill';
+            const modeText = quiz.Mode === 'battle' ? 'Battle' : 'Story';
 
             html += `
-                <div class="quiz-card">
-                    <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h5 class="quiz-title">${escapeHtml(quiz.Title)}</h5>
-                        <span class="badge bg-${statusClass}">${statusText}</span>
-                    </div>
-                    <div class="quiz-meta">
-                        <span><i class="bi bi-clock"></i> ${quiz.TimeLimit} min</span>
-                        <span><i class="bi bi-bullseye"></i> ${quiz.PassingScore}% to pass</span>
-                        <span><i class="bi bi-controller"></i> ${quiz.Mode}</span>
-                    </div>
-                    <div class="quiz-stats">
-                        <div class="quiz-stat">
-                            <div class="quiz-stat-value">${quiz.QuestionCount}</div>
-                            <div class="quiz-stat-label">Questions</div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="quiz-card">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="quiz-title mb-0">${escapeHtml(quiz.Title)}</h5>
+                            <span class="badge bg-${statusClass}">${statusText}</span>
                         </div>
-                        <div class="quiz-stat">
-                            <div class="quiz-stat-value">${quiz.AttemptCount}</div>
-                            <div class="quiz-stat-label">Attempts</div>
+                        <div class="quiz-meta mb-3">
+                            <span><i class="bi bi-clock"></i> ${quiz.TimeLimit} min</span>
+                            <span><i class="bi bi-bullseye"></i> ${quiz.PassingScore}%</span>
+                            <span><i class="${modeIcon}"></i> ${modeText}</span>
                         </div>
-                    </div>
-                    <div class="mt-3 d-flex gap-2">
-                        <button class="btn btn-primary btn-sm flex-fill" onclick="editQuiz('${quiz.QuizSlug}')">
-                            <i class="bi bi-pencil me-1"></i>Edit
-                        </button>
-                        <button class="btn btn-outline-secondary btn-sm" onclick="previewQuiz('${quiz.QuizSlug}')">
-                            <i class="bi bi-eye"></i>
-                        </button>
+                        <div class="quiz-stats">
+                            <div class="quiz-stat">
+                                <div class="quiz-stat-value">${quiz.QuestionCount}</div>
+                                <div class="quiz-stat-label">Questions</div>
+                            </div>
+                            <div class="quiz-stat">
+                                <div class="quiz-stat-value">${quiz.AttemptCount}</div>
+                                <div class="quiz-stat-label">Attempts</div>
+                            </div>
+                        </div>
+                        <div class="mt-3 d-flex gap-2">
+                            <button class="btn btn-primary btn-sm flex-fill" onclick="editQuiz('${quiz.QuizSlug}')">
+                                <i class="bi bi-pencil me-1"></i>Edit
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="previewQuiz('${quiz.QuizSlug}')">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
         });
 
-        html += '</div>';
         container.innerHTML = html;
+    }
+
+    // ===== Resources Rendering =====
+    function renderResources() {
+        const container = document.getElementById('resourcesContainer');
+        const noResources = document.getElementById('noResources');
+        
+        if (!container || !noResources) return;
+
+        // For now, always show empty state since we don't have a Resources table yet
+        container.style.display = 'none';
+        noResources.style.display = 'block';
+        
+        // TODO: Implement resources loading when Resources table is created
+        // This would query a Resources table and display downloadable files
     }
 
     // ===== Modal Functions =====
@@ -385,11 +429,19 @@
 
     // ===== Action Functions =====
     window.viewLevel = function (levelSlug) {
-        window.location.href = 'view_level.aspx?slug=' + levelSlug;
+        // TODO: Create view_level.aspx page to preview level content
+        alert('View Level Feature\n\n' +
+              'This will show the level content as students see it.\n' +
+              'Level: ' + levelSlug + '\n\n' +
+              'Feature coming soon!');
     };
 
     window.editLevel = function (levelSlug) {
-        alert('Edit level: ' + levelSlug + '\n\nThis would open the level editor.');
+        // TODO: Create edit level functionality
+        alert('Edit Level Feature\n\n' +
+              'This will allow you to edit the level details.\n' +
+              'Level: ' + levelSlug + '\n\n' +
+              'Feature coming soon!');
     };
 
     window.addQuizToLevel = function (levelSlug) {
@@ -400,17 +452,224 @@
             dropdown.value = levelSlug;
         }
     };
+    
+    window.createQuizForLevel = function (levelSlug, levelNumber, levelTitle) {
+        window.openCreateQuizModal();
+        // Pre-select the level and auto-fill quiz title
+        const dropdown = document.querySelector('select[id*="ddlLevelForQuiz"]');
+        const titleInput = document.querySelector('input[id*="txtQuizTitle"]');
+        
+        if (dropdown) {
+            dropdown.value = levelSlug;
+        }
+        if (titleInput) {
+            titleInput.value = `${levelTitle} Quiz`;
+        }
+    };
+    
+    // ===== Slide Management =====
+    let currentLevelSlug = null;
+    let currentLevelTitle = null;
+    let currentSlides = [];
+    let editingSlideNumber = null;
+    
+    window.manageSlides = function (levelSlug) {
+        // Find the level
+        const level = levels.find(l => l.LevelSlug === levelSlug);
+        if (!level) {
+            alert('Level not found!');
+            return;
+        }
+        
+        currentLevelSlug = levelSlug;
+        currentLevelTitle = level.Title;
+        
+        // Set level title in modal
+        const titleSpan = document.getElementById('slideModalLevelTitle');
+        if (titleSpan) titleSpan.textContent = level.Title;
+        
+        // Set hidden field
+        const levelSlugField = document.getElementById(window.CLASS_DATA.currentLevelSlugFieldId);
+        if (levelSlugField) levelSlugField.value = levelSlug;
+        
+        // Load slides for this level (loads from server)
+        loadSlidesForLevel(levelSlug);
+        
+        // Initialize slide number to 1 (or next number if slides exist)
+        const slideNumInput = document.querySelector('input[id*="txtSlideNumber"]');
+        if (slideNumInput) {
+            slideNumInput.value = currentSlides.length + 1;
+        }
+        
+        // Open modal
+        const modalElement = document.getElementById('manageSlidesModal');
+        if (modalElement) {
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+            console.log('Slides modal opened for level:', level.Title, 'Slides:', currentSlides.length);
+        }
+    };
+    
+    function loadSlidesForLevel(levelSlug) {
+        // Load slides from hidden field (populated by server)
+        try {
+            const slidesField = document.getElementById(window.CLASS_DATA.slidesFieldId);
+            if (slidesField && slidesField.value) {
+                const allSlides = JSON.parse(slidesField.value);
+                currentSlides = allSlides.map(s => ({
+                    number: s.SlideNumber,
+                    slug: s.SlideSlug,
+                    contentType: s.ContentType,
+                    content: s.ContentText,
+                    mediaUrl: s.MediaUrl
+                }));
+            } else {
+                currentSlides = [];
+            }
+        } catch (error) {
+            console.error('Error loading slides:', error);
+            currentSlides = [];
+        }
+        
+        renderSlidesList();
+        clearSlideForm();
+    }
+    
+    function renderSlidesList() {
+        const container = document.getElementById('slidesList');
+        const countBadge = document.getElementById('slideCount');
+        
+        if (!container) return;
+        
+        if (countBadge) countBadge.textContent = currentSlides.length;
+        
+        if (currentSlides.length === 0) {
+            container.innerHTML = '<p class="text-muted text-center py-5">No slides yet. Add your first slide!</p>';
+            return;
+        }
+        
+        container.innerHTML = currentSlides.map((slide, index) => `
+            <div class="card mb-2 slide-item ${editingSlideNumber === slide.number ? 'border-info' : ''}" 
+                 onclick="editSlide(${slide.number})">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">
+                                <span class="badge bg-info me-2">${slide.number}</span>
+                                ${slide.contentType === 'text' ? '<i class="bi bi-text-paragraph"></i>' : 
+                                  slide.contentType === 'image' ? '<i class="bi bi-image"></i>' : 
+                                  slide.contentType === 'video' ? '<i class="bi bi-camera-video"></i>' : 
+                                  '<i class="bi bi-code-square"></i>'}
+                                <span class="text-capitalize">${slide.contentType}</span>
+                            </h6>
+                            <small class="text-muted text-truncate d-block" style="max-width: 300px;">
+                                ${escapeHtml(slide.content?.substring(0, 50) || slide.mediaUrl || 'No content')}...
+                            </small>
+                        </div>
+                        <div class="btn-group btn-group-sm">
+                            <button type="button" class="btn btn-outline-danger" onclick="event.stopPropagation(); deleteSlide(${slide.number})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    window.addNewSlide = function() {
+        editingSlideNumber = null;
+        clearSlideForm();
+        
+        // Set next slide number
+        const slideNumInput = document.querySelector('input[id*="txtSlideNumber"]');
+        if (slideNumInput) {
+            slideNumInput.value = currentSlides.length + 1;
+        }
+    };
+    
+    window.editSlide = function(slideNumber) {
+        const slide = currentSlides.find(s => s.number === slideNumber);
+        if (!slide) return;
+        
+        editingSlideNumber = slideNumber;
+        
+        // Populate form
+        const slideNumInput = document.querySelector('input[id*="txtSlideNumber"]');
+        const contentTypeSelect = document.querySelector('select[id*="ddlSlideContentType"]');
+        const contentTextarea = document.querySelector('textarea[id*="txtSlideContent"]');
+        const mediaUrlInput = document.querySelector('input[id*="txtMediaUrl"]');
+        
+        if (slideNumInput) slideNumInput.value = slide.number;
+        if (contentTypeSelect) contentTypeSelect.value = slide.contentType;
+        if (contentTextarea) contentTextarea.value = slide.content || '';
+        if (mediaUrlInput) mediaUrlInput.value = slide.mediaUrl || '';
+        
+        toggleSlideContentFields();
+        renderSlidesList();
+    };
+    
+    window.deleteSlide = function(slideNumber) {
+        if (!confirm(`Delete slide ${slideNumber}?`)) return;
+        
+        currentSlides = currentSlides.filter(s => s.number !== slideNumber);
+        
+        // Renumber slides
+        currentSlides.forEach((slide, index) => {
+            slide.number = index + 1;
+        });
+        
+        renderSlidesList();
+        clearSlideForm();
+    };
+    
+    window.cancelSlideEdit = function() {
+        editingSlideNumber = null;
+        clearSlideForm();
+        renderSlidesList();
+    };
+    
+    function clearSlideForm() {
+        const slideNumInput = document.querySelector('input[id*="txtSlideNumber"]');
+        const contentTypeSelect = document.querySelector('select[id*="ddlSlideContentType"]');
+        const contentTextarea = document.querySelector('textarea[id*="txtSlideContent"]');
+        const mediaUrlInput = document.querySelector('input[id*="txtMediaUrl"]');
+        
+        if (slideNumInput) slideNumInput.value = currentSlides.length + 1;
+        if (contentTypeSelect) contentTypeSelect.value = 'text';
+        if (contentTextarea) contentTextarea.value = '';
+        if (mediaUrlInput) mediaUrlInput.value = '';
+        
+        toggleSlideContentFields();
+    }
+    
+    window.toggleSlideContentFields = function() {
+        const contentType = document.querySelector('select[id*="ddlSlideContentType"]')?.value;
+        const divText = document.getElementById('divTextContent');
+        const divMedia = document.getElementById('divMediaUrl');
+        
+        if (divText) divText.style.display = (contentType === 'text' || contentType === 'html') ? 'block' : 'none';
+        if (divMedia) divMedia.style.display = (contentType === 'image' || contentType === 'video') ? 'block' : 'none';
+    };
 
     window.editQuiz = function (quizSlug) {
         window.location.href = 'add_questions.aspx?quiz=' + quizSlug;
     };
 
     window.previewQuiz = function (quizSlug) {
-        window.open('quiz_preview.aspx?quiz=' + quizSlug, '_blank');
+        // TODO: Create quiz_preview.aspx page
+        alert('Quiz Preview Feature\n\n' +
+              'This will show the quiz as students see it.\n' +
+              'Quiz: ' + quizSlug + '\n\n' +
+              'Feature coming soon!');
     };
 
     window.viewStudentProgress = function (userSlug) {
-        alert('View progress for: ' + userSlug + '\n\nThis would show detailed student progress.');
+        // TODO: Create student progress page
+        alert('Student Progress Feature\n\n' +
+              'This will show detailed progress for:\n' +
+              userSlug + '\n\n' +
+              'Feature coming soon!');
     };
 
     // ===== Helper Functions =====

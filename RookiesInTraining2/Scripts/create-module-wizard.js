@@ -175,8 +175,15 @@
         const xp = parseInt(document.getElementById('txtXpReward').value) || 50;
         const publish = document.getElementById('chkPublishLevel').checked;
         const fileInput = document.getElementById('fileUploadLevel');
+        
+        // Quiz fields
+        const quizTitle = document.getElementById('txtQuizTitle').value.trim();
+        const quizMode = document.getElementById('ddlQuizModeWizard').value;
+        const quizTimeLimit = parseInt(document.getElementById('txtQuizTimeLimit').value) || 30;
+        const quizPassingScore = parseInt(document.getElementById('txtQuizPassingScore').value) || 70;
+        const quizPublish = document.getElementById('chkPublishQuiz').checked;
 
-        // Validate
+        // Validate level
         if (levelNumber < 1) {
             alert('Level number must be at least 1.');
             return;
@@ -185,6 +192,13 @@
         if (title.length < 3) {
             alert('Level title must be at least 3 characters.');
             document.getElementById('txtLevelTitle').focus();
+            return;
+        }
+        
+        // Validate quiz
+        if (quizTitle.length < 3) {
+            alert('Quiz title must be at least 3 characters.');
+            document.getElementById('txtQuizTitle').focus();
             return;
         }
 
@@ -202,7 +216,15 @@
             xp: xp,
             publish: publish,
             fileName: null,
-            contentType: null
+            contentType: null,
+            // Quiz data
+            quiz: {
+                title: quizTitle,
+                mode: quizMode,
+                timeLimit: quizTimeLimit,
+                passingScore: quizPassingScore,
+                publish: quizPublish
+            }
         };
 
         // Handle file if present
@@ -227,6 +249,21 @@
 
         // Clear form
         clearLevelForm();
+        
+        // Auto-suggest next level number and quiz title
+        const levelNumInput = document.getElementById('txtLevelNumber');
+        const quizTitleInput = document.getElementById('txtQuizTitle');
+        
+        if (levelNumInput && draft.levels.length > 0) {
+            const maxLevel = Math.max(...draft.levels.map(l => l.levelNumber));
+            const nextLevel = maxLevel + 1;
+            levelNumInput.value = nextLevel;
+            
+            // Auto-suggest quiz title
+            if (quizTitleInput) {
+                quizTitleInput.value = `Level ${nextLevel} Quiz`;
+            }
+        }
     };
 
     window.editLevel = function(levelNumber) {
@@ -269,6 +306,14 @@
         document.getElementById('txtXpReward').value = '50';
         document.getElementById('chkPublishLevel').checked = true;
         document.getElementById('fileUploadLevel').value = '';
+        
+        // Clear quiz fields
+        document.getElementById('txtQuizTitle').value = '';
+        document.getElementById('ddlQuizModeWizard').selectedIndex = 0;
+        document.getElementById('txtQuizTimeLimit').value = '30';
+        document.getElementById('txtQuizPassingScore').value = '70';
+        document.getElementById('chkPublishQuiz').checked = true;
+        
         updateLevelNumberSuggestion();
     }
 
@@ -290,10 +335,21 @@
                         ${level.publish ? '<span class="badge bg-success">Published</span>' : '<span class="badge bg-secondary">Draft</span>'}
                         ${level.fileName ? `<span class="badge bg-info"><i class="bi bi-paperclip"></i> ${escapeHtml(level.fileName)}</span>` : ''}
                     </div>
-                    <small class="text-muted">
+                    <small class="text-muted d-block mb-2">
                         ${escapeHtml(level.description || 'No description')} • 
                         <i class="bi bi-clock"></i> ${level.minutes} min • 
                         <i class="bi bi-star"></i> ${level.xp} XP
+                    </small>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-warning text-dark">
+                            <i class="bi bi-question-circle me-1"></i>${escapeHtml(level.quiz.title)}
+                        </span>
+                        <small class="text-muted">
+                            <i class="bi bi-${level.quiz.mode === 'battle' ? 'lightning' : 'book'}"></i> ${level.quiz.mode === 'battle' ? 'Battle' : 'Story'} • 
+                            ${level.quiz.timeLimit} min • 
+                            ${level.quiz.passingScore}% to pass
+                        </small>
+                    </div>
                     </small>
                 </div>
                 <div class="btn-group">

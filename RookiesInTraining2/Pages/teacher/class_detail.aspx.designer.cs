@@ -168,6 +168,60 @@ namespace RookiesInTraining2.Pages
         protected global::System.Web.UI.WebControls.Button btnSaveQuiz;
 
         /// <summary>
+        /// lblSlideError control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblSlideError;
+
+        /// <summary>
+        /// txtSlideNumber control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtSlideNumber;
+
+        /// <summary>
+        /// ddlSlideContentType control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlSlideContentType;
+
+        /// <summary>
+        /// txtSlideContent control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtSlideContent;
+
+        /// <summary>
+        /// txtMediaUrl control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtMediaUrl;
+
+        /// <summary>
+        /// btnSaveSlide control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnSaveSlide;
+
+        /// <summary>
         /// hfClassSlug control.
         /// </summary>
         /// <remarks>
@@ -175,6 +229,33 @@ namespace RookiesInTraining2.Pages
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.HiddenField hfClassSlug;
+
+        /// <summary>
+        /// hfCurrentLevelSlug control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfCurrentLevelSlug;
+
+        /// <summary>
+        /// hfCurrentSlideSlug control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfCurrentSlideSlug;
+
+        /// <summary>
+        /// hfSlidesJson control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfSlidesJson;
 
         /// <summary>
         /// hfLevelsJson control.

@@ -69,8 +69,82 @@
             transform: translateY(-4px);
             box-shadow: 0 8px 24px rgba(0,0,0,0.15) !important;
         }
+        
+        /* Quizzes - Uses Bootstrap grid (row/col) */
+        .quiz-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+        .quiz-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            border-color: #667eea;
+        }
+        .quiz-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        .quiz-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+        .quiz-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .quiz-stats {
+            display: flex;
+            gap: 2rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .quiz-stat {
+            text-align: center;
+        }
+        .quiz-stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .quiz-stat-label {
+            font-size: 0.75rem;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+        
+        /* Slide Management */
+        .slide-item {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .slide-item:hover {
+            background: #f8f9fa;
+            border-color: #17a2b8 !important;
+        }
+        .slide-item.border-info {
+            background: #e7f6f8;
+        }
+        
         @media (max-width: 768px) {
             .class-icon-large { width: 60px; height: 60px; font-size: 2rem; }
+            .quiz-stats { gap: 1rem; }
         }
     </style>
 
@@ -379,7 +453,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body p-4">
-                        <asp:Label ID="lblQuizError" runat="server" CssClass="alert alert-danger d-none" />
+                        <asp:Label ID="lblQuizError" runat="server" CssClass="alert alert-danger" Visible="false" />
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">
@@ -464,8 +538,93 @@
             </div>
         </div>
 
+        <!-- MANAGE SLIDES MODAL -->
+        <div class="modal fade" id="manageSlidesModal" tabindex="-1" aria-labelledby="manageSlidesModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title fw-bold" id="manageSlidesModalLabel">
+                            <i class="bi bi-file-slides me-2"></i>Manage Slides: <span id="slideModalLevelTitle">Level</span>
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <asp:Label ID="lblSlideError" runat="server" CssClass="alert alert-danger" Visible="false" />
+                        
+                        <div class="row">
+                            <!-- Left: Slide List -->
+                            <div class="col-md-5">
+                                <h6 class="mb-3">Slides List <span class="badge bg-info" id="slideCount">0</span></h6>
+                                <div id="slidesList" class="border rounded p-3" style="min-height: 400px; max-height: 500px; overflow-y: auto;">
+                                    <p class="text-muted text-center py-5">No slides yet. Add your first slide!</p>
+                                </div>
+                                <button type="button" class="btn btn-info w-100 mt-3" onclick="addNewSlide()">
+                                    <i class="bi bi-plus-circle me-2"></i>Add New Slide
+                                </button>
+                            </div>
+                            
+                            <!-- Right: Slide Editor -->
+                            <div class="col-md-7">
+                                <h6 class="mb-3">Slide Editor</h6>
+                                <div class="card border-info">
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Slide Number</label>
+                                            <asp:TextBox ID="txtSlideNumber" runat="server" 
+                                                         CssClass="form-control" TextMode="Number" 
+                                                         placeholder="1" ReadOnly="true" />
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold">Content Type</label>
+                                            <asp:DropDownList ID="ddlSlideContentType" runat="server" 
+                                                              CssClass="form-select" onchange="toggleSlideContentFields()">
+                                                <asp:ListItem Value="text" Selected="True">Text Content</asp:ListItem>
+                                                <asp:ListItem Value="image">Image</asp:ListItem>
+                                                <asp:ListItem Value="video">Video URL</asp:ListItem>
+                                                <asp:ListItem Value="html">HTML/Rich Content</asp:ListItem>
+                                            </asp:DropDownList>
+                                        </div>
+                                        
+                                        <div class="mb-3" id="divTextContent">
+                                            <label class="form-label fw-bold">Slide Content <span class="text-danger">*</span></label>
+                                            <asp:TextBox ID="txtSlideContent" runat="server" 
+                                                         TextMode="MultiLine" Rows="10"
+                                                         CssClass="form-control" 
+                                                         placeholder="Enter your slide content here..." />
+                                            <small class="text-muted">Markdown supported for formatting</small>
+                                        </div>
+                                        
+                                        <div class="mb-3" id="divMediaUrl" style="display: none;">
+                                            <label class="form-label fw-bold">Media URL</label>
+                                            <asp:TextBox ID="txtMediaUrl" runat="server" 
+                                                         CssClass="form-control" 
+                                                         placeholder="https://..." />
+                                        </div>
+                                        
+                                        <div class="d-grid gap-2">
+                                            <asp:Button ID="btnSaveSlide" runat="server" 
+                                                        Text="💾 Save Slide" 
+                                                        CssClass="btn btn-info btn-lg" 
+                                                        OnClick="btnSaveSlide_Click" />
+                                            <button type="button" class="btn btn-outline-secondary" onclick="cancelSlideEdit()">
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Hidden Fields -->
         <asp:HiddenField ID="hfClassSlug" runat="server" />
+        <asp:HiddenField ID="hfCurrentLevelSlug" runat="server" />
+        <asp:HiddenField ID="hfCurrentSlideSlug" runat="server" />
+        <asp:HiddenField ID="hfSlidesJson" runat="server" />
         <asp:HiddenField ID="hfLevelsJson" runat="server" />
         <asp:HiddenField ID="hfStudentsJson" runat="server" />
         <asp:HiddenField ID="hfQuizzesJson" runat="server" />
@@ -478,7 +637,10 @@
             levelsFieldId: '<%= hfLevelsJson.ClientID %>',
             studentsFieldId: '<%= hfStudentsJson.ClientID %>',
             quizzesFieldId: '<%= hfQuizzesJson.ClientID %>',
-            classDataFieldId: '<%= hfClassData.ClientID %>'
+            classDataFieldId: '<%= hfClassData.ClientID %>',
+            currentLevelSlugFieldId: '<%= hfCurrentLevelSlug.ClientID %>',
+            currentSlideSlugFieldId: '<%= hfCurrentSlideSlug.ClientID %>',
+            slidesFieldId: '<%= hfSlidesJson.ClientID %>'
         };
 
         // Debug: Log configuration on page load
@@ -507,14 +669,49 @@
         window.openCreateQuizModal = function() {
             const modalElement = document.getElementById('createQuizModal');
             if (modalElement) {
+                // Clear any previous errors
+                const errorLabel = document.getElementById('<%= lblQuizError.ClientID %>');
+                if (errorLabel) {
+                    errorLabel.style.display = 'none';
+                    errorLabel.textContent = '';
+                }
+                
+                // Show modal using Bootstrap
                 const modal = new bootstrap.Modal(modalElement);
                 modal.show();
+                
+                console.log('Quiz modal opened');
+            } else {
+                console.error('createQuizModal element not found');
             }
         };
 
         window.openUploadResourceModal = function() {
             alert('Upload resource feature coming soon!');
         };
+        
+        // Debug: Check if Bootstrap is loaded
+        window.addEventListener('DOMContentLoaded', function() {
+            if (typeof bootstrap === 'undefined') {
+                console.error('❌ Bootstrap is not loaded!');
+                alert('Error: Bootstrap JavaScript is not loaded. Tabs will not work.');
+            } else {
+                console.log('✅ Bootstrap loaded successfully');
+                
+                // Manually initialize tabs as a fallback
+                const tabButtons = document.querySelectorAll('[data-bs-toggle="tab"]');
+                tabButtons.forEach(function(button) {
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const tab = new bootstrap.Tab(button);
+                        tab.show();
+                        console.log('Tab switched to:', button.getAttribute('data-bs-target'));
+                    });
+                });
+                
+                console.log('✅ Tabs initialized:', tabButtons.length);
+            }
+        });
     </script>
 
     <script src="<%= ResolveUrl("~/Scripts/class-detail.js") %>"></script>

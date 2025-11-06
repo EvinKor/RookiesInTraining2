@@ -193,16 +193,51 @@ namespace RookiesInTraining2.Pages
                                     }
                                 }
 
+                                // Create quiz for this level
+                                string quizSlug = GenerateUniqueSlug(
+                                    SlugifyText($"{level.Title}-quiz"),
+                                    "Quizzes",
+                                    "quiz_slug",
+                                    con,
+                                    tx
+                                );
+                                
+                                // Insert Quiz first
+                                using (var cmd = con.CreateCommand())
+                                {
+                                    cmd.Transaction = tx;
+                                    cmd.CommandText = @"
+                                        INSERT INTO dbo.Quizzes 
+                                        (quiz_slug, title, mode, class_slug, level_slug, time_limit_minutes, passing_score, 
+                                         published, created_by_slug, created_at, updated_at, is_deleted)
+                                        VALUES 
+                                        (@quiz_slug, @quiz_title, @mode, @class_slug, @level_slug, @time_limit, @passing_score,
+                                         @published, @created_by, SYSUTCDATETIME(), SYSUTCDATETIME(), 0)";
+
+                                    cmd.Parameters.AddWithValue("@quiz_slug", quizSlug);
+                                    cmd.Parameters.AddWithValue("@quiz_title", level.Quiz?.Title ?? $"{level.Title} Quiz");
+                                    cmd.Parameters.AddWithValue("@mode", level.Quiz?.Mode ?? "story");
+                                    cmd.Parameters.AddWithValue("@class_slug", classSlug);
+                                    cmd.Parameters.AddWithValue("@level_slug", levelSlug);
+                                    cmd.Parameters.AddWithValue("@time_limit", level.Quiz?.TimeLimit ?? 30);
+                                    cmd.Parameters.AddWithValue("@passing_score", level.Quiz?.PassingScore ?? 70);
+                                    cmd.Parameters.AddWithValue("@published", (level.Quiz?.Publish ?? true) ? 1 : 0);
+                                    cmd.Parameters.AddWithValue("@created_by", teacherSlug);
+
+                                    cmd.ExecuteNonQuery();
+                                }
+
+                                // Insert Level with quiz reference
                                 using (var cmd = con.CreateCommand())
                                 {
                                     cmd.Transaction = tx;
                                     cmd.CommandText = @"
                                         INSERT INTO dbo.Levels 
                                         (level_slug, class_slug, level_number, title, description, content_type, content_url, 
-                                         xp_reward, estimated_minutes, is_published, created_at, updated_at, is_deleted)
+                                         quiz_slug, xp_reward, estimated_minutes, is_published, created_at, updated_at, is_deleted)
                                         VALUES 
                                         (@level_slug, @class_slug, @level_number, @title, @description, @content_type, @content_url,
-                                         @xp_reward, @estimated_minutes, @is_published, SYSUTCDATETIME(), SYSUTCDATETIME(), 0)";
+                                         @quiz_slug, @xp_reward, @estimated_minutes, @is_published, SYSUTCDATETIME(), SYSUTCDATETIME(), 0)";
 
                                     cmd.Parameters.AddWithValue("@level_slug", levelSlug);
                                     cmd.Parameters.AddWithValue("@class_slug", classSlug);
@@ -211,12 +246,15 @@ namespace RookiesInTraining2.Pages
                                     cmd.Parameters.AddWithValue("@description", level.Description ?? "");
                                     cmd.Parameters.AddWithValue("@content_type", (object)contentType ?? DBNull.Value);
                                     cmd.Parameters.AddWithValue("@content_url", (object)contentUrl ?? DBNull.Value);
+                                    cmd.Parameters.AddWithValue("@quiz_slug", quizSlug);
                                     cmd.Parameters.AddWithValue("@xp_reward", level.Xp);
                                     cmd.Parameters.AddWithValue("@estimated_minutes", level.Minutes);
                                     cmd.Parameters.AddWithValue("@is_published", level.Publish ? 1 : 0);
 
                                     cmd.ExecuteNonQuery();
                                 }
+                                
+                                System.Diagnostics.Debug.WriteLine($"[CreateModule] Level {level.LevelNumber} created with quiz: {quizSlug}");
                             }
 
                             // Commit transaction
@@ -420,6 +458,16 @@ namespace RookiesInTraining2.Pages
             public bool Publish { get; set; }
             public string FileName { get; set; }
             public string ContentType { get; set; }
+            public QuizItem Quiz { get; set; }
+        }
+        
+        public class QuizItem
+        {
+            public string Title { get; set; }
+            public string Mode { get; set; }
+            public int TimeLimit { get; set; }
+            public int PassingScore { get; set; }
+            public bool Publish { get; set; }
         }
     }
 }

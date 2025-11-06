@@ -175,15 +175,15 @@ namespace RookiesInTraining2.Pages
                 cmd.CommandText = @"
                     SELECT 
                         l.level_slug, l.level_number, l.title, l.description,
-                        l.content_type, l.content_url, l.xp_reward, l.estimated_minutes,
+                        l.content_type, l.content_url, l.quiz_slug, l.xp_reward, l.estimated_minutes,
                         l.is_published, l.created_at,
                         COUNT(DISTINCT ls.slide_slug) AS slide_count,
-                        (SELECT COUNT(*) FROM Quizzes WHERE level_slug = l.level_slug AND is_deleted = 0) AS quiz_count
+                        CASE WHEN l.quiz_slug IS NOT NULL THEN 1 ELSE 0 END AS quiz_count
                     FROM Levels l
-                    LEFT JOIN LevelSlides ls ON l.level_slug = ls.level_slug AND ls.is_deleted = 0
+                    LEFT JOIN LevelSlides ls ON l.level_slug = ls.slide_slug AND ls.is_deleted = 0
                     WHERE l.class_slug = @classSlug AND l.is_deleted = 0
                     GROUP BY l.level_slug, l.level_number, l.title, l.description,
-                             l.content_type, l.content_url, l.xp_reward, l.estimated_minutes,
+                             l.content_type, l.content_url, l.quiz_slug, l.xp_reward, l.estimated_minutes,
                              l.is_published, l.created_at
                     ORDER BY l.level_number";
 
@@ -503,8 +503,20 @@ namespace RookiesInTraining2.Pages
 
         protected void btnSaveQuiz_Click(object sender, EventArgs e)
         {
+            // Hide any previous errors
+            lblQuizError.Visible = false;
+            lblQuizError.Text = "";
+            
+            System.Diagnostics.Debug.WriteLine("[CreateQuiz] Button clicked!");
+            
             Page.Validate("CreateQuiz");
-            if (!Page.IsValid) return;
+            if (!Page.IsValid)
+            {
+                System.Diagnostics.Debug.WriteLine("[CreateQuiz] Validation failed");
+                lblQuizError.Text = "Please fill in all required fields.";
+                lblQuizError.Visible = true;
+                return;
+            }
 
             string classSlug = hfClassSlug.Value;
             string levelSlug = ddlLevelForQuiz.SelectedValue;
@@ -514,6 +526,10 @@ namespace RookiesInTraining2.Pages
             string mode = ddlQuizMode.SelectedValue;
             bool publish = chkPublishQuiz.Checked;
             string teacherSlug = Session["UserSlug"]?.ToString() ?? "";
+            
+            System.Diagnostics.Debug.WriteLine($"[CreateQuiz] Creating quiz: {quizTitle}");
+            System.Diagnostics.Debug.WriteLine($"[CreateQuiz] Class: {classSlug}, Level: {levelSlug}");
+            System.Diagnostics.Debug.WriteLine($"[CreateQuiz] Mode: {mode}, Publish: {publish}");
 
             try
             {
@@ -550,22 +566,30 @@ namespace RookiesInTraining2.Pages
                         cmd.ExecuteNonQuery();
                     }
 
+                    System.Diagnostics.Debug.WriteLine($"[CreateQuiz] ✓ Quiz created successfully: {quizSlug}");
+
                     // Clear form
                     ClearQuizForm();
 
                     // Reload data
                     LoadClassData(classSlug);
+                    LoadLevelsDropdown(classSlug);
 
                     // Redirect to add questions
                     ScriptManager.RegisterStartupScript(this, GetType(), "redirect",
-                        $"closeCreateQuizModal(); window.location.href='add_questions.aspx?quiz={quizSlug}';", true);
+                        $"const modalElement = document.getElementById('createQuizModal'); " +
+                        $"if (modalElement) {{ " +
+                        $"  const modal = bootstrap.Modal.getInstance(modalElement); " +
+                        $"  if (modal) modal.hide(); " +
+                        $"}} " +
+                        $"window.location.href='add_questions.aspx?quiz={quizSlug}';", true);
                 }
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[CreateQuiz] ❌ Error: {ex}");
                 lblQuizError.Text = "Error creating quiz: " + Server.HtmlEncode(ex.Message);
                 lblQuizError.Visible = true;
-                System.Diagnostics.Debug.WriteLine($"[ClassDetail] Quiz Error: {ex}");
             }
         }
 
@@ -639,9 +663,184 @@ namespace RookiesInTraining2.Pages
             txtTimeLimit.Text = "30";
             txtPassingScore.Text = "70";
             ddlQuizMode.SelectedIndex = 0;
+            ddlLevelForQuiz.SelectedIndex = 0;
             chkPublishQuiz.Checked = false;
             lblQuizError.Visible = false;
+            lblQuizError.Text = "";
         }
+
+        #endregion
+
+        #region Slide Management
+
+        protected void btnSaveSlide_Click(object sender, EventArgs e)
+        {
+            lblSlideError.Visible = false;
+            lblSlideError.Text = "";
+
+            string levelSlug = hfCurrentLevelSlug.Value;
+            if (string.IsNullOrWhiteSpace(levelSlug))
+            {
+                lblSlideError.Text = "Error: No level selected.";
+                lblSlideError.Visible = true;
+                return;
+            }
+
+            string slideContent = txtSlideContent.Text.Trim();
+            string mediaUrl = txtMediaUrl.Text.Trim();
+            string contentType = ddlSlideContentType.SelectedValue;
+            
+            // Validate slide number
+            if (!int.TryParse(txtSlideNumber.Text, out int slideNumber) || slideNumber < 1)
+            {
+                lblSlideError.Text = "Invalid slide number. Please try again.";
+                lblSlideError.Visible = true;
+                return;
+            }
+
+            // Validate content based on type
+            if (contentType == "text" || contentType == "html")
+            {
+                if (string.IsNullOrWhiteSpace(slideContent))
+                {
+                    lblSlideError.Text = "Slide content is required.";
+                    lblSlideError.Visible = true;
+                    return;
+                }
+            }
+            else if (contentType == "image" || contentType == "video")
+            {
+                if (string.IsNullOrWhiteSpace(mediaUrl))
+                {
+                    lblSlideError.Text = "Media URL is required.";
+                    lblSlideError.Visible = true;
+                    return;
+                }
+            }
+
+            try
+            {
+                using (var con = new SqlConnection(ConnStr))
+                {
+                    con.Open();
+
+                    // Check if slide exists
+                    string slideSlug = hfCurrentSlideSlug.Value;
+                    bool isUpdate = !string.IsNullOrWhiteSpace(slideSlug);
+
+                    if (!isUpdate)
+                    {
+                        // Generate new slide slug
+                        slideSlug = GenerateUniqueSlug(
+                            SlugifyText($"{levelSlug}-slide-{slideNumber}"),
+                            "LevelSlides",
+                            "slide_slug",
+                            con
+                        );
+                    }
+
+                    using (var cmd = con.CreateCommand())
+                    {
+                        if (isUpdate)
+                        {
+                            // Update existing slide
+                            cmd.CommandText = @"
+                                UPDATE LevelSlides
+                                SET content_type = @contentType,
+                                    content_text = @contentText,
+                                    media_url = @mediaUrl,
+                                    slide_number = @slideNumber
+                                WHERE slide_slug = @slideSlug AND is_deleted = 0";
+                        }
+                        else
+                        {
+                            // Insert new slide
+                            cmd.CommandText = @"
+                                INSERT INTO LevelSlides
+                                (slide_slug, level_slug, slide_number, content_type, content_text, media_url, created_at, is_deleted)
+                                VALUES
+                                (@slideSlug, @levelSlug, @slideNumber, @contentType, @contentText, @mediaUrl, SYSUTCDATETIME(), 0)";
+
+                            cmd.Parameters.AddWithValue("@slideSlug", slideSlug);
+                            cmd.Parameters.AddWithValue("@levelSlug", levelSlug);
+                        }
+
+                        cmd.Parameters.AddWithValue("@slideNumber", slideNumber);
+                        cmd.Parameters.AddWithValue("@contentType", contentType);
+                        cmd.Parameters.AddWithValue("@contentText", (object)slideContent ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@mediaUrl", (object)mediaUrl ?? DBNull.Value);
+
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"[SaveSlide] ✓ Slide saved: {slideSlug}");
+
+                    // Reload slides
+                    LoadSlidesForLevel(levelSlug);
+
+                    // Show success message
+                    ScriptManager.RegisterStartupScript(this, GetType(), "slideSuccess",
+                        "alert('Slide saved successfully!'); " +
+                        "window.location.reload();", true);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SaveSlide] ❌ Error: {ex}");
+                lblSlideError.Text = "Error saving slide: " + Server.HtmlEncode(ex.Message);
+                lblSlideError.Visible = true;
+            }
+        }
+
+        private void LoadSlidesForLevel(string levelSlug)
+        {
+            var slides = new List<SlideData>();
+
+            try
+            {
+                using (var con = new SqlConnection(ConnStr))
+                using (var cmd = con.CreateCommand())
+                {
+                    con.Open();
+                    cmd.CommandText = @"
+                        SELECT slide_slug, level_slug, slide_number, content_type, 
+                               ISNULL(content_text, '') as content_text, 
+                               ISNULL(media_url, '') as media_url
+                        FROM LevelSlides
+                        WHERE level_slug = @levelSlug AND is_deleted = 0
+                        ORDER BY slide_number";
+
+                    cmd.Parameters.AddWithValue("@levelSlug", levelSlug);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            slides.Add(new SlideData
+                            {
+                                SlideSlug = reader["slide_slug"].ToString(),
+                                LevelSlug = reader["level_slug"].ToString(),
+                                SlideNumber = Convert.ToInt32(reader["slide_number"]),
+                                ContentType = reader["content_type"].ToString(),
+                                ContentText = reader["content_text"].ToString(),
+                                MediaUrl = reader["media_url"].ToString()
+                            });
+                        }
+                    }
+                }
+
+                var serializer = new JavaScriptSerializer();
+                hfSlidesJson.Value = serializer.Serialize(slides);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LoadSlides] Error: {ex}");
+            }
+        }
+
+        #endregion
+
+        #region Helper Methods
 
         private string SlugifyText(string text)
         {
@@ -750,6 +949,16 @@ namespace RookiesInTraining2.Pages
             public string LevelSlug { get; set; }
             public int QuestionCount { get; set; }
             public int AttemptCount { get; set; }
+        }
+        
+        public class SlideData
+        {
+            public string SlideSlug { get; set; }
+            public string LevelSlug { get; set; }
+            public int SlideNumber { get; set; }
+            public string ContentType { get; set; }
+            public string ContentText { get; set; }
+            public string MediaUrl { get; set; }
         }
 
         #endregion

@@ -74,6 +74,7 @@ CREATE TABLE [dbo].[Levels]
 	[description] NVARCHAR(MAX) NULL,
 	[content_type] NVARCHAR(50) NULL,
 	[content_url] NVARCHAR(500) NULL,
+	[quiz_slug] NVARCHAR(100) NULL,
 	[xp_reward] INT NOT NULL DEFAULT 50,
 	[estimated_minutes] INT NOT NULL DEFAULT 15,
 	[is_published] BIT NOT NULL DEFAULT 1,
@@ -91,7 +92,7 @@ CREATE TABLE [dbo].[Quizzes]
 	[quiz_slug] NVARCHAR(100) NOT NULL PRIMARY KEY,
 	[title] NVARCHAR(200) NOT NULL,
 	[class_slug] NVARCHAR(100) NULL,
-	[level_slug] NVARCHAR(100) NULL,
+	[level_slug] NVARCHAR(100) NOT NULL UNIQUE,
 	[module_slug] NVARCHAR(100) NULL,
 	[quiz_type] NVARCHAR(50) NOT NULL DEFAULT 'multiple_choice',
 	[mode] NVARCHAR(50) NULL DEFAULT 'story',
@@ -104,7 +105,8 @@ CREATE TABLE [dbo].[Quizzes]
 	[created_by_slug] NVARCHAR(100) NULL,
 	[created_at] DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
 	[updated_at] DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
-	[is_deleted] BIT NOT NULL DEFAULT 0
+	[is_deleted] BIT NOT NULL DEFAULT 0,
+	CONSTRAINT FK_Quizzes_Levels FOREIGN KEY (level_slug) REFERENCES Levels(level_slug)
 );
 GO
 

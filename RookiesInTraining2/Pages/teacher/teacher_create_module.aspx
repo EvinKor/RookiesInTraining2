@@ -179,8 +179,44 @@
                                 <input type="file" id="fileUploadLevel" class="form-control" accept=".pptx,.ppt,.pdf,.mp4,.avi,.mov" />
                                 <small class="text-muted">Supported: PowerPoint, PDF, Video</small>
                             </div>
-                            <button type="button" class="btn btn-primary" onclick="addLevel()">
-                                <i class="bi bi-plus-circle me-2"></i>Add This Level
+                            
+                            <hr class="my-4" />
+                            
+                            <!-- Quiz Details (Required for each level) -->
+                            <h6 class="mb-3"><i class="bi bi-question-circle-fill text-warning me-2"></i>Quiz for This Level <span class="badge bg-warning text-dark">Required</span></h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Quiz Title <span class="text-danger">*</span></label>
+                                    <input type="text" id="txtQuizTitle" class="form-control" placeholder="e.g., Level 1 Quiz" maxlength="200" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Quiz Mode</label>
+                                    <select id="ddlQuizModeWizard" class="form-select">
+                                        <option value="story" selected>Story Mode</option>
+                                        <option value="battle">Battle Mode</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-bold">Time Limit (min)</label>
+                                    <input type="number" id="txtQuizTimeLimit" class="form-control" min="1" value="30" />
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-bold">Passing Score (%)</label>
+                                    <input type="number" id="txtQuizPassingScore" class="form-control" min="0" max="100" value="70" />
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-bold">Publish Quiz</label>
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input" type="checkbox" id="chkPublishQuiz" checked>
+                                        <label class="form-check-label" for="chkPublishQuiz">Yes</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button type="button" class="btn btn-success btn-lg w-100" onclick="addLevel()">
+                                <i class="bi bi-plus-circle me-2"></i>Add This Level with Quiz
                             </button>
                         </div>
                     </div>
