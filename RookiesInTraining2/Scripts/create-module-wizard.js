@@ -105,11 +105,18 @@
         // Update buttons
         const btnBack = document.getElementById('btnBack');
         const btnNext = document.getElementById('btnNext');
-        const btnCreate = document.getElementById('<%= btnCreateModule.ClientID %>'.replace('&lt;%=', '<%=').replace('%&gt;', '%>'));
+        const btnCreate = document.getElementById(window.WIZARD_IDS.btnCreateModule);
+
+        console.log('Step:', step, 'btnCreate element:', btnCreate);
 
         if (btnBack) btnBack.style.display = step > 1 ? 'block' : 'none';
         if (btnNext) btnNext.style.display = step < 3 ? 'block' : 'none';
-        if (btnCreate) btnCreate.style.display = step === 3 ? 'block' : 'none';
+        if (btnCreate) {
+            btnCreate.style.display = step === 3 ? 'block' : 'none';
+            console.log('Create button display set to:', step === 3 ? 'block' : 'none');
+        } else {
+            console.error('Create Module button not found! ID:', window.WIZARD_IDS.btnCreateModule);
+        }
 
         // Special actions per step
         if (step === 3) {

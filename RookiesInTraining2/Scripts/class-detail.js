@@ -402,7 +402,7 @@
     };
 
     window.editQuiz = function (quizSlug) {
-        window.location.href = 'add_questions.aspx?quiz=' + quizSlug;
+        window.location.href = 'teacher/add_questions.aspx?quiz=' + quizSlug;
     };
 
     window.previewQuiz = function (quizSlug) {

@@ -45,7 +45,7 @@ namespace RookiesInTraining2.Pages
             string classSlug = Request.QueryString["slug"];
             if (string.IsNullOrEmpty(classSlug))
             {
-                Response.Redirect("~/Pages/teacher_browse_classes.aspx", false);
+                Response.Redirect("~/Pages/teacher/teacher_browse_classes.aspx", false);
                 Context.ApplicationInstance.CompleteRequest();
                 return;
             }

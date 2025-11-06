@@ -223,7 +223,7 @@ namespace RookiesInTraining2.Pages
                             tx.Commit();
 
                             // Redirect to class detail
-                            Response.Redirect($"~/Pages/class_detail.aspx?slug={classSlug}", false);
+                            Response.Redirect($"~/Pages/teacher/class_detail.aspx?slug={classSlug}", false);
                         }
                         catch (Exception ex)
                         {

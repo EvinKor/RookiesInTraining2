@@ -21,7 +21,7 @@
                         <p class="mb-0" style="opacity: 0.9;">Browse and manage your classes</p>
                     </div>
                     <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
-                        <a href="<%= ResolveUrl("~/Pages/teacher_create_module.aspx") %>" 
+                        <a href="<%= ResolveUrl("~/Pages/teacher/teacher_create_module.aspx") %>" 
                            class="btn btn-light btn-lg px-4 shadow-sm">
                             <i class="bi bi-plus-circle me-2"></i>Create Module
                         </a>
@@ -78,7 +78,7 @@
                 <i class="bi bi-collection display-1 text-muted mb-3"></i>
                 <h3>No Classes Yet</h3>
                 <p class="text-muted">Create your first module to start teaching!</p>
-                <a href="<%= ResolveUrl("~/Pages/teacher_create_module.aspx") %>" 
+                <a href="<%= ResolveUrl("~/Pages/teacher/teacher_create_module.aspx") %>" 
                    class="btn btn-primary btn-lg mt-3">
                     <i class="bi bi-plus-circle me-2"></i>Create Your First Module
                 </a>

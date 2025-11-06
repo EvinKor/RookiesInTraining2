@@ -18,7 +18,7 @@ namespace RookiesInTraining2.Pages
                 System.Web.UI.UnobtrusiveValidationMode.None;
 
             if (!IsPostBack && Session["UserSlug"] != null)
-                Response.Redirect("~/Pages/dashboard_student.aspx");
+                Response.Redirect("~/Pages/student/dashboard_student.aspx");
         }
 
         protected void btnRegister_Click(object sender, EventArgs e)
@@ -138,9 +138,9 @@ namespace RookiesInTraining2.Pages
 
             switch (role.Trim().ToLowerInvariant())
             {
-                case "student": Response.Redirect("~/Pages/dashboard_student.aspx", false); break;
-                case "teacher": Response.Redirect("~/Pages/dashboard_teacher.aspx", false); break;
-                case "admin": Response.Redirect("~/Pages/dashboard_admin.aspx", false); break;
+                case "student": Response.Redirect("~/Pages/student/dashboard_student.aspx", false); break;
+                case "teacher": Response.Redirect("~/Pages/teacher/dashboard_teacher.aspx", false); break;
+                case "admin": Response.Redirect("~/Pages/admin/dashboard_admin.aspx", false); break;
                 default: Response.Redirect("~/Pages/Login.aspx", false); break;
             }
         }

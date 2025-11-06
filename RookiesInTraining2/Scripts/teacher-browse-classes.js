@@ -55,7 +55,7 @@
         col.innerHTML = `
             <div class="class-card clickable-card" 
                  style="--class-color: ${classItem.Color}; cursor: pointer;"
-                 onclick="window.location.href='class_detail.aspx?slug=${classItem.ClassSlug}'">
+                 onclick="window.location.href='teacher/class_detail.aspx?slug=${classItem.ClassSlug}'">
                 <div class="class-card-header">
                     <div class="class-icon">
                         ${classItem.Icon || '📚'}

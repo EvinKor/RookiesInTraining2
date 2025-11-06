@@ -80,7 +80,7 @@
         <div class="class-header-gradient" id="classHeader">
             <div class="container-fluid py-4">
                 <div class="d-flex justify-content-between align-items-start mb-4">
-                    <a href="<%= ResolveUrl("~/Pages/teacher_browse_classes.aspx") %>" class="btn btn-sm btn-outline-light">
+                    <a href="<%= ResolveUrl("~/Pages/teacher/teacher_browse_classes.aspx") %>" class="btn btn-sm btn-outline-light">
                         <i class="bi bi-arrow-left me-2"></i>Back to Classes
                     </a>
                     <div class="dropdown">

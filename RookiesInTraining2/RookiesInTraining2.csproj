@@ -131,15 +131,15 @@
     <Content Include="Global.asax" />
     <Content Include="MasterPages\dashboard.Master" />
     <Content Include="MasterPages\MyMain.Master" />
-    <Content Include="Pages\add_questions.aspx" />
-    <Content Include="Pages\class_detail.aspx" />
-    <Content Include="Pages\dashboard_admin.aspx" />
-    <Content Include="Pages\dashboard_student.aspx" />
-    <Content Include="Pages\dashboard_teacher.aspx" />
-    <Content Include="Pages\teacher_classes.aspx" />
-    <Content Include="Pages\teacher_browse_classes.aspx" />
-    <Content Include="Pages\teacher_create_class.aspx" />
-    <Content Include="Pages\teacher_create_module.aspx" />
+    <Content Include="Pages\teacher\add_questions.aspx" />
+    <Content Include="Pages\teacher\class_detail.aspx" />
+    <Content Include="Pages\admin\dashboard_admin.aspx" />
+    <Content Include="Pages\student\dashboard_student.aspx" />
+    <Content Include="Pages\teacher\dashboard_teacher.aspx" />
+    <Content Include="Pages\teacher\teacher_classes.aspx" />
+    <Content Include="Pages\teacher\teacher_browse_classes.aspx" />
+    <Content Include="Pages\teacher\teacher_create_class.aspx" />
+    <Content Include="Pages\teacher\teacher_create_module.aspx" />
     <Content Include="Pages\Login.aspx" />
     <Content Include="Pages\Register.aspx" />
     <Content Include="Scripts\bootstrap.bundle.js" />
@@ -251,67 +251,67 @@
     <Compile Include="MasterPages\MyMain.Master.designer.cs">
       <DependentUpon>MyMain.Master</DependentUpon>
     </Compile>
-    <Compile Include="Pages\add_questions.aspx.cs">
+    <Compile Include="Pages\teacher\add_questions.aspx.cs">
       <DependentUpon>add_questions.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Pages\add_questions.aspx.designer.cs">
+    <Compile Include="Pages\teacher\add_questions.aspx.designer.cs">
       <DependentUpon>add_questions.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Pages\class_detail.aspx.cs">
+    <Compile Include="Pages\teacher\class_detail.aspx.cs">
       <DependentUpon>class_detail.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Pages\class_detail.aspx.designer.cs">
+    <Compile Include="Pages\teacher\class_detail.aspx.designer.cs">
       <DependentUpon>class_detail.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Pages\dashboard_admin.aspx.cs">
+    <Compile Include="Pages\admin\dashboard_admin.aspx.cs">
       <DependentUpon>dashboard_admin.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Pages\dashboard_admin.aspx.designer.cs">
+    <Compile Include="Pages\admin\dashboard_admin.aspx.designer.cs">
       <DependentUpon>dashboard_admin.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Pages\dashboard_student.aspx.cs">
+    <Compile Include="Pages\student\dashboard_student.aspx.cs">
       <DependentUpon>dashboard_student.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Pages\dashboard_student.aspx.designer.cs">
+    <Compile Include="Pages\student\dashboard_student.aspx.designer.cs">
       <DependentUpon>dashboard_student.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Pages\dashboard_teacher.aspx.cs">
+    <Compile Include="Pages\teacher\dashboard_teacher.aspx.cs">
       <DependentUpon>dashboard_teacher.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Pages\dashboard_teacher.aspx.designer.cs">
+    <Compile Include="Pages\teacher\dashboard_teacher.aspx.designer.cs">
       <DependentUpon>dashboard_teacher.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Pages\teacher_classes.aspx.cs">
+    <Compile Include="Pages\teacher\teacher_classes.aspx.cs">
       <DependentUpon>teacher_classes.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Pages\teacher_classes.aspx.designer.cs">
+    <Compile Include="Pages\teacher\teacher_classes.aspx.designer.cs">
       <DependentUpon>teacher_classes.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Pages\teacher_browse_classes.aspx.cs">
+    <Compile Include="Pages\teacher\teacher_browse_classes.aspx.cs">
       <DependentUpon>teacher_browse_classes.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Pages\teacher_browse_classes.aspx.designer.cs">
+    <Compile Include="Pages\teacher\teacher_browse_classes.aspx.designer.cs">
       <DependentUpon>teacher_browse_classes.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Pages\teacher_create_class.aspx.cs">
+    <Compile Include="Pages\teacher\teacher_create_class.aspx.cs">
       <DependentUpon>teacher_create_class.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Pages\teacher_create_class.aspx.designer.cs">
+    <Compile Include="Pages\teacher\teacher_create_class.aspx.designer.cs">
       <DependentUpon>teacher_create_class.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Pages\teacher_create_module.aspx.cs">
+    <Compile Include="Pages\teacher\teacher_create_module.aspx.cs">
       <DependentUpon>teacher_create_module.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Pages\teacher_create_module.aspx.designer.cs">
+    <Compile Include="Pages\teacher\teacher_create_module.aspx.designer.cs">
       <DependentUpon>teacher_create_module.aspx</DependentUpon>
     </Compile>
     <Compile Include="Pages\Login.aspx.cs">
