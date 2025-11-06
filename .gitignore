@@ -1,0 +1,56 @@
+# ----- Visual Studio cache -----
+.vs/
+*.vscode/
+
+# ----- Build outputs -----
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Ll]og/
+[Tt]emp/
+
+# ----- Packages / tooling -----
+packages/
+*.nupkg
+artifacts/
+project.lock.json
+
+# ----- User-specific files -----
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# ----- IIS / publish / misc -----
+_AppStart.cshtml
+App_Data/Logs/
+publish/s
+*.Publish.xml
+
+# ----- LocalDB / auto-attached DB copies (keep the *original* if you really want) -----
+App_Data/*.mdf
+App_Data/*.ldf
+*.ldf
+*.mdf
+
+# ----- Node / front-end (if present) -----
+node_modules/
+bower_components/
+wwwroot/lib/
+
+# ----- Resharper / Rider (if present) -----
+_ReSharper*/
+*.DotSettings.user
+.idea/
+
+# ----- Others you likely don't want -----
+*.log
+*.cache
+*.orig
+*.tmp
+*.DS_Store
+Thumbs.db
