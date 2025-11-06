@@ -137,6 +137,9 @@
     <Content Include="Pages\dashboard_student.aspx" />
     <Content Include="Pages\dashboard_teacher.aspx" />
     <Content Include="Pages\teacher_classes.aspx" />
+    <Content Include="Pages\teacher_browse_classes.aspx" />
+    <Content Include="Pages\teacher_create_class.aspx" />
+    <Content Include="Pages\teacher_create_module.aspx" />
     <Content Include="Pages\Login.aspx" />
     <Content Include="Pages\Register.aspx" />
     <Content Include="Scripts\bootstrap.bundle.js" />
@@ -147,6 +150,9 @@
     <Content Include="Scripts\class-detail.js" />
     <Content Include="Scripts\student-dashboard.js" />
     <Content Include="Scripts\teacher-classes.js" />
+    <Content Include="Scripts\teacher-browse-classes.js" />
+    <Content Include="Scripts\teacher-create-class.js" />
+    <Content Include="Scripts\create-module-wizard.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Scripts\bootstrap.min.js.map" />
@@ -286,6 +292,27 @@
     </Compile>
     <Compile Include="Pages\teacher_classes.aspx.designer.cs">
       <DependentUpon>teacher_classes.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\teacher_browse_classes.aspx.cs">
+      <DependentUpon>teacher_browse_classes.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\teacher_browse_classes.aspx.designer.cs">
+      <DependentUpon>teacher_browse_classes.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\teacher_create_class.aspx.cs">
+      <DependentUpon>teacher_create_class.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\teacher_create_class.aspx.designer.cs">
+      <DependentUpon>teacher_create_class.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\teacher_create_module.aspx.cs">
+      <DependentUpon>teacher_create_module.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\teacher_create_module.aspx.designer.cs">
+      <DependentUpon>teacher_create_module.aspx</DependentUpon>
     </Compile>
     <Compile Include="Pages\Login.aspx.cs">
       <DependentUpon>Login.aspx</DependentUpon>

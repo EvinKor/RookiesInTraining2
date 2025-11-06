@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -47,7 +45,7 @@ namespace RookiesInTraining2.Pages
             string classSlug = Request.QueryString["slug"];
             if (string.IsNullOrEmpty(classSlug))
             {
-                Response.Redirect("~/Pages/teacher_classes.aspx", false);
+                Response.Redirect("~/Pages/teacher_browse_classes.aspx", false);
                 Context.ApplicationInstance.CompleteRequest();
                 return;
             }
@@ -63,6 +61,7 @@ namespace RookiesInTraining2.Pages
         private void LoadClassData(string classSlug)
         {
             string teacherSlug = Session["UserSlug"]?.ToString() ?? "";
+            var serializer = new JavaScriptSerializer();
 
             try
             {
@@ -74,30 +73,49 @@ namespace RookiesInTraining2.Pages
                     var classData = LoadClass(classSlug, teacherSlug, con);
                     if (classData == null)
                     {
-                        Response.Redirect("~/Pages/teacher_classes.aspx", false);
+                        // Class not found - show error with more detail
+                        System.Diagnostics.Debug.WriteLine($"[ClassDetail] Class not found - Slug: {classSlug}, Teacher: {teacherSlug}");
+                        
+                        // Set error state in hidden field
+                        var errorData = new { ClassName = "", ClassCode = "", Error = "Class not found" };
+                        hfClassData.Value = serializer.Serialize(errorData);
+                        
+                        ScriptManager.RegisterStartupScript(this, GetType(), "classNotFound",
+                            $"console.error('Class not found with slug: {Server.HtmlEncode(classSlug)}'); " +
+                            $"alert('Class not found. You may not have access to this class.'); " +
+                            $"setTimeout(function() {{ window.location.href = 'teacher_browse_classes.aspx'; }}, 2000);", true);
                         return;
                     }
 
+                    System.Diagnostics.Debug.WriteLine($"[ClassDetail] Loaded class: {classData.ClassName} ({classData.ClassSlug})");
+
                     // Load levels
                     var levels = LoadLevels(classSlug, con);
+                    System.Diagnostics.Debug.WriteLine($"[ClassDetail] Loaded {levels.Count} levels");
 
                     // Load students
                     var students = LoadStudents(classSlug, con);
+                    System.Diagnostics.Debug.WriteLine($"[ClassDetail] Loaded {students.Count} students");
 
                     // Load quizzes
                     var quizzes = LoadQuizzes(classSlug, con);
+                    System.Diagnostics.Debug.WriteLine($"[ClassDetail] Loaded {quizzes.Count} quizzes");
 
                     // Serialize to JSON
-                    var serializer = new JavaScriptSerializer();
                     hfClassData.Value = serializer.Serialize(classData);
                     hfLevelsJson.Value = serializer.Serialize(levels);
                     hfStudentsJson.Value = serializer.Serialize(students);
                     hfQuizzesJson.Value = serializer.Serialize(quizzes);
+                    
+                    System.Diagnostics.Debug.WriteLine($"[ClassDetail] Data serialization complete");
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[ClassDetail] Error: {ex}");
+                System.Diagnostics.Debug.WriteLine($"[ClassDetail] Error loading class data: {ex}");
+                ScriptManager.RegisterStartupScript(this, GetType(), "loadError",
+                    $"console.error('Error loading class:', {Server.HtmlEncode(ex.Message)}); " +
+                    $"alert('Error loading class data. Please try again or contact support.');", true);
             }
         }
 
@@ -112,11 +130,14 @@ namespace RookiesInTraining2.Pages
                            ISNULL(color, '#6c5ce7') AS color
                     FROM Classes
                     WHERE class_slug = @slug 
-                        AND teacher_slug = @teacherSlug 
-                        AND is_deleted = 0";
+                      AND is_deleted = 0
+                      AND (teacher_slug = @teacherSlug OR @isAdmin = 1)";
 
                 cmd.Parameters.AddWithValue("@slug", classSlug);
                 cmd.Parameters.AddWithValue("@teacherSlug", teacherSlug);
+
+                var role = (Convert.ToString(Session["Role"]) ?? "").ToLowerInvariant();
+                cmd.Parameters.AddWithValue("@isAdmin", role == "admin" ? 1 : 0);
 
                 using (var reader = cmd.ExecuteReader())
                 {
@@ -151,7 +172,7 @@ namespace RookiesInTraining2.Pages
                         COUNT(DISTINCT ls.slide_slug) AS slide_count,
                         (SELECT COUNT(*) FROM Quizzes WHERE level_slug = l.level_slug AND is_deleted = 0) AS quiz_count
                     FROM Levels l
-                    LEFT JOIN LevelSlides ls ON l.level_slug = ls.level_slug
+                    LEFT JOIN LevelSlides ls ON l.level_slug = ls.level_slug AND ls.is_deleted = 0
                     WHERE l.class_slug = @classSlug AND l.is_deleted = 0
                     GROUP BY l.level_slug, l.level_number, l.title, l.description,
                              l.content_type, l.content_url, l.xp_reward, l.estimated_minutes,
@@ -213,6 +234,13 @@ namespace RookiesInTraining2.Pages
                 {
                     while (reader.Read())
                     {
+                        int avgScoreInt = 0;
+                        if (reader["avg_score"] != DBNull.Value)
+                        {
+                            decimal avg = Convert.ToDecimal(reader["avg_score"]);
+                            avgScoreInt = (int)Math.Round(avg);
+                        }
+
                         students.Add(new StudentData
                         {
                             UserSlug = reader["user_slug"].ToString(),
@@ -220,9 +248,7 @@ namespace RookiesInTraining2.Pages
                             Email = reader["email"].ToString(),
                             JoinedAt = Convert.ToDateTime(reader["joined_at"]),
                             Attempts = Convert.ToInt32(reader["attempts"]),
-                            AvgScore = reader["avg_score"] != DBNull.Value 
-                                ? Convert.ToInt32(reader["avg_score"]) 
-                                : 0
+                            AvgScore = avgScoreInt
                         });
                     }
                 }
@@ -261,11 +287,11 @@ namespace RookiesInTraining2.Pages
                             Title = reader["title"].ToString(),
                             Mode = reader["mode"].ToString(),
                             Published = Convert.ToBoolean(reader["published"]),
-                            TimeLimit = reader["time_limit_minutes"] != DBNull.Value 
-                                ? Convert.ToInt32(reader["time_limit_minutes"]) 
+                            TimeLimit = reader["time_limit_minutes"] != DBNull.Value
+                                ? Convert.ToInt32(reader["time_limit_minutes"])
                                 : 30,
-                            PassingScore = reader["passing_score"] != DBNull.Value 
-                                ? Convert.ToInt32(reader["passing_score"]) 
+                            PassingScore = reader["passing_score"] != DBNull.Value
+                                ? Convert.ToInt32(reader["passing_score"])
                                 : 70,
                             LevelSlug = reader["level_slug"].ToString(),
                             QuestionCount = Convert.ToInt32(reader["question_count"]),
@@ -315,16 +341,70 @@ namespace RookiesInTraining2.Pages
 
         protected void btnSaveLevel_Click(object sender, EventArgs e)
         {
+            // Hide any previous errors
+            lblLevelError.Visible = false;
+            lblLevelError.Text = "";
+
+            // Validate form
             Page.Validate("CreateLevel");
-            if (!Page.IsValid) return;
+            if (!Page.IsValid)
+            {
+                lblLevelError.Text = "Please fill in all required fields correctly.";
+                lblLevelError.Visible = true;
+                lblLevelError.CssClass = "alert alert-danger";
+                return;
+            }
+
+            // Validate inputs
+            if (string.IsNullOrWhiteSpace(hfClassSlug.Value))
+            {
+                lblLevelError.Text = "Error: Class slug is missing. Please refresh the page.";
+                lblLevelError.Visible = true;
+                lblLevelError.CssClass = "alert alert-danger";
+                return;
+            }
 
             string classSlug = hfClassSlug.Value;
             string teacherSlug = Session["UserSlug"]?.ToString() ?? "";
-            int levelNumber = int.Parse(txtLevelNumber.Text);
+            
+            if (string.IsNullOrWhiteSpace(teacherSlug))
+            {
+                lblLevelError.Text = "Error: You must be logged in to create levels.";
+                lblLevelError.Visible = true;
+                lblLevelError.CssClass = "alert alert-danger";
+                return;
+            }
+
+            // Parse and validate inputs
+            if (!int.TryParse(txtLevelNumber.Text, out int levelNumber) || levelNumber <= 0)
+            {
+                lblLevelError.Text = "Please enter a valid level number (must be greater than 0).";
+                lblLevelError.Visible = true;
+                lblLevelError.CssClass = "alert alert-danger";
+                return;
+            }
+
             string title = txtLevelTitle.Text.Trim();
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                lblLevelError.Text = "Level title is required.";
+                lblLevelError.Visible = true;
+                lblLevelError.CssClass = "alert alert-danger";
+                return;
+            }
+
             string description = txtLevelDescription.Text.Trim();
-            int minutes = int.Parse(txtEstimatedMinutes.Text);
-            int xp = int.Parse(txtXpReward.Text);
+            
+            if (!int.TryParse(txtEstimatedMinutes.Text, out int minutes) || minutes <= 0)
+            {
+                minutes = 15; // Default
+            }
+
+            if (!int.TryParse(txtXpReward.Text, out int xp) || xp <= 0)
+            {
+                xp = 50; // Default
+            }
+
             bool publish = chkPublishLevel.Checked;
 
             try
@@ -343,9 +423,19 @@ namespace RookiesInTraining2.Pages
 
                     if (fileUpload.HasFile)
                     {
-                        var result = HandleFileUpload(fileUpload, classSlug, levelSlug);
-                        contentType = result.Item1;
-                        contentUrl = result.Item2;
+                        try
+                        {
+                            var result = HandleFileUpload(fileUpload, classSlug, levelSlug);
+                            contentType = result.Item1;
+                            contentUrl = result.Item2;
+                        }
+                        catch (Exception uploadEx)
+                        {
+                            lblLevelError.Text = "Error uploading file: " + Server.HtmlEncode(uploadEx.Message);
+                            lblLevelError.Visible = true;
+                            lblLevelError.CssClass = "alert alert-danger";
+                            return;
+                        }
                     }
 
                     // Insert level
@@ -365,7 +455,7 @@ namespace RookiesInTraining2.Pages
                         cmd.Parameters.AddWithValue("@classSlug", classSlug);
                         cmd.Parameters.AddWithValue("@levelNum", levelNumber);
                         cmd.Parameters.AddWithValue("@title", title);
-                        cmd.Parameters.AddWithValue("@desc", (object)description ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@desc", string.IsNullOrWhiteSpace(description) ? (object)DBNull.Value : description);
                         cmd.Parameters.AddWithValue("@contentType", (object)contentType ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@contentUrl", (object)contentUrl ?? DBNull.Value);
                         cmd.Parameters.AddWithValue("@xp", xp);
@@ -375,6 +465,8 @@ namespace RookiesInTraining2.Pages
                         cmd.ExecuteNonQuery();
                     }
 
+                    System.Diagnostics.Debug.WriteLine($"[ClassDetail] Level created successfully: {levelSlug}");
+
                     // Clear form
                     ClearLevelForm();
 
@@ -382,15 +474,24 @@ namespace RookiesInTraining2.Pages
                     LoadClassData(classSlug);
                     LoadLevelsDropdown(classSlug);
 
+                    // Close modal and refresh page to show new level
                     ScriptManager.RegisterStartupScript(this, GetType(), "closeModal",
-                        "closeCreateLevelModal(); showSuccessToast('Level created successfully!');", true);
+                        "setTimeout(function() { " +
+                        "  const modalElement = document.getElementById('createLevelModal'); " +
+                        "  if (modalElement) { " +
+                        "    const modal = bootstrap.Modal.getInstance(modalElement); " +
+                        "    if (modal) modal.hide(); " +
+                        "  } " +
+                        "  window.location.reload(); " +
+                        "}, 500);", true);
                 }
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[ClassDetail] Error creating level: {ex}");
                 lblLevelError.Text = "Error creating level: " + Server.HtmlEncode(ex.Message);
                 lblLevelError.Visible = true;
-                System.Diagnostics.Debug.WriteLine($"[ClassDetail] Error: {ex}");
+                lblLevelError.CssClass = "alert alert-danger";
             }
         }
 
@@ -436,7 +537,7 @@ namespace RookiesInTraining2.Pages
                         cmd.Parameters.AddWithValue("@publish", publish ? 1 : 0);
                         cmd.Parameters.AddWithValue("@teacherSlug", teacherSlug);
                         cmd.Parameters.AddWithValue("@classSlug", classSlug);
-                        cmd.Parameters.AddWithValue("@levelSlug", (object)levelSlug ?? DBNull.Value);
+                        cmd.Parameters.AddWithValue("@levelSlug", string.IsNullOrWhiteSpace(levelSlug) ? (object)DBNull.Value : levelSlug);
                         cmd.Parameters.AddWithValue("@timeLimit", timeLimit);
                         cmd.Parameters.AddWithValue("@passingScore", passingScore);
 
@@ -506,8 +607,6 @@ namespace RookiesInTraining2.Pages
             string relativeUrl = $"/Uploads/{classSlug}/{levelSlug}/{safeFileName}";
 
             // TODO: If PowerPoint, process slides here
-            // For now, just save the file
-
             return Tuple.Create(contentType, relativeUrl);
         }
 
@@ -522,8 +621,10 @@ namespace RookiesInTraining2.Pages
             txtLevelDescription.Text = "";
             txtEstimatedMinutes.Text = "15";
             txtXpReward.Text = "50";
-            chkPublishLevel.Checked = false;
+            chkPublishLevel.Checked = true;
             lblLevelError.Visible = false;
+            lblLevelError.Text = "";
+            lblLevelError.CssClass = "alert alert-danger";
         }
 
         private void ClearQuizForm()
@@ -648,4 +749,3 @@ namespace RookiesInTraining2.Pages
         #endregion
     }
 }
-

@@ -29,6 +29,7 @@
         try {
             if (!window.CLASS_DATA) {
                 console.error('CLASS_DATA not found');
+                showError('Configuration error: CLASS_DATA not found');
                 return;
             }
 
@@ -37,8 +38,18 @@
             const studentsField = document.getElementById(window.CLASS_DATA.studentsFieldId);
             const quizzesField = document.getElementById(window.CLASS_DATA.quizzesFieldId);
 
+            console.log('Loading data from fields:', {
+                classDataField: classDataField ? 'found' : 'missing',
+                classDataValue: classDataField?.value ? 'has value' : 'empty',
+                levelsField: levelsField ? 'found' : 'missing',
+                studentsField: studentsField ? 'found' : 'missing',
+                quizzesField: quizzesField ? 'found' : 'missing'
+            });
+
             if (classDataField && classDataField.value) {
                 classData = JSON.parse(classDataField.value);
+            } else {
+                console.warn('No class data found in hidden field');
             }
 
             if (levelsField && levelsField.value) {
@@ -61,12 +72,21 @@
             });
         } catch (error) {
             console.error('Error loading data:', error);
+            showError('Error loading class data: ' + error.message);
         }
     }
 
     // ===== Class Header Rendering =====
     function renderClassHeader() {
-        if (!classData.ClassName) return;
+        const nameEl = document.getElementById('className');
+        const codeEl = document.getElementById('classCode');
+        
+        if (!classData.ClassName) {
+            console.warn('No class name found, showing error state');
+            if (nameEl) nameEl.textContent = 'Class Not Found';
+            if (codeEl) codeEl.textContent = 'ERROR';
+            return;
+        }
 
         // Set header background color
         const header = document.getElementById('classHeader');
@@ -83,11 +103,9 @@
         }
 
         // Set name
-        const nameEl = document.getElementById('className');
         if (nameEl) nameEl.textContent = classData.ClassName;
 
         // Set code
-        const codeEl = document.getElementById('classCode');
         if (codeEl) codeEl.textContent = classData.ClassCode;
 
         // Set counts
@@ -126,42 +144,64 @@
     }
 
     function createLevelItem(level) {
-        const div = document.createElement('div');
-        div.className = 'level-item position-relative';
+        const col = document.createElement('div');
+        col.className = 'col-12';
 
         const contentTypeIcon = getContentTypeIcon(level.ContentType);
         const statusBadge = level.IsPublished 
-            ? '<span class="level-status-badge published">Published</span>'
-            : '<span class="level-status-badge draft">Draft</span>';
+            ? '<span class="badge bg-success position-absolute top-0 end-0 m-3"><i class="bi bi-check-circle me-1"></i>Published</span>'
+            : '<span class="badge bg-warning text-dark position-absolute top-0 end-0 m-3"><i class="bi bi-clock me-1"></i>Draft</span>';
 
-        div.innerHTML = `
-            ${statusBadge}
-            <div class="level-number-badge">${level.LevelNumber}</div>
-            <div class="level-content">
-                <h4 class="level-title">${escapeHtml(level.Title)}</h4>
-                <p class="text-muted mb-2">${escapeHtml(level.Description) || 'No description'}</p>
-                <div class="level-meta">
-                    <span><i class="bi bi-clock"></i> ${level.EstimatedMinutes} min</span>
-                    <span><i class="bi bi-star-fill"></i> ${level.XpReward} XP</span>
-                    ${level.ContentType ? `<span><i class="${contentTypeIcon}"></i> ${level.ContentType}</span>` : ''}
-                    ${level.SlideCount > 0 ? `<span><i class="bi bi-file-slides"></i> ${level.SlideCount} slides</span>` : ''}
-                    <span><i class="bi bi-question-circle"></i> ${level.QuizCount} quiz(es)</span>
+        col.innerHTML = `
+            <div class="card level-card border-0 shadow-sm mb-3 position-relative">
+                ${statusBadge}
+                <div class="card-body">
+                    <div class="row align-items-center g-3">
+                        <div class="col-auto">
+                            <div class="level-number-badge">${level.LevelNumber}</div>
+                        </div>
+                        <div class="col">
+                            <h5 class="card-title mb-2 fw-bold">${escapeHtml(level.Title)}</h5>
+                            <p class="card-text text-muted small mb-2">
+                                ${escapeHtml(level.Description) || 'No description'}
+                            </p>
+                            <div class="d-flex flex-wrap gap-3">
+                                <span class="badge bg-light text-dark">
+                                    <i class="bi bi-clock text-info me-1"></i>${level.EstimatedMinutes} min
+                                </span>
+                                <span class="badge bg-light text-dark">
+                                    <i class="bi bi-star-fill text-warning me-1"></i>${level.XpReward} XP
+                                </span>
+                                ${level.ContentType ? `<span class="badge bg-light text-dark">
+                                    <i class="${contentTypeIcon} me-1"></i>${level.ContentType}
+                                </span>` : ''}
+                                ${level.SlideCount > 0 ? `<span class="badge bg-light text-dark">
+                                    <i class="bi bi-file-slides text-primary me-1"></i>${level.SlideCount} slides
+                                </span>` : ''}
+                                <span class="badge bg-light text-dark">
+                                    <i class="bi bi-question-circle text-success me-1"></i>${level.QuizCount} quiz(zes)
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-primary" onclick="viewLevel('${level.LevelSlug}')" title="View">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="editLevel('${level.LevelSlug}')" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-success" onclick="addQuizToLevel('${level.LevelSlug}')" title="Add Quiz">
+                                    <i class="bi bi-plus-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="level-actions">
-                <button class="btn btn-outline-primary btn-sm" onclick="viewLevel('${level.LevelSlug}')">
-                    <i class="bi bi-eye"></i>
-                </button>
-                <button class="btn btn-outline-secondary btn-sm" onclick="editLevel('${level.LevelSlug}')">
-                    <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-outline-success btn-sm" onclick="addQuizToLevel('${level.LevelSlug}')">
-                    <i class="bi bi-plus-circle"></i> Quiz
-                </button>
             </div>
         `;
 
-        return div;
+        return col;
     }
 
     // ===== Students Rendering =====
@@ -171,22 +211,26 @@
 
         if (students.length === 0) {
             container.innerHTML = `
-                <div class="empty-state">
-                    <i class="bi bi-people display-4 text-muted"></i>
-                    <h4>No Students Enrolled Yet</h4>
-                    <p class="text-muted">Share the class code with students to let them join</p>
+                <div class="text-center py-5">
+                    <i class="bi bi-people display-1 text-muted opacity-25"></i>
+                    <h4 class="mt-3 mb-2">No Students Enrolled Yet</h4>
+                    <p class="text-muted mb-3">Share the class code for students to join</p>
+                    <div class="alert alert-info d-inline-block">
+                        <strong>Class Code:</strong> <code class="fs-5">${classData.ClassCode || 'N/A'}</code>
+                    </div>
                 </div>
             `;
             return;
         }
 
-        let html = '<div class="students-table"><table><thead><tr>';
-        html += '<th>Student</th>';
-        html += '<th>Email</th>';
-        html += '<th>Joined</th>';
-        html += '<th>Attempts</th>';
-        html += '<th>Avg Score</th>';
-        html += '<th>Actions</th>';
+        let html = '<table class="table table-hover align-middle mb-0">';
+        html += '<thead class="table-light"><tr>';
+        html += '<th class="fw-bold">Student</th>';
+        html += '<th class="fw-bold">Email</th>';
+        html += '<th class="fw-bold">Joined</th>';
+        html += '<th class="fw-bold text-center">Attempts</th>';
+        html += '<th class="fw-bold text-center">Avg Score</th>';
+        html += '<th class="fw-bold text-end">Actions</th>';
         html += '</tr></thead><tbody>';
 
         students.forEach(function (student) {
@@ -194,21 +238,31 @@
             const initial = student.DisplayName.charAt(0).toUpperCase();
 
             html += '<tr>';
-            html += `<td><div class="d-flex align-items-center">
-                        <div class="student-avatar">${initial}</div>
-                        <strong>${escapeHtml(student.DisplayName)}</strong>
-                    </div></td>`;
-            html += `<td>${escapeHtml(student.Email)}</td>`;
-            html += `<td>${joinedDate}</td>`;
-            html += `<td>${student.Attempts}</td>`;
-            html += `<td>${student.AvgScore > 0 ? student.AvgScore + '%' : 'N/A'}</td>`;
-            html += `<td><button class="btn btn-sm btn-outline-primary" onclick="viewStudentProgress('${student.UserSlug}')">
-                        <i class="bi bi-graph-up"></i>
-                    </button></td>`;
+            html += `<td>
+                        <div class="d-flex align-items-center">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                 style="width: 40px; height: 40px; font-weight: 700;">
+                                ${initial}
+                            </div>
+                            <div>
+                                <div class="fw-semibold">${escapeHtml(student.DisplayName)}</div>
+                                <small class="text-muted">${student.UserSlug}</small>
+                            </div>
+                        </div>
+                     </td>`;
+            html += `<td class="text-muted">${escapeHtml(student.Email)}</td>`;
+            html += `<td><span class="badge bg-light text-dark"><i class="bi bi-calendar3 me-1"></i>${joinedDate}</span></td>`;
+            html += `<td class="text-center"><span class="badge bg-info">${student.Attempts || 0}</span></td>`;
+            html += `<td class="text-center"><span class="badge ${(student.AvgScore || 0) >= 70 ? 'bg-success' : 'bg-warning'} fs-6">${student.AvgScore > 0 ? student.AvgScore + '%' : 'N/A'}</span></td>`;
+            html += `<td class="text-end">
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewStudentProgress('${student.UserSlug}')" title="View Progress">
+                            <i class="bi bi-graph-up"></i>
+                        </button>
+                     </td>`;
             html += '</tr>';
         });
 
-        html += '</tbody></table></div>';
+        html += '</tbody></table>';
         container.innerHTML = html;
     }
 
@@ -275,24 +329,49 @@
     }
 
     // ===== Modal Functions =====
-    window.openCreateLevelModal = function () {
-        const modal = document.getElementById('createLevelModal');
-        if (modal) modal.style.display = 'flex';
-    };
-
+    // Note: openCreateLevelModal is defined in the ASPX page to use Bootstrap Modal API
+    // Only closeCreateLevelModal needs to be defined here
+    
     window.closeCreateLevelModal = function () {
-        const modal = document.getElementById('createLevelModal');
-        if (modal) modal.style.display = 'none';
+        const modalElement = document.getElementById('createLevelModal');
+        if (modalElement) {
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            } else {
+                // Fallback if Bootstrap modal not initialized
+                modalElement.style.display = 'none';
+                modalElement.classList.remove('show');
+                document.body.classList.remove('modal-open');
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) backdrop.remove();
+            }
+        }
     };
 
     window.openCreateQuizModal = function () {
-        const modal = document.getElementById('createQuizModal');
-        if (modal) modal.style.display = 'flex';
+        const modalElement = document.getElementById('createQuizModal');
+        if (modalElement) {
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        }
     };
 
     window.closeCreateQuizModal = function () {
-        const modal = document.getElementById('createQuizModal');
-        if (modal) modal.style.display = 'none';
+        const modalElement = document.getElementById('createQuizModal');
+        if (modalElement) {
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            } else {
+                // Fallback if Bootstrap modal not initialized
+                modalElement.style.display = 'none';
+                modalElement.classList.remove('show');
+                document.body.classList.remove('modal-open');
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) backdrop.remove();
+            }
+        }
     };
 
     window.showSuccessToast = function (message) {
@@ -364,6 +443,21 @@
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    function showError(message) {
+        const nameEl = document.getElementById('className');
+        if (nameEl) {
+            nameEl.textContent = 'Error Loading Class';
+            nameEl.style.color = '#dc3545';
+        }
+        
+        const codeEl = document.getElementById('classCode');
+        if (codeEl) {
+            codeEl.textContent = message;
+        }
+        
+        console.error('Page Error:', message);
     }
 
     // Close modals on ESC

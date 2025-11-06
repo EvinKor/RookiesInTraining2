@@ -6,8 +6,16 @@
 <html>
 <head runat="server">
   <title>Rookies in Training</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  
   <!-- Bootstrap CSS -->
- <asp:ContentPlaceHolder ID="head" runat="server" />
+  <link href="<%= ResolveUrl("~/Content/bootstrap.min.css") %>" rel="stylesheet" />
+  
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
+  
+  <asp:ContentPlaceHolder ID="head" runat="server" />
 </head>
 <body class="bg-light">
   <form id="form1" runat="server"> <!-- ✅ REQUIRED for Web Forms -->
@@ -17,6 +25,7 @@
     </main>
   </form>
 
-  <!-- Bootstrap JS -->
+  <!-- Bootstrap JS Bundle (includes Popper) -->
+  <script src="<%= ResolveUrl("~/Scripts/bootstrap.bundle.min.js") %>"></script>
 </body>
 </html>

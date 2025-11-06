@@ -15,6 +15,53 @@
     font-size: 2rem;
 }
 
+/* ===== Stat Cards ===== */
+.stat-card {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.stat-info {
+    flex: 1;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2c3e50;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: #7f8c8d;
+    font-weight: 500;
+}
+
 /* ===== Class Card ===== */
 .class-card {
     background: white;
@@ -27,9 +74,22 @@
     flex-direction: column;
 }
 
+.class-card.clickable-card {
+    cursor: pointer;
+}
+
 .class-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.class-card.clickable-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 32px rgba(102, 126, 234, 0.25);
+}
+
+.class-card.clickable-card:active {
+    transform: translateY(-2px) scale(1.01);
 }
 
 .class-card-header {
@@ -517,6 +577,44 @@
     .level-input-group {
         padding: 1rem;
     }
+}
+
+/* ===== Clickable Class Cards ===== */
+.class-card-footer {
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    margin-top: auto;
+    text-align: center;
+}
+
+.class-card.clickable-card .class-card-footer {
+    background: linear-gradient(to right, #f8f9fa, #e7f1ff);
+    color: #667eea;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.class-card.clickable-card:hover .class-card-footer {
+    background: linear-gradient(to right, #e7f1ff, #d0e7ff);
+}
+
+.class-card-body {
+    padding: 1.5rem;
+    flex-grow: 1;
+}
+
+.class-stats {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
 }
 
 
