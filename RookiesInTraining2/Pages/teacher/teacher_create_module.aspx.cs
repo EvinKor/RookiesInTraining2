@@ -221,6 +221,11 @@ namespace RookiesInTraining2.Pages
 
                             // Commit transaction
                             tx.Commit();
+                            
+                            System.Diagnostics.Debug.WriteLine($"[CreateModule] ✓ Module created successfully!");
+                            System.Diagnostics.Debug.WriteLine($"[CreateModule] Class Slug: {classSlug}");
+                            System.Diagnostics.Debug.WriteLine($"[CreateModule] Teacher Slug: {teacherSlug}");
+                            System.Diagnostics.Debug.WriteLine($"[CreateModule] Levels Created: {draft.Levels.Count}");
 
                             // Redirect to class detail
                             Response.Redirect($"~/Pages/teacher/class_detail.aspx?slug={classSlug}", false);
@@ -228,6 +233,8 @@ namespace RookiesInTraining2.Pages
                         catch (Exception ex)
                         {
                             tx.Rollback();
+                            System.Diagnostics.Debug.WriteLine($"[CreateModule] ❌ ERROR during creation: {ex}");
+                            System.Diagnostics.Debug.WriteLine($"[CreateModule] Stack trace: {ex.StackTrace}");
                             throw new Exception("Failed to create module: " + ex.Message, ex);
                         }
                     }

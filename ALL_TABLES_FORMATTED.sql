@@ -94,6 +94,7 @@ CREATE TABLE [dbo].[Quizzes]
 	[level_slug] NVARCHAR(100) NULL,
 	[module_slug] NVARCHAR(100) NULL,
 	[quiz_type] NVARCHAR(50) NOT NULL DEFAULT 'multiple_choice',
+	[mode] NVARCHAR(50) NULL DEFAULT 'story',
 	[time_limit_minutes] INT NULL DEFAULT 30,
 	[passing_score] INT NULL DEFAULT 70,
 	[estimated_minutes] INT NULL DEFAULT 10,
@@ -128,7 +129,32 @@ CREATE TABLE [dbo].[Questions]
 GO
 
 -- =============================================
--- TABLE 7: Modules (For student dashboard)
+-- TABLE 7: Attempts (Student quiz attempts)
+-- =============================================
+CREATE TABLE [dbo].[Attempts]
+(
+	[attempt_slug] NVARCHAR(100) NOT NULL PRIMARY KEY,
+	[user_slug] NVARCHAR(100) NOT NULL,
+	[quiz_slug] NVARCHAR(100) NOT NULL,
+	[score] DECIMAL(5,2) NULL,
+	[max_score] DECIMAL(5,2) NULL,
+	[passed] BIT DEFAULT 0,
+	[started_at] DATETIME2 NOT NULL,
+	[finished_at] DATETIME2 NULL,
+	[time_spent_seconds] INT NULL,
+	[answers_json] NVARCHAR(MAX) NULL,
+	[attempt_number] INT DEFAULT 1,
+	[is_practice] BIT DEFAULT 0,
+	[created_at] DATETIME2 DEFAULT SYSUTCDATETIME(),
+	[updated_at] DATETIME2 DEFAULT SYSUTCDATETIME(),
+	[is_deleted] BIT DEFAULT 0,
+	CONSTRAINT FK_Attempts_Users FOREIGN KEY (user_slug) REFERENCES Users(user_slug),
+	CONSTRAINT FK_Attempts_Quizzes FOREIGN KEY (quiz_slug) REFERENCES Quizzes(quiz_slug)
+);
+GO
+
+-- =============================================
+-- TABLE 8: Modules (For student dashboard)
 -- =============================================
 CREATE TABLE [dbo].[Modules]
 (
@@ -150,7 +176,7 @@ CREATE TABLE [dbo].[Modules]
 GO
 
 -- =============================================
--- TABLE 8: ModuleQuizzes (Quizzes in modules)
+-- TABLE 9: ModuleQuizzes (Quizzes in modules)
 -- =============================================
 CREATE TABLE [dbo].[ModuleQuizzes]
 (
@@ -168,7 +194,7 @@ CREATE TABLE [dbo].[ModuleQuizzes]
 GO
 
 -- =============================================
--- TABLE 9: Badges (Achievements)
+-- TABLE 10: Badges (Achievements)
 -- =============================================
 CREATE TABLE [dbo].[Badges]
 (
@@ -182,7 +208,7 @@ CREATE TABLE [dbo].[Badges]
 GO
 
 -- =============================================
--- TABLE 10: UserBadges (User earned badges)
+-- TABLE 11: UserBadges (User earned badges)
 -- =============================================
 CREATE TABLE [dbo].[UserBadges]
 (
@@ -194,7 +220,7 @@ CREATE TABLE [dbo].[UserBadges]
 GO
 
 -- =============================================
--- TABLE 11: UserProgress (Quiz progress tracking)
+-- TABLE 12: UserProgress (Quiz progress tracking)
 -- =============================================
 CREATE TABLE [dbo].[UserProgress]
 (
@@ -213,7 +239,7 @@ CREATE TABLE [dbo].[UserProgress]
 GO
 
 -- =============================================
--- TABLE 12: LevelSlides (Learning material slides)
+-- TABLE 13: LevelSlides (Learning material slides)
 -- =============================================
 CREATE TABLE [dbo].[LevelSlides]
 (
@@ -229,7 +255,7 @@ CREATE TABLE [dbo].[LevelSlides]
 GO
 
 -- =============================================
--- TABLE 13: StudentLevelProgress (Student progress in levels)
+-- TABLE 14: StudentLevelProgress (Student progress in levels)
 -- =============================================
 CREATE TABLE [dbo].[StudentLevelProgress]
 (
@@ -245,7 +271,7 @@ CREATE TABLE [dbo].[StudentLevelProgress]
 GO
 
 -- =============================================
--- TABLE 14: QuizAssignments (Class-Quiz mapping)
+-- TABLE 15: QuizAssignments (Class-Quiz mapping)
 -- =============================================
 CREATE TABLE [dbo].[QuizAssignments]
 (
@@ -257,7 +283,7 @@ CREATE TABLE [dbo].[QuizAssignments]
 );
 GO
 
-PRINT '✅ All 14 tables created!';
+PRINT '✅ All 15 tables created!';
 PRINT '';
 PRINT 'Tables:';
 PRINT '  1. Users';
@@ -266,14 +292,15 @@ PRINT '  3. Enrollments';
 PRINT '  4. Levels';
 PRINT '  5. Quizzes';
 PRINT '  6. Questions';
-PRINT '  7. Modules';
-PRINT '  8. ModuleQuizzes';
-PRINT '  9. Badges';
-PRINT '  10. UserBadges';
-PRINT '  11. UserProgress';
-PRINT '  12. LevelSlides';
-PRINT '  13. StudentLevelProgress';
-PRINT '  14. QuizAssignments';
+PRINT '  7. Attempts';
+PRINT '  8. Modules';
+PRINT '  9. ModuleQuizzes';
+PRINT '  10. Badges';
+PRINT '  11. UserBadges';
+PRINT '  12. UserProgress';
+PRINT '  13. LevelSlides';
+PRINT '  14. StudentLevelProgress';
+PRINT '  15. QuizAssignments';
 PRINT '';
 PRINT '🚀 Now run: SEED_Test_Accounts.sql';
 GO

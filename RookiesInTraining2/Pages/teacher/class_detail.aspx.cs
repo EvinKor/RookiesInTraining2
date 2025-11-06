@@ -27,6 +27,7 @@ namespace RookiesInTraining2.Pages
             // Guard: Check authentication
             if (Session["UserSlug"] == null)
             {
+                System.Diagnostics.Debug.WriteLine("[ClassDetail Page_Load] User not authenticated - redirecting to login");
                 Response.Redirect("~/Pages/Login.aspx", false);
                 Context.ApplicationInstance.CompleteRequest();
                 return;
@@ -34,8 +35,11 @@ namespace RookiesInTraining2.Pages
 
             // Guard: Check role
             string role = Convert.ToString(Session["Role"])?.ToLowerInvariant() ?? "";
+            System.Diagnostics.Debug.WriteLine($"[ClassDetail Page_Load] User role: {role}");
+            
             if (role != "teacher" && !(ALLOW_ADMIN_VIEW && role == "admin"))
             {
+                System.Diagnostics.Debug.WriteLine($"[ClassDetail Page_Load] Unauthorized role: {role} - redirecting");
                 Response.Redirect("~/Pages/Login.aspx", false);
                 Context.ApplicationInstance.CompleteRequest();
                 return;
@@ -43,8 +47,12 @@ namespace RookiesInTraining2.Pages
 
             // Guard: Check class slug
             string classSlug = Request.QueryString["slug"];
+            System.Diagnostics.Debug.WriteLine($"[ClassDetail Page_Load] Class slug from URL: {classSlug}");
+            System.Diagnostics.Debug.WriteLine($"[ClassDetail Page_Load] Teacher slug from session: {Session["UserSlug"]}");
+            
             if (string.IsNullOrEmpty(classSlug))
             {
+                System.Diagnostics.Debug.WriteLine("[ClassDetail Page_Load] No class slug - redirecting");
                 Response.Redirect("~/Pages/teacher/teacher_browse_classes.aspx", false);
                 Context.ApplicationInstance.CompleteRequest();
                 return;
@@ -114,7 +122,7 @@ namespace RookiesInTraining2.Pages
             {
                 System.Diagnostics.Debug.WriteLine($"[ClassDetail] Error loading class data: {ex}");
                 ScriptManager.RegisterStartupScript(this, GetType(), "loadError",
-                    $"console.error('Error loading class:', {Server.HtmlEncode(ex.Message)}); " +
+                    $"console.error('Error loading class: {Server.HtmlEncode(ex.Message)}'); " +
                     $"alert('Error loading class data. Please try again or contact support.');", true);
             }
         }
@@ -216,16 +224,14 @@ namespace RookiesInTraining2.Pages
                     SELECT 
                         u.user_slug, u.display_name, u.email,
                         e.joined_at,
-                        COUNT(DISTINCT a.attempt_slug) AS attempts,
-                        AVG(CASE WHEN a.finished_at IS NOT NULL THEN a.score ELSE NULL END) AS avg_score
+                        0 AS attempts,
+                        0 AS avg_score
                     FROM Enrollments e
                     JOIN Users u ON e.user_slug = u.user_slug
-                    LEFT JOIN Attempts a ON u.user_slug = a.user_slug AND a.is_deleted = 0
                     WHERE e.class_slug = @classSlug 
                         AND e.role_in_class = 'student'
                         AND e.is_deleted = 0
                         AND u.is_deleted = 0
-                    GROUP BY u.user_slug, u.display_name, u.email, e.joined_at
                     ORDER BY e.joined_at DESC";
 
                 cmd.Parameters.AddWithValue("@classSlug", classSlug);
@@ -270,7 +276,7 @@ namespace RookiesInTraining2.Pages
                         ISNULL(q.level_slug, '') AS level_slug,
                         q.created_at,
                         (SELECT COUNT(*) FROM Questions WHERE quiz_slug = q.quiz_slug AND is_deleted = 0) AS question_count,
-                        (SELECT COUNT(DISTINCT user_slug) FROM Attempts WHERE quiz_slug = q.quiz_slug AND is_deleted = 0) AS attempt_count
+                        0 AS attempt_count
                     FROM Quizzes q
                     WHERE q.class_slug = @classSlug AND q.is_deleted = 0
                     ORDER BY q.created_at DESC";
