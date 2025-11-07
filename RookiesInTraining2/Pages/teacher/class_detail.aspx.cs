@@ -566,7 +566,7 @@ namespace RookiesInTraining2.Pages
                         cmd.ExecuteNonQuery();
                     }
 
-                    System.Diagnostics.Debug.WriteLine($"[CreateQuiz] ✓ Quiz created successfully: {quizSlug}");
+                    System.Diagnostics.Debug.WriteLine($"[CreateQuiz] Quiz created successfully: {quizSlug}");
 
                     // Clear form
                     ClearQuizForm();
@@ -773,7 +773,7 @@ namespace RookiesInTraining2.Pages
                         cmd.ExecuteNonQuery();
                     }
 
-                    System.Diagnostics.Debug.WriteLine($"[SaveSlide] ✓ Slide saved: {slideSlug}");
+                    System.Diagnostics.Debug.WriteLine($"[SaveSlide] Slide saved: {slideSlug}");
 
                     // Reload slides
                     LoadSlidesForLevel(levelSlug);

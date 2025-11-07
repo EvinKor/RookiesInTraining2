@@ -433,7 +433,7 @@
                             <i class="bi bi-x-circle me-1"></i>Cancel
                         </button>
                         <asp:Button ID="btnSaveLevel" runat="server" 
-                                    Text="✓ Create Level" 
+                                    Text="Create Level" 
                                     CssClass="btn btn-primary btn-lg px-4" 
                                     ValidationGroup="CreateLevel"
                                     OnClick="btnSaveLevel_Click" />
@@ -529,7 +529,7 @@
                             <i class="bi bi-x-circle me-1"></i>Cancel
                         </button>
                         <asp:Button ID="btnSaveQuiz" runat="server" 
-                                    Text="✓ Create Quiz & Add Questions" 
+                                    Text="Create Quiz & Add Questions" 
                                     CssClass="btn btn-warning text-dark btn-lg px-4 fw-bold" 
                                     ValidationGroup="CreateQuiz"
                                     OnClick="btnSaveQuiz_Click" />
@@ -604,7 +604,7 @@
                                         
                                         <div class="d-grid gap-2">
                                             <asp:Button ID="btnSaveSlide" runat="server" 
-                                                        Text="💾 Save Slide" 
+                                                        Text="Save Slide" 
                                                         CssClass="btn btn-info btn-lg" 
                                                         OnClick="btnSaveSlide_Click" />
                                             <button type="button" class="btn btn-outline-secondary" onclick="cancelSlideEdit()">

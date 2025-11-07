@@ -58,7 +58,7 @@ namespace RookiesInTraining2.Pages
                 var draft = serializer.Deserialize<ModuleDraft>(json);
 
                 // Validate
-                if (draft == null || draft.ClassInfo == null || draft.Levels == null)
+                if (draft == null || draft.ClassInfo == null)
                 {
                     ShowError("Invalid data format.");
                     return;
@@ -70,31 +70,7 @@ namespace RookiesInTraining2.Pages
                     return;
                 }
 
-                if (draft.Levels.Count < 3)
-                {
-                    ShowError("Minimum 3 levels required.");
-                    return;
-                }
-
-                // Validate each level
-                foreach (var level in draft.Levels)
-                {
-                    if (level.LevelNumber < 1)
-                    {
-                        ShowError($"Invalid level number: {level.LevelNumber}");
-                        return;
-                    }
-                    if (string.IsNullOrWhiteSpace(level.Title) || level.Title.Length < 3)
-                    {
-                        ShowError($"Level {level.LevelNumber} title must be at least 3 characters.");
-                        return;
-                    }
-                    if (level.Minutes < 0 || level.Xp < 0)
-                    {
-                        ShowError($"Level {level.LevelNumber} has invalid minutes or XP.");
-                        return;
-                    }
-                }
+                // Note: No level validation - levels will be added later in Story Mode
 
                 // Begin transaction
                 using (var con = new SqlConnection(ConnStr))
@@ -137,150 +113,32 @@ namespace RookiesInTraining2.Pages
                                 cmd.ExecuteNonQuery();
                             }
 
-                            // Create upload directory
-                            string uploadsBasePath = Server.MapPath("~/Uploads");
-                            if (!Directory.Exists(uploadsBasePath))
-                            {
-                                Directory.CreateDirectory(uploadsBasePath);
-                            }
-
-                            string classUploadPath = Path.Combine(uploadsBasePath, classSlug);
-                            if (!Directory.Exists(classUploadPath))
-                            {
-                                Directory.CreateDirectory(classUploadPath);
-                            }
-
-                            // Insert Levels
-                            foreach (var level in draft.Levels)
-                            {
-                                string levelSlug = GenerateUniqueSlug(
-                                    SlugifyText($"{classSlug}-level-{level.LevelNumber}"),
-                                    "Levels",
-                                    "level_slug",
-                                    con,
-                                    tx
-                                );
-
-                                string contentType = null;
-                                string contentUrl = null;
-
-                                // Handle file upload if present
-                                if (!string.IsNullOrWhiteSpace(level.FileName))
-                                {
-                                    // File was uploaded in client; we need to find it in Request.Files
-                                    // Since we're using client-side file handling, files will be in Request.Files
-                                    var fileKey = $"level_{level.LevelNumber}_file";
-                                    if (Request.Files.Count > 0)
-                                    {
-                                        // Try to match by original name
-                                        HttpPostedFile uploadedFile = null;
-                                        for (int i = 0; i < Request.Files.Count; i++)
-                                        {
-                                            var file = Request.Files[i];
-                                            if (file.FileName == level.FileName && file.ContentLength > 0)
-                                            {
-                                                uploadedFile = file;
-                                                break;
-                                            }
-                                        }
-
-                                        if (uploadedFile != null)
-                                        {
-                                            var result = HandleFileUpload(uploadedFile, classSlug, levelSlug, classUploadPath);
-                                            contentType = result.Item1;
-                                            contentUrl = result.Item2;
-                                        }
-                                    }
-                                }
-
-                                // Create quiz for this level
-                                string quizSlug = GenerateUniqueSlug(
-                                    SlugifyText($"{level.Title}-quiz"),
-                                    "Quizzes",
-                                    "quiz_slug",
-                                    con,
-                                    tx
-                                );
-                                
-                                // Insert Quiz first
-                                using (var cmd = con.CreateCommand())
-                                {
-                                    cmd.Transaction = tx;
-                                    cmd.CommandText = @"
-                                        INSERT INTO dbo.Quizzes 
-                                        (quiz_slug, title, mode, class_slug, level_slug, time_limit_minutes, passing_score, 
-                                         published, created_by_slug, created_at, updated_at, is_deleted)
-                                        VALUES 
-                                        (@quiz_slug, @quiz_title, @mode, @class_slug, @level_slug, @time_limit, @passing_score,
-                                         @published, @created_by, SYSUTCDATETIME(), SYSUTCDATETIME(), 0)";
-
-                                    cmd.Parameters.AddWithValue("@quiz_slug", quizSlug);
-                                    cmd.Parameters.AddWithValue("@quiz_title", level.Quiz?.Title ?? $"{level.Title} Quiz");
-                                    cmd.Parameters.AddWithValue("@mode", level.Quiz?.Mode ?? "story");
-                                    cmd.Parameters.AddWithValue("@class_slug", classSlug);
-                                    cmd.Parameters.AddWithValue("@level_slug", levelSlug);
-                                    cmd.Parameters.AddWithValue("@time_limit", level.Quiz?.TimeLimit ?? 30);
-                                    cmd.Parameters.AddWithValue("@passing_score", level.Quiz?.PassingScore ?? 70);
-                                    cmd.Parameters.AddWithValue("@published", (level.Quiz?.Publish ?? true) ? 1 : 0);
-                                    cmd.Parameters.AddWithValue("@created_by", teacherSlug);
-
-                                    cmd.ExecuteNonQuery();
-                                }
-
-                                // Insert Level with quiz reference
-                                using (var cmd = con.CreateCommand())
-                                {
-                                    cmd.Transaction = tx;
-                                    cmd.CommandText = @"
-                                        INSERT INTO dbo.Levels 
-                                        (level_slug, class_slug, level_number, title, description, content_type, content_url, 
-                                         quiz_slug, xp_reward, estimated_minutes, is_published, created_at, updated_at, is_deleted)
-                                        VALUES 
-                                        (@level_slug, @class_slug, @level_number, @title, @description, @content_type, @content_url,
-                                         @quiz_slug, @xp_reward, @estimated_minutes, @is_published, SYSUTCDATETIME(), SYSUTCDATETIME(), 0)";
-
-                                    cmd.Parameters.AddWithValue("@level_slug", levelSlug);
-                                    cmd.Parameters.AddWithValue("@class_slug", classSlug);
-                                    cmd.Parameters.AddWithValue("@level_number", level.LevelNumber);
-                                    cmd.Parameters.AddWithValue("@title", level.Title);
-                                    cmd.Parameters.AddWithValue("@description", level.Description ?? "");
-                                    cmd.Parameters.AddWithValue("@content_type", (object)contentType ?? DBNull.Value);
-                                    cmd.Parameters.AddWithValue("@content_url", (object)contentUrl ?? DBNull.Value);
-                                    cmd.Parameters.AddWithValue("@quiz_slug", quizSlug);
-                                    cmd.Parameters.AddWithValue("@xp_reward", level.Xp);
-                                    cmd.Parameters.AddWithValue("@estimated_minutes", level.Minutes);
-                                    cmd.Parameters.AddWithValue("@is_published", level.Publish ? 1 : 0);
-
-                                    cmd.ExecuteNonQuery();
-                                }
-                                
-                                System.Diagnostics.Debug.WriteLine($"[CreateModule] Level {level.LevelNumber} created with quiz: {quizSlug}");
-                            }
+                            // Note: Levels will be added later in Story Mode
+                            // No upload directory or level creation needed here
 
                             // Commit transaction
                             tx.Commit();
                             
-                            System.Diagnostics.Debug.WriteLine($"[CreateModule] ✓ Module created successfully!");
-                            System.Diagnostics.Debug.WriteLine($"[CreateModule] Class Slug: {classSlug}");
-                            System.Diagnostics.Debug.WriteLine($"[CreateModule] Teacher Slug: {teacherSlug}");
-                            System.Diagnostics.Debug.WriteLine($"[CreateModule] Levels Created: {draft.Levels.Count}");
+                            System.Diagnostics.Debug.WriteLine($"[CreateClass] Class created successfully!");
+                            System.Diagnostics.Debug.WriteLine($"[CreateClass] Class Slug: {classSlug}");
+                            System.Diagnostics.Debug.WriteLine($"[CreateClass] Teacher Slug: {teacherSlug}");
 
-                            // Redirect to class detail
-                            Response.Redirect($"~/Pages/teacher/class_detail.aspx?slug={classSlug}", false);
+                            // Redirect to manage_classes page with Story Mode tab auto-selected
+                            Response.Redirect($"~/Pages/teacher/manage_classes.aspx?class={classSlug}&tab=storymode", false);
                         }
                         catch (Exception ex)
                         {
                             tx.Rollback();
-                            System.Diagnostics.Debug.WriteLine($"[CreateModule] ❌ ERROR during creation: {ex}");
-                            System.Diagnostics.Debug.WriteLine($"[CreateModule] Stack trace: {ex.StackTrace}");
-                            throw new Exception("Failed to create module: " + ex.Message, ex);
+                            System.Diagnostics.Debug.WriteLine($"[CreateClass] ❌ ERROR during creation: {ex}");
+                            System.Diagnostics.Debug.WriteLine($"[CreateClass] Stack trace: {ex.StackTrace}");
+                            throw new Exception("Failed to create class: " + ex.Message, ex);
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                ShowError("Error creating module: " + ex.Message);
+                ShowError("Error creating class: " + ex.Message);
             }
         }
 

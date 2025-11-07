@@ -129,6 +129,14 @@
     <Content Include="Default.aspx" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
+    <Content Include="Pages\student\join_class.aspx" />
+    <Content Include="Pages\student\student_class.aspx" />
+    <Content Include="Pages\student\take_level.aspx" />
+    <Content Include="Pages\teacher\create_forum_post.aspx" />
+    <Content Include="Pages\teacher\create_level.aspx" />
+    <Content Include="Pages\teacher\edit_level.aspx" />
+    <Content Include="Pages\teacher\edit_quiz.aspx" />
+    <Content Include="Pages\teacher\manage_classes.aspx" />
     <Content Include="MasterPages\dashboard.Master" />
     <Content Include="MasterPages\MyMain.Master" />
     <Content Include="Pages\teacher\add_questions.aspx" />
@@ -136,12 +144,14 @@
     <Content Include="Pages\admin\dashboard_admin.aspx" />
     <Content Include="Pages\student\dashboard_student.aspx" />
     <Content Include="Pages\teacher\dashboard_teacher.aspx" />
+    <Content Include="Pages\teacher\manage_slides.aspx" />
     <Content Include="Pages\teacher\teacher_classes.aspx" />
     <Content Include="Pages\teacher\teacher_browse_classes.aspx" />
     <Content Include="Pages\teacher\teacher_create_class.aspx" />
     <Content Include="Pages\teacher\teacher_create_module.aspx" />
     <Content Include="Pages\Login.aspx" />
     <Content Include="Pages\Register.aspx" />
+    <Content Include="Pages\teacher\view_forum_post.aspx" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.esm.js" />
@@ -237,6 +247,62 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Pages\student\join_class.aspx.cs">
+      <DependentUpon>join_class.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\student\join_class.aspx.designer.cs">
+      <DependentUpon>join_class.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\student\student_class.aspx.cs">
+      <DependentUpon>student_class.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\student\student_class.aspx.designer.cs">
+      <DependentUpon>student_class.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\student\take_level.aspx.cs">
+      <DependentUpon>take_level.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\student\take_level.aspx.designer.cs">
+      <DependentUpon>take_level.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\teacher\create_forum_post.aspx.cs">
+      <DependentUpon>create_forum_post.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\teacher\create_forum_post.aspx.designer.cs">
+      <DependentUpon>create_forum_post.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\teacher\create_level.aspx.cs">
+      <DependentUpon>create_level.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\teacher\create_level.aspx.designer.cs">
+      <DependentUpon>create_level.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\teacher\edit_level.aspx.cs">
+      <DependentUpon>edit_level.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\teacher\edit_level.aspx.designer.cs">
+      <DependentUpon>edit_level.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\teacher\edit_quiz.aspx.cs">
+      <DependentUpon>edit_quiz.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\teacher\edit_quiz.aspx.designer.cs">
+      <DependentUpon>edit_quiz.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\teacher\manage_classes.aspx.cs">
+      <DependentUpon>manage_classes.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\teacher\manage_classes.aspx.designer.cs">
+      <DependentUpon>manage_classes.aspx</DependentUpon>
+    </Compile>
     <Compile Include="MasterPages\dashboard.Master.cs">
       <DependentUpon>dashboard.Master</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -286,6 +352,13 @@
     <Compile Include="Pages\teacher\dashboard_teacher.aspx.designer.cs">
       <DependentUpon>dashboard_teacher.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Pages\teacher\manage_slides.aspx.cs">
+      <DependentUpon>manage_slides.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\teacher\manage_slides.aspx.designer.cs">
+      <DependentUpon>manage_slides.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Pages\teacher\teacher_classes.aspx.cs">
       <DependentUpon>teacher_classes.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -327,6 +400,13 @@
     </Compile>
     <Compile Include="Pages\Register.aspx.designer.cs">
       <DependentUpon>Register.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\teacher\view_forum_post.aspx.cs">
+      <DependentUpon>view_forum_post.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\teacher\view_forum_post.aspx.designer.cs">
+      <DependentUpon>view_forum_post.aspx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Site.Master.cs">

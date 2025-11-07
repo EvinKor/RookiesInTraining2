@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
 using System.Web.Script.Serialization;
@@ -11,6 +13,7 @@ namespace RookiesInTraining2.Pages
     {
         // Set to true if you want admins to also view this page
         private const bool ALLOW_ADMIN_VIEW = true;
+        private string ConnStr => ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -42,23 +45,85 @@ namespace RookiesInTraining2.Pages
             string userSlug = Session["UserSlug"]?.ToString() ?? "";
             string fullName = Session["FullName"]?.ToString() ?? "Student";
 
-            // TODO: If you have a repository, load real data here
-            // Example: 
-            // var modules = _moduleRepository.GetByUserSlug(userSlug);
-            // var quizzes = _quizRepository.GetByUserSlug(userSlug);
-            
-            // For now, use mock data
-            var modules = GetMockModules();
-            var quizzes = GetMockQuizzes();
+            // Load real classes from database
+            var classes = LoadEnrolledClasses(userSlug);
             var badges = GetMockBadges();
-            var summary = GetMockSummary(fullName, quizzes);
+            var summary = new ProgressSummary
+            {
+                StudentName = fullName,
+                Xp = 0, // Calculate from attempts
+                Streak = 0,
+                Completed = 0,
+                Total = 0
+            };
 
             // Serialize to JSON
             var serializer = new JavaScriptSerializer();
-            hfModulesJson.Value = serializer.Serialize(modules);
-            hfQuizzesJson.Value = serializer.Serialize(quizzes);
+            hfModulesJson.Value = serializer.Serialize(classes);
+            hfQuizzesJson.Value = "[]";
             hfSummaryJson.Value = serializer.Serialize(summary);
             hfBadgesJson.Value = serializer.Serialize(badges);
+        }
+
+        private List<dynamic> LoadEnrolledClasses(string studentSlug)
+        {
+            List<dynamic> classes = new List<dynamic>();
+
+            try
+            {
+                using (var con = new SqlConnection(ConnStr))
+                {
+                    con.Open();
+                    using (var cmd = con.CreateCommand())
+                    {
+                        cmd.CommandText = @"
+                            SELECT 
+                                c.class_slug,
+                                c.class_name,
+                                c.class_code,
+                                c.description,
+                                c.icon,
+                                c.color,
+                                COUNT(DISTINCT l.level_slug) AS LevelCount,
+                                COUNT(DISTINCT CASE WHEN slp.is_completed = 1 THEN l.level_slug END) AS CompletedCount
+                            FROM Enrollments e
+                            INNER JOIN Classes c ON e.class_slug = c.class_slug
+                            LEFT JOIN Levels l ON c.class_slug = l.class_slug AND l.is_deleted = 0 AND l.is_published = 1
+                            LEFT JOIN StudentLevelProgress slp ON l.level_slug = slp.level_slug AND slp.student_slug = @studentSlug
+                            WHERE e.user_slug = @studentSlug 
+                              AND e.is_deleted = 0 
+                              AND c.is_deleted = 0
+                            GROUP BY c.class_slug, c.class_name, c.class_code, c.description, c.icon, c.color
+                            ORDER BY e.enrolled_at DESC";
+
+                        cmd.Parameters.AddWithValue("@studentSlug", studentSlug);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                classes.Add(new
+                                {
+                                    ClassSlug = reader["class_slug"].ToString(),
+                                    ClassName = reader["class_name"].ToString(),
+                                    ClassCode = reader["class_code"].ToString(),
+                                    Description = reader["description"].ToString(),
+                                    Icon = reader["icon"].ToString(),
+                                    Color = reader["color"].ToString(),
+                                    Total = Convert.ToInt32(reader["LevelCount"]),
+                                    Completed = Convert.ToInt32(reader["CompletedCount"])
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[StudentDashboard] Error loading classes: {ex.Message}");
+            }
+
+            return classes;
         }
 
         #region Mock Data

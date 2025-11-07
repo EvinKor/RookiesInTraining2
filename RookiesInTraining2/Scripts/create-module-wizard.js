@@ -77,7 +77,7 @@
     window.goNext = function() {
         if (validateCurrentStep()) {
             captureStepData();
-            if (currentStep < 3) {
+            if (currentStep < 2) {  // Changed from 3 to 2 (only 2 steps now)
                 showStep(currentStep + 1);
             }
         }
@@ -110,16 +110,16 @@
         console.log('Step:', step, 'btnCreate element:', btnCreate);
 
         if (btnBack) btnBack.style.display = step > 1 ? 'block' : 'none';
-        if (btnNext) btnNext.style.display = step < 3 ? 'block' : 'none';
+        if (btnNext) btnNext.style.display = step < 2 ? 'block' : 'none';  // Changed from 3 to 2
         if (btnCreate) {
-            btnCreate.style.display = step === 3 ? 'block' : 'none';
-            console.log('Create button display set to:', step === 3 ? 'block' : 'none');
+            btnCreate.style.display = step === 2 ? 'block' : 'none';  // Changed from 3 to 2
+            console.log('Create button display set to:', step === 2 ? 'block' : 'none');
         } else {
-            console.error('Create Module button not found! ID:', window.WIZARD_IDS.btnCreateModule);
+            console.error('Create Class button not found! ID:', window.WIZARD_IDS.btnCreateModule);
         }
 
         // Special actions per step
-        if (step === 3) {
+        if (step === 2) {  // Changed from 3 to 2
             generateReview();
             syncDraftToHiddenField();
         }
@@ -129,8 +129,6 @@
         switch (currentStep) {
             case 1:
                 return validateStep1();
-            case 2:
-                return validateStep2();
             default:
                 return true;
         }
@@ -149,20 +147,14 @@
         return true;
     }
 
-    function validateStep2() {
-        if (draft.levels.length < 3) {
-            alert('You must add at least 3 levels before proceeding.');
-            return false;
-        }
-        return true;
-    }
-
     function captureStepData() {
         if (currentStep === 1) {
             draft.classInfo.name = document.getElementById(window.WIZARD_IDS.txtClassName).value.trim();
             draft.classInfo.description = document.getElementById(window.WIZARD_IDS.txtClassDescription).value.trim();
             draft.classInfo.classCode = document.getElementById(window.WIZARD_IDS.txtClassCode).value.trim();
             // icon and color already captured via event listeners
+            
+            // Note: No levels are captured - levels will be added later in Story Mode
         }
     }
 
@@ -392,27 +384,20 @@
         document.getElementById('reviewClassName').textContent = draft.classInfo.name || 'N/A';
         document.getElementById('reviewClassCode').textContent = draft.classInfo.classCode || 'N/A';
         document.getElementById('reviewDescription').textContent = draft.classInfo.description || 'No description provided';
-
-        // Levels
-        const levelsContainer = document.getElementById('reviewLevelsList');
-        if (levelsContainer) {
-            levelsContainer.innerHTML = draft.levels.map((level, idx) => `
-                <div class="level-list-item ${idx === draft.levels.length - 1 ? 'mb-0' : ''}">
-                    <div class="level-num-badge">${level.levelNumber}</div>
-                    <div class="flex-grow-1">
-                        <div class="d-flex align-items-center gap-2 mb-1">
-                            <strong>${escapeHtml(level.title)}</strong>
-                            ${level.publish ? '<span class="badge bg-success">Published</span>' : '<span class="badge bg-secondary">Draft</span>'}
-                        </div>
-                        <small class="text-muted">
-                            ${level.fileName ? `<i class="bi bi-paperclip"></i> ${escapeHtml(level.fileName)} • ` : ''}
-                            <i class="bi bi-clock"></i> ${level.minutes} min • 
-                            <i class="bi bi-star"></i> ${level.xp} XP
-                        </small>
-                    </div>
-                </div>
-            `).join('');
+        
+        // Icon and Color
+        const iconEl = document.getElementById('reviewIcon');
+        const colorEl = document.getElementById('reviewColor');
+        
+        if (iconEl) {
+            iconEl.textContent = draft.classInfo.icon || '📚';
         }
+        
+        if (colorEl) {
+            colorEl.style.backgroundColor = draft.classInfo.color || '#4A90E2';
+        }
+
+        // Note: No levels are shown - they will be added later in Story Mode
     }
 
     function syncDraftToHiddenField() {

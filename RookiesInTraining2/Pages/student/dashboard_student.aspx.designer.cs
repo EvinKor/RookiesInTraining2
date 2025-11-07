@@ -48,6 +48,16 @@ namespace RookiesInTraining2.Pages
         protected global::System.Web.UI.WebControls.HiddenField hfBadgesJson;
 
         /// <summary>
+        /// lnkJoinClass control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.HyperLink lnkJoinClass;
+
+        /// <summary>
+        /// lnkJoinFirst control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.HyperLink lnkJoinFirst;
+
+        /// <summary>
         /// btnLogout control.
         /// </summary>
         /// <remarks>

@@ -21,7 +21,7 @@
                         <h1 class="mb-1" id="quizTitle">Add Questions to Quiz</h1>
                         <p class="text-white-50 mb-0">Quiz: <span id="quizName">Loading...</span></p>
                     </div>
-                    <button class="btn btn-light btn-lg" onclick="finishQuiz()">
+                    <button type="button" class="btn btn-light btn-lg" onclick="finishQuiz()">
                         <i class="bi bi-check-circle me-2"></i>Finish & Save
                     </button>
                 </div>
@@ -34,7 +34,7 @@
                 <div class="col-lg-8">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h3>Questions (<span id="questionCount">0</span>)</h3>
-                        <button class="btn btn-primary" onclick="openAddQuestionModal()">
+                        <button type="button" class="btn btn-primary" onclick="openAddQuestionModal()">
                             <i class="bi bi-plus-circle me-2"></i>Add Question
                         </button>
                     </div>
@@ -47,7 +47,7 @@
                         <i class="bi bi-question-circle display-4 text-muted"></i>
                         <h4>No Questions Yet</h4>
                         <p class="text-muted">Add your first question to this quiz</p>
-                        <button class="btn btn-primary btn-lg" onclick="openAddQuestionModal()">
+                        <button type="button" class="btn btn-primary btn-lg" onclick="openAddQuestionModal()">
                             <i class="bi bi-plus-circle me-2"></i>Add First Question
                         </button>
                     </div>

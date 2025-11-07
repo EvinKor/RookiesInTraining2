@@ -16,24 +16,36 @@
 
     function loadClasses() {
         try {
+            console.log('[Classes] Loading classes...');
+            console.log('[Classes] Looking for field ID:', window.TEACHER_DATA?.classesFieldId);
+            
             const hfClasses = document.getElementById(window.TEACHER_DATA.classesFieldId);
+            console.log('[Classes] Hidden field element:', hfClasses);
+            console.log('[Classes] Hidden field value:', hfClasses?.value);
+            
             if (hfClasses && hfClasses.value) {
                 classes = JSON.parse(hfClasses.value);
+                console.log('[Classes] Parsed classes:', classes);
+                console.log('[Classes] Number of classes:', classes.length);
+            } else {
+                console.warn('[Classes] No classes data found in hidden field');
             }
         } catch (error) {
-            console.error('Error loading classes:', error);
+            console.error('[Classes] Error loading classes:', error);
         }
     }
 
     function renderClasses() {
         const grid = document.getElementById('classesGrid');
         const emptyState = document.getElementById('emptyState');
+        const viewMoreBtn = document.getElementById('viewMoreClasses');
 
         if (!grid) return;
 
         if (classes.length === 0) {
             grid.style.display = 'none';
             if (emptyState) emptyState.style.display = 'block';
+            if (viewMoreBtn) viewMoreBtn.style.display = 'none';
             return;
         }
 
@@ -42,10 +54,23 @@
 
         grid.innerHTML = '';
 
-        classes.forEach(function (classItem) {
+        // Limit to 6 classes (2 rows x 3 columns) for dashboard
+        const maxClasses = 6;
+        const classesToShow = classes.slice(0, maxClasses);
+
+        classesToShow.forEach(function (classItem) {
             const card = createClassCard(classItem);
             grid.appendChild(card);
         });
+
+        // Show "View More" button if there are more than 6 classes
+        if (viewMoreBtn) {
+            if (classes.length > maxClasses) {
+                viewMoreBtn.style.display = 'block';
+            } else {
+                viewMoreBtn.style.display = 'none';
+            }
+        }
     }
 
     function createClassCard(classItem) {
@@ -55,7 +80,7 @@
         col.innerHTML = `
             <div class="class-card clickable-card" 
                  style="--class-color: ${classItem.Color}; cursor: pointer;"
-                 onclick="window.location.href='class_detail.aspx?slug=${classItem.ClassSlug}'">
+                 onclick="window.location.href='manage_classes.aspx?class=${classItem.ClassSlug}'">
                 <div class="class-card-header">
                     <div class="class-icon">
                         ${classItem.Icon || '📚'}
@@ -85,7 +110,7 @@
                     </div>
                 </div>
                 <div class="class-card-footer">
-                    <i class="bi bi-arrow-right-circle me-1"></i>Click to view levels and manage quizzes
+                    <i class="bi bi-chat-dots-fill me-1"></i>Click to open Forum & Story Mode
                 </div>
             </div>
         `;

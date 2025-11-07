@@ -64,15 +64,33 @@
             </div>
         </div>
 
-        <!-- Module Grid Section -->
+        <!-- My Classes Section -->
         <div class="container-fluid py-4">
-            <div class="mb-3">
-                <h3 class="mb-1">Learning Modules</h3>
-                <p class="text-muted">Choose a module to start learning</p>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h3 class="mb-1">My Classes</h3>
+                    <p class="text-muted mb-0">Your enrolled classes</p>
+                </div>
+                <asp:HyperLink ID="lnkJoinClass" runat="server" 
+                              NavigateUrl="~/Pages/student/join_class.aspx"
+                              CssClass="btn btn-success btn-lg">
+                    <i class="bi bi-plus-circle me-2"></i>Join New Class
+                </asp:HyperLink>
             </div>
             
-            <div id="moduleGrid" class="module-grid">
-                <!-- Module cards will be inserted here by JavaScript -->
+            <div id="classesGrid" class="row g-4">
+                <!-- Class cards will be inserted here by JavaScript -->
+            </div>
+            
+            <div id="noClasses" class="text-center py-5" style="display: none;">
+                <i class="bi bi-door-open display-1 text-muted opacity-25"></i>
+                <h4 class="mt-3 mb-2">No Classes Yet</h4>
+                <p class="text-muted">Join your first class to start learning!</p>
+                <asp:HyperLink ID="lnkJoinFirst" runat="server" 
+                              NavigateUrl="~/Pages/student/join_class.aspx"
+                              CssClass="btn btn-success btn-lg mt-3">
+                    <i class="bi bi-plus-circle me-2"></i>Join a Class
+                </asp:HyperLink>
             </div>
         </div>
 
@@ -143,6 +161,79 @@
             summaryFieldId: '<%= hfSummaryJson.ClientID %>',
             badgesFieldId: '<%= hfBadgesJson.ClientID %>'
         };
+        
+        // Load and render classes
+        document.addEventListener('DOMContentLoaded', function() {
+            loadClasses();
+        });
+        
+        function loadClasses() {
+            const modulesField = document.getElementById(window.DASHBOARD_DATA.modulesFieldId);
+            const container = document.getElementById('classesGrid');
+            const noClasses = document.getElementById('noClasses');
+            
+            if (!modulesField || !modulesField.value) {
+                container.style.display = 'none';
+                noClasses.style.display = 'block';
+                return;
+            }
+            
+            try {
+                const classes = JSON.parse(modulesField.value);
+                console.log('[Dashboard] Loaded classes:', classes);
+                
+                if (classes.length === 0) {
+                    container.style.display = 'none';
+                    noClasses.style.display = 'block';
+                    return;
+                }
+                
+                container.style.display = 'flex';
+                noClasses.style.display = 'none';
+                
+                container.innerHTML = classes.map(cls => `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-0 shadow-sm" style="cursor: pointer; --class-color: ${cls.Color}"
+                             onclick="window.location.href='student_class.aspx?class=${cls.ClassSlug}'">
+                            <div class="card-header" style="background: linear-gradient(135deg, ${cls.Color}, ${cls.Color}90); border: none; color: white; padding: 1.5rem;">
+                                <div class="d-flex align-items-center">
+                                    <i class="${cls.Icon} fs-2 me-3"></i>
+                                    <div class="flex-grow-1">
+                                        <h5 class="mb-0">${escapeHtml(cls.ClassName)}</h5>
+                                        <small class="opacity-75">${cls.ClassCode}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted small mb-3">${escapeHtml(cls.Description || 'No description')}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-light text-dark">
+                                        <i class="bi bi-layers me-1"></i>${cls.Total} levels
+                                    </span>
+                                    <span class="badge ${cls.Completed > 0 ? 'bg-success' : 'bg-secondary'}">
+                                        <i class="bi bi-check-circle me-1"></i>${cls.Completed}/${cls.Total}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-light border-0 text-center">
+                                <small class="text-primary fw-semibold">
+                                    <i class="bi bi-arrow-right-circle me-1"></i>Click to open class
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('[Dashboard] Error loading classes:', error);
+                noClasses.style.display = 'block';
+            }
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text || '';
+            return div.innerHTML;
+        }
     </script>
 
     <!-- JavaScript -->

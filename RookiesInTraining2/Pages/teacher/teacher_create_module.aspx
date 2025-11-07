@@ -47,8 +47,8 @@
 
         <div class="card wizard-card">
             <div class="wizard-header">
-                <h2 class="mb-0 fw-bold"><i class="bi bi-plus-circle me-2"></i>Create New Module</h2>
-                <p class="mb-0 mt-2 opacity-75">Build a complete learning module with class info and levels</p>
+                <h2 class="mb-0 fw-bold"><i class="bi bi-plus-circle me-2"></i>Create New Class</h2>
+                <p class="mb-0 mt-2 opacity-75">Build a complete learning class with info and levels</p>
                 <div class="wizard-nav">
                     <div class="wizard-step active" data-step="1">
                         <div class="step-num">1</div>
@@ -56,10 +56,6 @@
                     </div>
                     <div class="wizard-step" data-step="2">
                         <div class="step-num">2</div>
-                        <div class="step-label">Levels (≥3)</div>
-                    </div>
-                    <div class="wizard-step" data-step="3">
-                        <div class="step-num">3</div>
                         <div class="step-label">Review</div>
                     </div>
                 </div>
@@ -127,109 +123,11 @@
                     </div>
                 </div>
 
-                <!-- STEP 2: Levels -->
+                <!-- STEP 2: Review -->
                 <div id="step2" class="step-content">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div>
-                            <h4 class="mb-1">Add Levels</h4>
-                            <p class="text-muted mb-0">Minimum 3 levels required</p>
-                        </div>
-                        <span class="badge bg-info fs-6" id="levelCountBadge">0 Levels</span>
-                    </div>
-
-                    <!-- Level Entry Form -->
-                    <div class="card border-primary mb-4">
-                        <div class="card-header bg-primary text-white">
-                            <h6 class="mb-0"><i class="bi bi-plus-circle me-2"></i>Add New Level</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">Level Number <span class="text-danger">*</span></label>
-                                    <input type="number" id="txtLevelNumber" class="form-control" min="1" value="1" />
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">Title <span class="text-danger">*</span></label>
-                                    <input type="text" id="txtLevelTitle" class="form-control" placeholder="e.g., Introduction to Variables" maxlength="200" />
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Description</label>
-                                <textarea id="txtLevelDescription" class="form-control" rows="2" placeholder="What will students learn in this level?" maxlength="500"></textarea>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label fw-bold">Est. Minutes</label>
-                                    <input type="number" id="txtEstimatedMinutes" class="form-control" min="1" value="15" />
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label fw-bold">XP Reward</label>
-                                    <input type="number" id="txtXpReward" class="form-control" min="0" value="50" />
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label fw-bold">Published</label>
-                                    <div class="form-check form-switch mt-2">
-                                        <input class="form-check-input" type="checkbox" id="chkPublishLevel" checked>
-                                        <label class="form-check-label" for="chkPublishLevel">Yes</label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">Learning Material (Optional)</label>
-                                <input type="file" id="fileUploadLevel" class="form-control" accept=".pptx,.ppt,.pdf,.mp4,.avi,.mov" />
-                                <small class="text-muted">Supported: PowerPoint, PDF, Video</small>
-                            </div>
-                            
-                            <hr class="my-4" />
-                            
-                            <!-- Quiz Details (Required for each level) -->
-                            <h6 class="mb-3"><i class="bi bi-question-circle-fill text-warning me-2"></i>Quiz for This Level <span class="badge bg-warning text-dark">Required</span></h6>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">Quiz Title <span class="text-danger">*</span></label>
-                                    <input type="text" id="txtQuizTitle" class="form-control" placeholder="e.g., Level 1 Quiz" maxlength="200" />
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">Quiz Mode</label>
-                                    <select id="ddlQuizModeWizard" class="form-select">
-                                        <option value="story" selected>Story Mode</option>
-                                        <option value="battle">Battle Mode</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label fw-bold">Time Limit (min)</label>
-                                    <input type="number" id="txtQuizTimeLimit" class="form-control" min="1" value="30" />
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label fw-bold">Passing Score (%)</label>
-                                    <input type="number" id="txtQuizPassingScore" class="form-control" min="0" max="100" value="70" />
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label fw-bold">Publish Quiz</label>
-                                    <div class="form-check form-switch mt-2">
-                                        <input class="form-check-input" type="checkbox" id="chkPublishQuiz" checked>
-                                        <label class="form-check-label" for="chkPublishQuiz">Yes</label>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <button type="button" class="btn btn-success btn-lg w-100" onclick="addLevel()">
-                                <i class="bi bi-plus-circle me-2"></i>Add This Level with Quiz
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Levels List -->
-                    <div id="levelsList"></div>
-                </div>
-
-                <!-- STEP 3: Review -->
-                <div id="step3" class="step-content">
                     <div class="text-center mb-4">
                         <i class="bi bi-clipboard-check text-success" style="font-size: 3rem;"></i>
-                        <h4 class="mt-3 mb-1">Review Your Module</h4>
+                        <h4 class="mt-3 mb-1">Review Your Class</h4>
                         <p class="text-muted">Check everything before creating</p>
                     </div>
 
@@ -238,14 +136,18 @@
                         <div class="review-item"><span>Class Name:</span><strong id="reviewClassName"></strong></div>
                         <div class="review-item"><span>Class Code:</span><span class="badge bg-secondary" id="reviewClassCode"></span></div>
                         <div class="review-item"><span>Description:</span><span id="reviewDescription" class="text-muted"></span></div>
+                        <div class="review-item"><span>Icon:</span><span id="reviewIcon">📚</span></div>
+                        <div class="review-item"><span>Color:</span><span id="reviewColor" style="display: inline-block; width: 40px; height: 20px; border-radius: 4px;"></span></div>
                     </div>
 
-                    <div class="review-box">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="mb-0"><i class="bi bi-layers text-success me-2"></i>Levels</h5>
-                            <span class="badge bg-success" id="reviewLevelCount">0 Levels</span>
+                    <div class="alert alert-info border-info">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-info-circle-fill me-3 fs-4"></i>
+                            <div>
+                                <h6 class="mb-1">About Levels & Story Mode</h6>
+                                <p class="mb-0">After creating this class, you can add learning levels in the <strong>Story Mode</strong> tab. Each level will have custom slides and a quiz.</p>
+                            </div>
                         </div>
-                        <div id="reviewLevelsList"></div>
                     </div>
 
                     <div class="alert alert-success border-0">
@@ -253,7 +155,7 @@
                             <i class="bi bi-check-circle-fill me-3 fs-3"></i>
                             <div>
                                 <h5 class="mb-1">Ready to Create!</h5>
-                                <p class="mb-0">Your module will be created with all levels. Click "Create Module" below.</p>
+                                <p class="mb-0">Your class will be created. You can add levels in Story Mode after creation.</p>
                             </div>
                         </div>
                     </div>
@@ -276,7 +178,7 @@
                         <button type="button" id="btnNext" class="btn btn-lg btn-primary px-4" onclick="goNext()">
                             Next Step <i class="bi bi-arrow-right ms-2"></i>
                         </button>
-                        <asp:Button ID="btnCreateModule" runat="server" Text="✓ Create Module" 
+                        <asp:Button ID="btnCreateModule" runat="server" Text="Create Class" 
                                     CssClass="btn btn-lg btn-success px-5" style="display: none;"
                                     OnClick="btnCreateModule_Click" />
                     </div>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Globalization;
+using System.Web.Script.Serialization;
 using System.Web.UI;
 
 namespace RookiesInTraining2.Pages
@@ -38,8 +39,8 @@ namespace RookiesInTraining2.Pages
             // Load stats
             LoadStats(userSlug);
 
-            // Load courses
-            LoadCourses(userSlug);
+            // Load classes for the class cards display
+            LoadClasses(userSlug);
 
             // Load recent activity
             LoadRecentActivity(userSlug);
@@ -66,36 +67,6 @@ namespace RookiesInTraining2.Pages
             }
         }
 
-        private void LoadCourses(string userSlug)
-        {
-            try
-            {
-                // Sample data - replace with actual database query
-                var courses = new List<dynamic>
-                {
-                    new { CourseName = "C# Fundamentals", StudentCount = 35 },
-                    new { CourseName = "ASP.NET Web Forms", StudentCount = 28 },
-                    new { CourseName = "Database Design", StudentCount = 42 },
-                    new { CourseName = "Software Engineering", StudentCount = 30 }
-                };
-
-                if (courses.Count > 0)
-                {
-                    rptCourses.DataSource = courses;
-                    rptCourses.DataBind();
-                    lblNoCoursesMessage.Visible = false;
-                }
-                else
-                {
-                    lblNoCoursesMessage.Visible = true;
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[TeacherDash] Error loading courses: {ex.Message}");
-                lblNoCoursesMessage.Visible = true;
-            }
-        }
 
         private void LoadRecentActivity(string userSlug)
         {
@@ -154,6 +125,84 @@ namespace RookiesInTraining2.Pages
             {
                 System.Diagnostics.Debug.WriteLine($"[TeacherDash] Error loading pending: {ex.Message}");
                 lblNoPendingMessage.Visible = true;
+            }
+        }
+
+        private void LoadClasses(string teacherSlug)
+        {
+            List<dynamic> classes = new List<dynamic>();
+
+            System.Diagnostics.Debug.WriteLine($"[Dashboard] ========== LoadClasses START ==========");
+            System.Diagnostics.Debug.WriteLine($"[Dashboard] Teacher Slug: {teacherSlug}");
+            System.Diagnostics.Debug.WriteLine($"[Dashboard] Connection String: {(string.IsNullOrEmpty(ConnStr) ? "EMPTY!" : "OK")}");
+
+            try
+            {
+                using (var con = new SqlConnection(ConnStr))
+                {
+                    con.Open();
+                    System.Diagnostics.Debug.WriteLine($"[Dashboard] Database connection opened successfully");
+                    
+                    using (var cmd = con.CreateCommand())
+                    {
+                        cmd.CommandText = @"
+                            SELECT 
+                                c.class_slug AS ClassSlug,
+                                c.class_name AS ClassName,
+                                c.description AS Description,
+                                c.icon AS Icon,
+                                c.color AS Color,
+                                c.class_code AS ClassCode,
+                                COUNT(DISTINCT e.user_slug) AS StudentCount,
+                                COUNT(DISTINCT l.level_slug) AS LevelCount
+                            FROM Classes c
+                            LEFT JOIN Enrollments e ON c.class_slug = e.class_slug 
+                                AND e.role_in_class = 'student' AND e.is_deleted = 0
+                            LEFT JOIN Levels l ON c.class_slug = l.class_slug AND l.is_deleted = 0
+                            WHERE c.teacher_slug = @teacherSlug AND c.is_deleted = 0
+                            GROUP BY c.class_slug, c.class_name, c.description, c.icon, c.color, c.class_code, c.created_at
+                            ORDER BY c.created_at DESC";
+
+                        cmd.Parameters.AddWithValue("@teacherSlug", teacherSlug);
+                        
+                        System.Diagnostics.Debug.WriteLine($"[Dashboard] Executing query with teacher_slug: {teacherSlug}");
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                classes.Add(new
+                                {
+                                    ClassSlug = reader["ClassSlug"].ToString(),
+                                    ClassName = reader["ClassName"].ToString(),
+                                    Description = reader["Description"].ToString(),
+                                    Icon = reader["Icon"].ToString(),
+                                    Color = reader["Color"].ToString(),
+                                    ClassCode = reader["ClassCode"].ToString(),
+                                    StudentCount = Convert.ToInt32(reader["StudentCount"]),
+                                    LevelCount = Convert.ToInt32(reader["LevelCount"])
+                                });
+                            }
+                        }
+                    }
+                }
+
+                // Serialize to JSON for JavaScript
+                var serializer = new JavaScriptSerializer();
+                string json = serializer.Serialize(classes);
+                hfClassesJson.Value = json;
+
+                System.Diagnostics.Debug.WriteLine($"[Dashboard] ✅ SUCCESS: Loaded {classes.Count} classes for teacher {teacherSlug}");
+                System.Diagnostics.Debug.WriteLine($"[Dashboard] JSON length: {json.Length}");
+                System.Diagnostics.Debug.WriteLine($"[Dashboard] JSON content: {json}");
+                System.Diagnostics.Debug.WriteLine($"[Dashboard] ========== LoadClasses END ==========");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Dashboard] ❌ ERROR loading classes: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[Dashboard] Stack trace: {ex.StackTrace}");
+                System.Diagnostics.Debug.WriteLine($"[Dashboard] ========== LoadClasses END (ERROR) ==========");
+                hfClassesJson.Value = "[]";
             }
         }
     }

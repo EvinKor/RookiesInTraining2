@@ -9,78 +9,126 @@
 
 namespace RookiesInTraining2.Pages
 {
+
+
     public partial class dashboard_teacher
     {
+
         /// <summary>
         /// lblTeacherName control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblTeacherName;
 
         /// <summary>
         /// lblTodayClasses control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblTodayClasses;
 
         /// <summary>
         /// lblCurrentDate control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblCurrentDate;
 
         /// <summary>
         /// lblMyCourses control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblMyCourses;
 
         /// <summary>
         /// lblTotalStudents control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblTotalStudents;
 
         /// <summary>
         /// lblPendingAssignments control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblPendingAssignments;
 
         /// <summary>
         /// lblMaterials control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblMaterials;
-
-        /// <summary>
-        /// rptCourses control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Repeater rptCourses;
-
-        /// <summary>
-        /// lblNoCoursesMessage control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Label lblNoCoursesMessage;
 
         /// <summary>
         /// rptActivity control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptActivity;
 
         /// <summary>
         /// lblNoActivityMessage control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblNoActivityMessage;
 
         /// <summary>
         /// lblPendingCount control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblPendingCount;
 
         /// <summary>
         /// rptPendingItems control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptPendingItems;
 
         /// <summary>
         /// lblNoPendingMessage control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblNoPendingMessage;
+
+        /// <summary>
+        /// hfClassesJson control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfClassesJson;
     }
 }
-
-

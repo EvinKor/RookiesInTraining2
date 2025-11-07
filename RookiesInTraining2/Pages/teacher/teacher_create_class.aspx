@@ -385,7 +385,7 @@
                             Next Step <i class="bi bi-arrow-right ms-2"></i>
                         </button>
                         <asp:Button ID="btnCreateClass" runat="server" 
-                                    Text="✓ Create Class"
+                                    Text="Create Class"
                                     CssClass="btn btn-lg btn-success px-5" style="display: none;"
                                     OnClick="btnCreateClass_Click" />
                     </div>

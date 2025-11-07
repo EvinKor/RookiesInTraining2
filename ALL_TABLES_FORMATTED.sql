@@ -285,7 +285,44 @@ CREATE TABLE [dbo].[QuizAssignments]
 );
 GO
 
-PRINT '✅ All 15 tables created!';
+-- =============================================
+-- TABLE 16: ForumPosts (Class discussion posts)
+-- =============================================
+CREATE TABLE [dbo].[ForumPosts]
+(
+	[post_slug] NVARCHAR(100) NOT NULL PRIMARY KEY,
+	[class_slug] NVARCHAR(100) NOT NULL,
+	[user_slug] NVARCHAR(100) NOT NULL,
+	[title] NVARCHAR(200) NOT NULL,
+	[content] NVARCHAR(MAX) NOT NULL,
+	[is_pinned] BIT DEFAULT 0,
+	[is_locked] BIT DEFAULT 0,
+	[created_at] DATETIME2 DEFAULT SYSUTCDATETIME(),
+	[updated_at] DATETIME2 DEFAULT SYSUTCDATETIME(),
+	[is_deleted] BIT DEFAULT 0,
+	CONSTRAINT FK_ForumPosts_Classes FOREIGN KEY (class_slug) REFERENCES Classes(class_slug),
+	CONSTRAINT FK_ForumPosts_Users FOREIGN KEY (user_slug) REFERENCES Users(user_slug)
+);
+GO
+
+-- =============================================
+-- TABLE 17: ForumReplies (Replies to posts)
+-- =============================================
+CREATE TABLE [dbo].[ForumReplies]
+(
+	[reply_slug] NVARCHAR(100) NOT NULL PRIMARY KEY,
+	[post_slug] NVARCHAR(100) NOT NULL,
+	[user_slug] NVARCHAR(100) NOT NULL,
+	[content] NVARCHAR(MAX) NOT NULL,
+	[created_at] DATETIME2 DEFAULT SYSUTCDATETIME(),
+	[updated_at] DATETIME2 DEFAULT SYSUTCDATETIME(),
+	[is_deleted] BIT DEFAULT 0,
+	CONSTRAINT FK_ForumReplies_Posts FOREIGN KEY (post_slug) REFERENCES ForumPosts(post_slug),
+	CONSTRAINT FK_ForumReplies_Users FOREIGN KEY (user_slug) REFERENCES Users(user_slug)
+);
+GO
+
+PRINT '✅ All 17 tables created!';
 PRINT '';
 PRINT 'Tables:';
 PRINT '  1. Users';
@@ -303,6 +340,8 @@ PRINT '  12. UserProgress';
 PRINT '  13. LevelSlides';
 PRINT '  14. StudentLevelProgress';
 PRINT '  15. QuizAssignments';
+PRINT '  16. ForumPosts';
+PRINT '  17. ForumReplies';
 PRINT '';
 PRINT '🚀 Now run: SEED_Test_Accounts.sql';
 GO
