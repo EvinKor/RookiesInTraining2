@@ -27,6 +27,13 @@ namespace RookiesInTraining2.Pages
             if (!IsPostBack)
             {
                 LoadUsers();
+                
+                // Check if user slug is in query string to show details modal
+                string userSlug = Request.QueryString["user"];
+                if (!string.IsNullOrEmpty(userSlug))
+                {
+                    LoadUserDetailsForModal(userSlug);
+                }
             }
         }
 
@@ -117,6 +124,48 @@ namespace RookiesInTraining2.Pages
         protected void ddlRoleFilter_SelectedIndexChanged(object sender, EventArgs e)
         {
             LoadUsers();
+        }
+
+
+        private void LoadUserDetailsForModal(string userSlug)
+        {
+            try
+            {
+                using (var con = new SqlConnection(ConnStr))
+                using (var cmd = con.CreateCommand())
+                {
+                    con.Open();
+                    cmd.CommandText = @"
+                        SELECT 
+                            user_slug,
+                            display_name,
+                            email,
+                            role_global,
+                            FORMAT(created_at, 'yyyy-MM-dd HH:mm') as created_at
+                        FROM dbo.Users
+                        WHERE user_slug = @slug AND is_deleted = 0";
+
+                    cmd.Parameters.AddWithValue("@slug", userSlug);
+
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            // Store user details in hidden fields for JavaScript to access
+                            hfModalUserSlug.Value = reader["user_slug"].ToString();
+                            hfModalDisplayName.Value = reader["display_name"].ToString();
+                            hfModalEmail.Value = reader["email"].ToString();
+                            hfModalRole.Value = reader["role_global"].ToString();
+                            hfModalCreatedAt.Value = reader["created_at"].ToString();
+                            hfShowModal.Value = "true";
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Users] Error loading user details: {ex.Message}");
+            }
         }
 
         protected void btnCreateUser_Click(object sender, EventArgs e)

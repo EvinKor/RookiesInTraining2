@@ -152,7 +152,7 @@
                                             </td>
                                             <td><%# Eval("CreatedAt") %></td>
                                             <td class="text-end pe-4">
-                                                <a href="#" class="btn btn-sm btn-outline-secondary">
+                                                <a href="Users.aspx?user=<%# Server.UrlEncode(Eval("UserSlug").ToString()) %>" class="btn btn-sm btn-outline-secondary" title="View User Details">
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
                                             </td>
@@ -298,6 +298,20 @@
         
         .text-primary {
             color: #667eea !important;
+        }
+
+        /* Ensure Bootstrap Icons display correctly */
+        .bi {
+            display: inline-block;
+            font-family: "bootstrap-icons" !important;
+            font-style: normal;
+            font-weight: normal !important;
+            font-variant: normal;
+            text-transform: none;
+            line-height: 1;
+            vertical-align: -.125em;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
     </style>
 

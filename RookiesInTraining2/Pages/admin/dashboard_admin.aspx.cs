@@ -111,6 +111,7 @@ namespace RookiesInTraining2.Pages
                     con.Open();
                     cmd.CommandText = @"
                         SELECT TOP 5
+                            user_slug as UserSlug,
                             display_name as DisplayName,
                             email as Email,
                             role_global as Role,
@@ -127,6 +128,7 @@ namespace RookiesInTraining2.Pages
                         {
                             users.Add(new
                             {
+                                UserSlug = reader["UserSlug"].ToString(),
                                 DisplayName = reader["DisplayName"].ToString(),
                                 Email = reader["Email"].ToString(),
                                 Role = reader["Role"].ToString(),

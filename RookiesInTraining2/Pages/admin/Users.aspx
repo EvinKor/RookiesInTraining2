@@ -10,8 +10,11 @@
     <!-- Page Header -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
+            <div class="d-flex align-items-center mb-3">
+                <a href="dashboard_admin.aspx" class="btn btn-outline-secondary me-3">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
+                </a>
+                <div class="flex-grow-1">
                     <h2 class="mb-1">User Management</h2>
                     <p class="text-muted mb-0">Manage all users in the system</p>
                 </div>
@@ -259,7 +262,29 @@
         }
 
         /* Or use Bootstrap utility classes directly in the HTML */
+
+        /* Ensure Bootstrap Icons display correctly */
+        .bi {
+            display: inline-block;
+            font-family: "bootstrap-icons" !important;
+            font-style: normal;
+            font-weight: normal !important;
+            font-variant: normal;
+            text-transform: none;
+            line-height: 1;
+            vertical-align: -.125em;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
     </style>
+
+    <!-- Hidden fields for modal data from query string -->
+    <asp:HiddenField ID="hfModalUserSlug" runat="server" />
+    <asp:HiddenField ID="hfModalDisplayName" runat="server" />
+    <asp:HiddenField ID="hfModalEmail" runat="server" />
+    <asp:HiddenField ID="hfModalRole" runat="server" />
+    <asp:HiddenField ID="hfModalCreatedAt" runat="server" />
+    <asp:HiddenField ID="hfShowModal" runat="server" Value="false" />
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -272,17 +297,33 @@
                     var role = this.getAttribute('data-role');
                     var createdAt = this.getAttribute('data-created-at');
                     
-                    document.getElementById('detailUserSlug').textContent = userSlug;
-                    document.getElementById('detailFullName').textContent = displayName;
-                    document.getElementById('detailEmail').textContent = email;
-                    document.getElementById('detailRole').textContent = role.charAt(0).toUpperCase() + role.slice(1);
-                    document.getElementById('detailCreatedAt').textContent = createdAt;
-                    
-                    var modal = new bootstrap.Modal(document.getElementById('userDetailsModal'));
-                    modal.show();
+                    showUserDetailsModal(userSlug, displayName, email, role, createdAt);
                 });
             });
+
+            // Check if we need to show modal from query string
+            var showModal = document.getElementById('<%= hfShowModal.ClientID %>').value === 'true';
+            if (showModal) {
+                var userSlug = document.getElementById('<%= hfModalUserSlug.ClientID %>').value;
+                var displayName = document.getElementById('<%= hfModalDisplayName.ClientID %>').value;
+                var email = document.getElementById('<%= hfModalEmail.ClientID %>').value;
+                var role = document.getElementById('<%= hfModalRole.ClientID %>').value;
+                var createdAt = document.getElementById('<%= hfModalCreatedAt.ClientID %>').value;
+                
+                showUserDetailsModal(userSlug, displayName, email, role, createdAt);
+            }
         });
+
+        function showUserDetailsModal(userSlug, displayName, email, role, createdAt) {
+            document.getElementById('detailUserSlug').textContent = userSlug;
+            document.getElementById('detailFullName').textContent = displayName;
+            document.getElementById('detailEmail').textContent = email;
+            document.getElementById('detailRole').textContent = role.charAt(0).toUpperCase() + role.slice(1);
+            document.getElementById('detailCreatedAt').textContent = createdAt;
+            
+            var modal = new bootstrap.Modal(document.getElementById('userDetailsModal'));
+            modal.show();
+        }
     </script>
 
 </asp:Content>
