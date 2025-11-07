@@ -151,5 +151,81 @@
         }
     </style>
 
+    <script type="text/javascript">
+        console.log('[AddStudents] Page loaded');
+        
+        // Log when page is fully ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('[AddStudents] DOM Content Loaded');
+            
+            // Find all Add buttons
+            const addButtons = document.querySelectorAll('[id*="btnAdd"]');
+            console.log('[AddStudents] Found Add buttons:', addButtons.length);
+            
+            // Add click listeners to track clicks
+            addButtons.forEach((btn, index) => {
+                console.log(`[AddStudents] Button ${index}:`, btn);
+                btn.addEventListener('click', function(e) {
+                    console.log('[AddStudents] ===== ADD BUTTON CLICKED =====');
+                    console.log('[AddStudents] Button:', this);
+                    console.log('[AddStudents] Event:', e);
+                    console.log('[AddStudents] Button ID:', this.id);
+                    console.log('[AddStudents] Form will postback...');
+                });
+            });
+            
+            // Find all Remove buttons
+            const removeButtons = document.querySelectorAll('[id*="btnRemove"]');
+            console.log('[AddStudents] Found Remove buttons:', removeButtons.length);
+            
+            removeButtons.forEach((btn, index) => {
+                btn.addEventListener('click', function(e) {
+                    console.log('[AddStudents] ===== REMOVE BUTTON CLICKED =====');
+                    console.log('[AddStudents] Button:', this);
+                });
+            });
+            
+            // Check for form
+            const form = document.querySelector('form[id*="form"]');
+            if (form) {
+                console.log('[AddStudents] Form found:', form.id);
+                form.addEventListener('submit', function(e) {
+                    console.log('[AddStudents] ===== FORM SUBMITTING =====');
+                    console.log('[AddStudents] Form action:', this.action);
+                    console.log('[AddStudents] Form method:', this.method);
+                });
+            } else {
+                console.error('[AddStudents] ❌ NO FORM FOUND! This is the problem!');
+            }
+            
+            // Log ViewState
+            const viewState = document.querySelector('input[name="__VIEWSTATE"]');
+            if (viewState) {
+                console.log('[AddStudents] ViewState exists, length:', viewState.value.length);
+            } else {
+                console.error('[AddStudents] ❌ NO VIEWSTATE FOUND!');
+            }
+            
+            // Log EventValidation
+            const eventValidation = document.querySelector('input[name="__EVENTVALIDATION"]');
+            if (eventValidation) {
+                console.log('[AddStudents] EventValidation exists');
+            } else {
+                console.error('[AddStudents] ❌ NO EVENTVALIDATION FOUND!');
+            }
+        });
+        
+        // Log before page unload (postback)
+        window.addEventListener('beforeunload', function() {
+            console.log('[AddStudents] Page is unloading (postback happening)');
+        });
+        
+        // Check for errors
+        window.addEventListener('error', function(e) {
+            console.error('[AddStudents] ❌ JavaScript Error:', e.message);
+            console.error('[AddStudents] Error details:', e);
+        });
+    </script>
+
 </asp:Content>
 

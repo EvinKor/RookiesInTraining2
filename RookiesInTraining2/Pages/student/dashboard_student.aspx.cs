@@ -44,9 +44,14 @@ namespace RookiesInTraining2.Pages
         {
             string userSlug = Session["UserSlug"]?.ToString() ?? "";
             string fullName = Session["FullName"]?.ToString() ?? "Student";
+            
+            System.Diagnostics.Debug.WriteLine($"[StudentDashboard][LoadStudentData] User Slug: '{userSlug}'");
+            System.Diagnostics.Debug.WriteLine($"[StudentDashboard][LoadStudentData] Full Name: '{fullName}'");
 
             // Load real classes from database
             var classes = LoadEnrolledClasses(userSlug);
+            System.Diagnostics.Debug.WriteLine($"[StudentDashboard][LoadStudentData] Classes returned: {classes.Count}");
+            
             var badges = GetMockBadges();
             var summary = new ProgressSummary
             {
@@ -59,21 +64,33 @@ namespace RookiesInTraining2.Pages
 
             // Serialize to JSON
             var serializer = new JavaScriptSerializer();
-            hfModulesJson.Value = serializer.Serialize(classes);
+            string classesJson = serializer.Serialize(classes);
+            hfModulesJson.Value = classesJson;
             hfQuizzesJson.Value = "[]";
             hfSummaryJson.Value = serializer.Serialize(summary);
             hfBadgesJson.Value = serializer.Serialize(badges);
+            
+            System.Diagnostics.Debug.WriteLine($"[StudentDashboard] Serialized {classes.Count} classes to JSON");
+            System.Diagnostics.Debug.WriteLine($"[StudentDashboard] JSON length: {classesJson.Length}");
+            System.Diagnostics.Debug.WriteLine($"[StudentDashboard] JSON preview: {(classesJson.Length > 200 ? classesJson.Substring(0, 200) + "..." : classesJson)}");
         }
 
         private List<dynamic> LoadEnrolledClasses(string studentSlug)
         {
+            System.Diagnostics.Debug.WriteLine($"[StudentDashboard] Loading enrolled classes for student: {studentSlug}");
             List<dynamic> classes = new List<dynamic>();
 
             try
             {
+                System.Diagnostics.Debug.WriteLine($"[StudentDashboard] Opening database connection...");
+                System.Diagnostics.Debug.WriteLine($"[StudentDashboard] Connection string: {ConnStr}");
+                
                 using (var con = new SqlConnection(ConnStr))
                 {
                     con.Open();
+                    System.Diagnostics.Debug.WriteLine($"[StudentDashboard] ✅ Database connected successfully");
+                    System.Diagnostics.Debug.WriteLine($"[StudentDashboard] Database name: {con.Database}");
+                    
                     using (var cmd = con.CreateCommand())
                     {
                         cmd.CommandText = @"
@@ -85,24 +102,28 @@ namespace RookiesInTraining2.Pages
                                 c.icon,
                                 c.color,
                                 COUNT(DISTINCT l.level_slug) AS LevelCount,
-                                COUNT(DISTINCT CASE WHEN slp.is_completed = 1 THEN l.level_slug END) AS CompletedCount
+                                0 AS CompletedCount,
+                                MAX(e.joined_at) AS joined_at
                             FROM Enrollments e
                             INNER JOIN Classes c ON e.class_slug = c.class_slug
-                            LEFT JOIN Levels l ON c.class_slug = l.class_slug AND l.is_deleted = 0 AND l.is_published = 1
-                            LEFT JOIN StudentLevelProgress slp ON l.level_slug = slp.level_slug AND slp.student_slug = @studentSlug
+                            LEFT JOIN Levels l ON c.class_slug = l.class_slug AND l.is_deleted = 0
                             WHERE e.user_slug = @studentSlug 
                               AND e.is_deleted = 0 
                               AND c.is_deleted = 0
                             GROUP BY c.class_slug, c.class_name, c.class_code, c.description, c.icon, c.color
-                            ORDER BY e.enrolled_at DESC";
+                            ORDER BY MAX(e.joined_at) DESC";
 
                         cmd.Parameters.AddWithValue("@studentSlug", studentSlug);
+                        
+                        System.Diagnostics.Debug.WriteLine($"[StudentDashboard] Executing query for student: '{studentSlug}'");
+                        System.Diagnostics.Debug.WriteLine($"[StudentDashboard] SQL Query: {cmd.CommandText}");
 
                         using (var reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
                             {
-                                classes.Add(new
+                                // Map class data to format expected by inline JavaScript
+                                var classItem = new
                                 {
                                     ClassSlug = reader["class_slug"].ToString(),
                                     ClassName = reader["class_name"].ToString(),
@@ -111,16 +132,26 @@ namespace RookiesInTraining2.Pages
                                     Icon = reader["icon"].ToString(),
                                     Color = reader["color"].ToString(),
                                     Total = Convert.ToInt32(reader["LevelCount"]),
-                                    Completed = Convert.ToInt32(reader["CompletedCount"])
-                                });
+                                    Completed = Convert.ToInt32(reader["CompletedCount"]),
+                                    // Also include module-style properties for compatibility
+                                    ModuleSlug = reader["class_slug"].ToString(),
+                                    Title = reader["class_name"].ToString(),
+                                    Summary = reader["description"].ToString(),
+                                    TotalXp = Convert.ToInt32(reader["LevelCount"]) * 100
+                                };
+                                classes.Add(classItem);
+                                System.Diagnostics.Debug.WriteLine($"[StudentDashboard] Loaded class: {classItem.ClassName} ({classItem.ClassSlug})");
                             }
                         }
                     }
                 }
+                
+                System.Diagnostics.Debug.WriteLine($"[StudentDashboard] Total classes loaded: {classes.Count}");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[StudentDashboard] Error loading classes: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[StudentDashboard] Stack trace: {ex.StackTrace}");
             }
 
             return classes;

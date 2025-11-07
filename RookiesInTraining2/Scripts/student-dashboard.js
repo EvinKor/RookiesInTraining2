@@ -32,16 +32,17 @@
             summary: summary
         });
 
-        if (modules.length === 0) {
-            console.warn('No modules found, showing empty state');
-            showEmptyState();
-            return;
-        }
-
         // Render UI
         renderSummary();
-        renderModuleGrid();
         renderBadges();
+        
+        if (modules.length === 0) {
+            console.warn('[StudentDashboard] No classes found, showing empty state');
+            showEmptyState();
+        } else {
+            console.log('[StudentDashboard] Rendering', modules.length, 'classes');
+            renderClassesGrid();
+        }
 
         // Setup event listeners
         setupGlobalContinueButton();
@@ -52,35 +53,54 @@
     // ===== Data Loading =====
     function loadData() {
         try {
+            console.log('[StudentDashboard] Loading data...');
+            
             if (!window.DASHBOARD_DATA) {
-                console.error('DASHBOARD_DATA not found');
+                console.error('[StudentDashboard] ❌ DASHBOARD_DATA not found on window object');
                 return;
             }
+            
+            console.log('[StudentDashboard] DASHBOARD_DATA:', window.DASHBOARD_DATA);
 
             const modulesField = document.getElementById(window.DASHBOARD_DATA.modulesFieldId);
             const quizzesField = document.getElementById(window.DASHBOARD_DATA.quizzesFieldId);
             const summaryField = document.getElementById(window.DASHBOARD_DATA.summaryFieldId);
             const badgesField = document.getElementById(window.DASHBOARD_DATA.badgesFieldId);
 
+            console.log('[StudentDashboard] Hidden fields:', {
+                modulesField: modulesField?.id,
+                modulesValue: modulesField?.value?.substring(0, 100),
+                quizzesField: quizzesField?.id,
+                summaryField: summaryField?.id,
+                badgesField: badgesField?.id
+            });
+
             if (modulesField && modulesField.value) {
                 modules = JSON.parse(modulesField.value);
+                console.log('[StudentDashboard] ✅ Modules loaded:', modules.length);
+                console.log('[StudentDashboard] Modules data:', modules);
+            } else {
+                console.warn('[StudentDashboard] ⚠️ No modules data found');
             }
 
             if (quizzesField && quizzesField.value) {
                 quizzes = JSON.parse(quizzesField.value);
+                console.log('[StudentDashboard] Quizzes loaded:', quizzes.length);
             }
 
             if (summaryField && summaryField.value) {
                 summary = JSON.parse(summaryField.value);
+                console.log('[StudentDashboard] Summary loaded:', summary);
             }
 
             if (badgesField && badgesField.value) {
                 badges = JSON.parse(badgesField.value);
+                console.log('[StudentDashboard] Badges loaded:', badges.length);
             }
 
             userSlug = summary.StudentName || 'default';
         } catch (error) {
-            console.error('Error loading dashboard data:', error);
+            console.error('[StudentDashboard] ❌ Error loading dashboard data:', error);
         }
     }
 
@@ -113,17 +133,90 @@
         if (progressBar) progressBar.style.width = progressPct + '%';
     }
 
-    // ===== Module Grid Rendering =====
-    function renderModuleGrid() {
-        const grid = document.getElementById('moduleGrid');
-        if (!grid) return;
+    // ===== Classes Grid Rendering =====
+    function renderClassesGrid() {
+        const grid = document.getElementById('classesGrid');
+        const noClasses = document.getElementById('noClasses');
+        
+        if (!grid) {
+            console.error('[StudentDashboard] ❌ classesGrid element not found');
+            return;
+        }
 
+        console.log('[StudentDashboard] Rendering classes grid with', modules.length, 'classes');
+
+        if (modules.length === 0) {
+            grid.style.display = 'none';
+            if (noClasses) noClasses.style.display = 'block';
+            return;
+        }
+
+        grid.style.display = 'flex';
+        if (noClasses) noClasses.style.display = 'none';
         grid.innerHTML = '';
 
         modules.forEach(function (module) {
-            const card = createModuleCard(module);
+            const card = createClassCard(module);
             grid.appendChild(card);
         });
+        
+        console.log('[StudentDashboard] ✅ Rendered', modules.length, 'class cards');
+    }
+    
+    function createClassCard(classData) {
+        const col = document.createElement('div');
+        col.className = 'col-md-6 col-lg-4';
+        
+        const progressPct = classData.Total > 0 
+            ? Math.round((classData.Completed / classData.Total) * 100) 
+            : 0;
+
+        col.innerHTML = `
+            <div class="card border-0 shadow-sm h-100 hover-shadow" style="cursor: pointer;" onclick="window.location.href='/Pages/student/student_class.aspx?class=${classData.ModuleSlug}'">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="flex-shrink-0 me-3">
+                            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, ${classData.Color}, ${classData.Color}DD); 
+                                        border-radius: 1rem; display: flex; align-items: center; justify-content: center; 
+                                        font-size: 2rem; color: white;">
+                                <i class="${classData.Icon}"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">${escapeHtml(classData.Title)}</h5>
+                            <p class="text-muted small mb-0">${escapeHtml(classData.Summary || 'No description')}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="text-muted">Progress</small>
+                            <small class="text-muted fw-bold">${classData.Completed}/${classData.Total} levels</small>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar" style="width: ${progressPct}%; background: ${classData.Color};"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-light text-dark">
+                            <i class="bi bi-layers me-1"></i>${classData.Total} levels
+                        </span>
+                        <span class="badge bg-light text-dark">
+                            <i class="bi bi-star text-warning me-1"></i>${classData.TotalXp} XP
+                        </span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        return col;
+    }
+
+    // ===== Module Grid Rendering (Legacy) =====
+    function renderModuleGrid() {
+        // Legacy function - now uses renderClassesGrid
+        renderClassesGrid();
     }
 
     function createModuleCard(module) {
@@ -178,50 +271,41 @@
             </div>
         `;
 
-        // Click handlers
+        // Click handlers - redirect to student_class.aspx
         card.addEventListener('click', function (e) {
             if (!e.target.closest('.module-action-btn')) {
-                openModule(module.ModuleSlug);
+                navigateToClass(module.ModuleSlug);
             }
         });
 
         const button = card.querySelector('.module-action-btn');
         button.addEventListener('click', function (e) {
             e.stopPropagation();
-            openModule(module.ModuleSlug);
+            navigateToClass(module.ModuleSlug);
         });
 
         return card;
     }
 
-    // ===== Module Opening =====
+    // ===== Module/Class Navigation =====
+    function navigateToClass(classSlug) {
+        console.log('[StudentDashboard] Navigating to class:', classSlug);
+        window.location.href = `/Pages/student/student_class.aspx?class=${classSlug}`;
+    }
+
+    // ===== Module Opening (Legacy - kept for compatibility) =====
     function openModule(moduleSlug) {
-        currentModuleId = moduleSlug;
-        const module = modules.find(function (m) { return m.ModuleSlug === moduleSlug; });
-        if (!module) return;
-
-        // Update header
-        document.getElementById('currentModuleTitle').textContent = module.Title;
-        document.getElementById('currentModuleSummary').textContent = module.Summary;
-
-        // Hide module grid, show quiz rail
-        document.getElementById('moduleGrid').style.display = 'none';
-        document.getElementById('quizRailSection').style.display = 'block';
-
-        // Render quizzes for this module
-        renderQuizRail(moduleSlug);
-
-        // Setup module continue button
-        setupModuleContinueButton(moduleSlug);
-
-        // Scroll to top
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // For enrolled classes, redirect to class page instead
+        navigateToClass(moduleSlug);
     }
 
     function closeModule() {
         currentModuleId = null;
-        document.getElementById('moduleGrid').style.display = 'grid';
-        document.getElementById('quizRailSection').style.display = 'none';
+        const classesGrid = document.getElementById('classesGrid');
+        if (classesGrid) classesGrid.style.display = 'flex';
+        
+        const quizRailSection = document.getElementById('quizRailSection');
+        if (quizRailSection) quizRailSection.style.display = 'none';
     }
 
     // ===== Quiz Rail Rendering =====
@@ -355,19 +439,19 @@
         const btn = document.getElementById('btnContinue');
         if (!btn) return;
 
-        // Find next available or in-progress quiz across all modules
-        const nextQuiz = quizzes.find(function (q) {
-            return q.Status === 'available' || q.Status === 'in_progress';
+        // Find first class with incomplete levels
+        const nextClass = modules.find(function (m) {
+            return m.Completed < m.Total;
         });
 
-        if (!nextQuiz) {
+        if (!nextClass) {
             btn.disabled = true;
             btn.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i>All Caught Up!';
             return;
         }
 
         btn.addEventListener('click', function () {
-            openModule(nextQuiz.ModuleSlug);
+            navigateToClass(nextClass.ModuleSlug);
         });
     }
 
@@ -518,13 +602,17 @@
     }
 
     function showEmptyState() {
-        const emptyState = document.getElementById('emptyState');
-        if (emptyState) {
-            emptyState.style.display = 'block';
+        console.log('[StudentDashboard] Showing empty state');
+        
+        const noClasses = document.getElementById('noClasses');
+        if (noClasses) {
+            noClasses.style.display = 'block';
         }
 
-        const moduleGrid = document.getElementById('moduleGrid');
-        if (moduleGrid) moduleGrid.style.display = 'none';
+        const classesGrid = document.getElementById('classesGrid');
+        if (classesGrid) {
+            classesGrid.style.display = 'none';
+        }
     }
 
 })();

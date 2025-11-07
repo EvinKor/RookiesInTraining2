@@ -17,8 +17,7 @@
                 <div class="row align-items-center">
                     <div class="col-lg-8">
                         <h1 class="mb-2">
-                            Welcome back, <span class="text-primary" id="studentName"></span>! 🚀
-                        </h1>
+                            Welcome back, <span class="text-primary" id="studentName"></span>!                        </h1>
                         <div class="d-flex flex-wrap gap-4 mt-3">
                             <div class="stat-badge">
                                 <i class="bi bi-star-fill text-warning"></i>
@@ -164,30 +163,56 @@
         
         // Load and render classes
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('[Dashboard] ===== DOM CONTENT LOADED =====');
+            console.log('[Dashboard] DASHBOARD_DATA:', window.DASHBOARD_DATA);
             loadClasses();
         });
         
         function loadClasses() {
-            const modulesField = document.getElementById(window.DASHBOARD_DATA.modulesFieldId);
+            console.log('[Dashboard] ===== loadClasses() CALLED =====');
+            
+            const modulesFieldId = window.DASHBOARD_DATA.modulesFieldId;
+            console.log('[Dashboard] Looking for hidden field with ID:', modulesFieldId);
+            
+            const modulesField = document.getElementById(modulesFieldId);
+            console.log('[Dashboard] Hidden field element:', modulesField);
+            console.log('[Dashboard] Hidden field value:', modulesField?.value);
+            console.log('[Dashboard] Hidden field value length:', modulesField?.value?.length);
+            
             const container = document.getElementById('classesGrid');
             const noClasses = document.getElementById('noClasses');
             
-            if (!modulesField || !modulesField.value) {
+            console.log('[Dashboard] Container element:', container);
+            console.log('[Dashboard] No classes element:', noClasses);
+            
+            if (!modulesField) {
+                console.error('[Dashboard] ❌ Hidden field NOT FOUND! ID:', modulesFieldId);
+                container.style.display = 'none';
+                noClasses.style.display = 'block';
+                return;
+            }
+            
+            if (!modulesField.value) {
+                console.warn('[Dashboard] ⚠️ Hidden field is EMPTY');
                 container.style.display = 'none';
                 noClasses.style.display = 'block';
                 return;
             }
             
             try {
+                console.log('[Dashboard] Parsing JSON...');
                 const classes = JSON.parse(modulesField.value);
-                console.log('[Dashboard] Loaded classes:', classes);
+                console.log('[Dashboard] ✅ Parsed classes:', classes);
+                console.log('[Dashboard] Classes count:', classes.length);
                 
                 if (classes.length === 0) {
+                    console.warn('[Dashboard] No classes in array');
                     container.style.display = 'none';
                     noClasses.style.display = 'block';
                     return;
                 }
                 
+                console.log('[Dashboard] Rendering', classes.length, 'class cards...');
                 container.style.display = 'flex';
                 noClasses.style.display = 'none';
                 
@@ -223,8 +248,12 @@
                         </div>
                     </div>
                 `).join('');
+                
+                console.log('[Dashboard] ✅ Successfully rendered', classes.length, 'class cards');
             } catch (error) {
-                console.error('[Dashboard] Error loading classes:', error);
+                console.error('[Dashboard] ❌ Error loading/rendering classes:', error);
+                console.error('[Dashboard] Error stack:', error.stack);
+                container.style.display = 'none';
                 noClasses.style.display = 'block';
             }
         }

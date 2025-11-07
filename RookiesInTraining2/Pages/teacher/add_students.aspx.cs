@@ -148,16 +148,24 @@ namespace RookiesInTraining2.Pages.teacher
                     }
                 }
 
+                System.Diagnostics.Debug.WriteLine($"[AddStudents][LoadAvailableStudents] Students found: {students.Count}");
                 lblAvailableCount.Text = students.Count.ToString();
 
                 if (students.Count > 0)
                 {
+                    System.Diagnostics.Debug.WriteLine($"[AddStudents][LoadAvailableStudents] Binding {students.Count} students to repeater");
+                    foreach (var student in students)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[AddStudents][LoadAvailableStudents] - Student: {student.GetType().GetProperty("UserSlug")?.GetValue(student)} / {student.GetType().GetProperty("FullName")?.GetValue(student)}");
+                    }
                     rptAvailableStudents.DataSource = students;
                     rptAvailableStudents.DataBind();
+                    System.Diagnostics.Debug.WriteLine($"[AddStudents][LoadAvailableStudents] Repeater bound successfully. Item count: {rptAvailableStudents.Items.Count}");
                     lblNoAvailable.Visible = false;
                 }
                 else
                 {
+                    System.Diagnostics.Debug.WriteLine($"[AddStudents][LoadAvailableStudents] No students to display");
                     lblNoAvailable.Visible = true;
                 }
             }
@@ -180,13 +188,13 @@ namespace RookiesInTraining2.Pages.teacher
                     using (var cmd = con.CreateCommand())
                     {
                         cmd.CommandText = @"
-                            SELECT u.user_slug, u.full_name, u.email, e.enrolled_at
+                            SELECT u.user_slug, u.full_name, u.email, e.joined_at
                             FROM Enrollments e
                             INNER JOIN Users u ON e.user_slug = u.user_slug
                             WHERE e.class_slug = @classSlug 
                               AND e.role_in_class = 'student'
                               AND e.is_deleted = 0
-                            ORDER BY e.enrolled_at DESC";
+                            ORDER BY e.joined_at DESC";
 
                         cmd.Parameters.AddWithValue("@classSlug", classSlug);
 
@@ -199,23 +207,27 @@ namespace RookiesInTraining2.Pages.teacher
                                     UserSlug = reader["user_slug"].ToString(),
                                     FullName = reader["full_name"].ToString(),
                                     Email = reader["email"].ToString(),
-                                    EnrolledAt = Convert.ToDateTime(reader["enrolled_at"])
+                                    EnrolledAt = Convert.ToDateTime(reader["joined_at"])
                                 });
                             }
                         }
                     }
                 }
 
+                System.Diagnostics.Debug.WriteLine($"[AddStudents][LoadEnrolledStudents] Enrolled students found: {students.Count}");
                 lblEnrolledCount.Text = students.Count.ToString();
 
                 if (students.Count > 0)
                 {
+                    System.Diagnostics.Debug.WriteLine($"[AddStudents][LoadEnrolledStudents] Binding {students.Count} enrolled students to repeater");
                     rptEnrolledStudents.DataSource = students;
                     rptEnrolledStudents.DataBind();
+                    System.Diagnostics.Debug.WriteLine($"[AddStudents][LoadEnrolledStudents] Repeater bound successfully. Item count: {rptEnrolledStudents.Items.Count}");
                     lblNoEnrolled.Visible = false;
                 }
                 else
                 {
+                    System.Diagnostics.Debug.WriteLine($"[AddStudents][LoadEnrolledStudents] No enrolled students to display");
                     lblNoEnrolled.Visible = true;
                 }
             }
@@ -283,15 +295,20 @@ namespace RookiesInTraining2.Pages.teacher
                         // Insert new enrollment
                         using (var cmd = con.CreateCommand())
                         {
+                            // Generate enrollment slug (format: enroll-{32-char-guid})
+                            string enrollmentSlug = $"enroll-{Guid.NewGuid():N}";
+                            
                             cmd.CommandText = @"
                                 INSERT INTO Enrollments 
-                                (user_slug, class_slug, role_in_class, enrolled_at, is_deleted)
+                                (enrollment_slug, user_slug, class_slug, role_in_class, joined_at, is_deleted)
                                 VALUES 
-                                (@studentSlug, @classSlug, 'student', SYSUTCDATETIME(), 0)";
+                                (@enrollmentSlug, @studentSlug, @classSlug, 'student', SYSUTCDATETIME(), 0)";
 
+                            cmd.Parameters.AddWithValue("@enrollmentSlug", enrollmentSlug);
                             cmd.Parameters.AddWithValue("@studentSlug", studentSlug);
                             cmd.Parameters.AddWithValue("@classSlug", classSlug);
 
+                            System.Diagnostics.Debug.WriteLine($"[AddStudents] Inserting with enrollment slug: {enrollmentSlug}");
                             int rowsAffected = cmd.ExecuteNonQuery();
                             System.Diagnostics.Debug.WriteLine($"[AddStudents] INSERT completed. Rows affected: {rowsAffected}");
                         }

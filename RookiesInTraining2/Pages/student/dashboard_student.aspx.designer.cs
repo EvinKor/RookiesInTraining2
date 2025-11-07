@@ -9,8 +9,38 @@
 
 namespace RookiesInTraining2.Pages
 {
+
+
     public partial class dashboard_student
     {
+
+        /// <summary>
+        /// btnLogout control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnLogout;
+
+        /// <summary>
+        /// lnkJoinClass control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkJoinClass;
+
+        /// <summary>
+        /// lnkJoinFirst control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HyperLink lnkJoinFirst;
+
         /// <summary>
         /// hfModulesJson control.
         /// </summary>
@@ -46,24 +76,5 @@ namespace RookiesInTraining2.Pages
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.HiddenField hfBadgesJson;
-
-        /// <summary>
-        /// lnkJoinClass control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.HyperLink lnkJoinClass;
-
-        /// <summary>
-        /// lnkJoinFirst control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.HyperLink lnkJoinFirst;
-
-        /// <summary>
-        /// btnLogout control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnLogout;
     }
 }
