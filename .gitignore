@@ -54,3 +54,7 @@ _ReSharper*/
 *.tmp
 *.DS_Store
 Thumbs.db
+
+# Ignore SQL Server databases
+App_Data/*.mdf
+App_Data/*.ldf
