@@ -109,6 +109,7 @@ namespace RookiesInTraining2.Pages.teacher
         private void LoadAllLevels()
         {
             string teacherSlug = Session["UserSlug"]?.ToString() ?? "";
+            System.Diagnostics.Debug.WriteLine($"[ManageClasses][LoadAllLevels] Loading levels for teacher: {teacherSlug}");
             List<LevelItem> levels = new List<LevelItem>();
 
             try
@@ -133,7 +134,7 @@ namespace RookiesInTraining2.Pages.teacher
                     {
                         while (reader.Read())
                         {
-                            levels.Add(new LevelItem
+                            var level = new LevelItem
                             {
                                 LevelSlug = reader["level_slug"].ToString(),
                                 ClassSlug = reader["class_slug"].ToString(),
@@ -145,17 +146,24 @@ namespace RookiesInTraining2.Pages.teacher
                                 EstimatedMinutes = Convert.ToInt32(reader["estimated_minutes"]),
                                 IsPublished = Convert.ToBoolean(reader["is_published"]),
                                 QuizSlug = reader["quiz_slug"]?.ToString()
-                            });
+                            };
+                            levels.Add(level);
+                            System.Diagnostics.Debug.WriteLine($"[ManageClasses][LoadAllLevels] Added level: {level.LevelSlug} for class: {level.ClassSlug}");
                         }
                     }
                 }
 
+                System.Diagnostics.Debug.WriteLine($"[ManageClasses][LoadAllLevels] Total levels loaded: {levels.Count}");
                 var serializer = new JavaScriptSerializer();
-                hfLevelsJson.Value = serializer.Serialize(levels);
+                string jsonData = serializer.Serialize(levels);
+                hfLevelsJson.Value = jsonData;
+                System.Diagnostics.Debug.WriteLine($"[ManageClasses][LoadAllLevels] Serialized JSON length: {jsonData.Length}");
+                System.Diagnostics.Debug.WriteLine($"[ManageClasses][LoadAllLevels] First 200 chars of JSON: {(jsonData.Length > 200 ? jsonData.Substring(0, 200) : jsonData)}");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[ManageClasses] Error loading levels: {ex}");
+                System.Diagnostics.Debug.WriteLine($"[ManageClasses][LoadAllLevels] Error loading levels: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[ManageClasses][LoadAllLevels] Stack trace: {ex.StackTrace}");
             }
         }
 

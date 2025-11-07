@@ -168,6 +168,12 @@
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="studentsTabBtn" data-bs-toggle="tab" data-bs-target="#studentsTab"
+                            type="button" role="tab" aria-controls="studentsTab" aria-selected="false">
+                        <i class="bi bi-people-fill me-2"></i>Students
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
                     <button class="nav-link" id="storymodeTabBtn" data-bs-toggle="tab" data-bs-target="#storymodeTab"
                             type="button" role="tab" aria-controls="storymodeTab" aria-selected="false"
                             onclick="console.log('Switched to Storymode tab'); loadLevelsForClass(selectedClass?.slug);">
@@ -201,6 +207,60 @@
                                     <i class="bi bi-plus-circle me-2"></i>Create First Post
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STUDENTS TAB -->
+                <div class="tab-pane fade" id="studentsTab" role="tabpanel" aria-labelledby="studentsTabBtn">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="mb-0"><i class="bi bi-people me-2"></i>Class Students</h5>
+                                <button type="button" class="btn btn-success btn-lg" onclick="openAddStudentsPage()">
+                                    <i class="bi bi-person-plus me-2"></i>Add Students
+                                </button>
+                            </div>
+                            
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Click "Add Students" to manually enroll students or share the class code with your students so they can join independently.
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="card bg-primary bg-opacity-10 border-primary">
+                                        <div class="card-body text-center">
+                                            <h6 class="text-muted mb-1">Class Code</h6>
+                                            <h3 class="mb-0" id="classCodeDisplay">------</h3>
+                                            <small class="text-muted">Share with students</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-success bg-opacity-10 border-success">
+                                        <div class="card-body text-center">
+                                            <h6 class="text-muted mb-1">Total Students</h6>
+                                            <h3 class="mb-0" id="totalStudentsDisplay">0</h3>
+                                            <small class="text-muted">Enrolled</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-info bg-opacity-10 border-info">
+                                        <div class="card-body text-center">
+                                            <h6 class="text-muted mb-1">Active Students</h6>
+                                            <h3 class="mb-0" id="activeStudentsDisplay">0</h3>
+                                            <small class="text-muted">Last 7 days</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <p class="text-muted mb-0">
+                                <i class="bi bi-lightbulb me-2"></i>
+                                To add or remove students, click the "Add Students" button above.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -325,13 +385,40 @@
 
         function selectClass(slug, name) {
             console.log('Selecting class:', slug, name);
-            selectedClass = { slug: slug, name: name };
+            
+            // Find the full class data
+            const classesField = document.getElementById('<%= hfClassesJson.ClientID %>');
+            if (classesField && classesField.value) {
+                try {
+                    const classes = JSON.parse(classesField.value);
+                    const foundClass = classes.find(c => c.ClassSlug === slug);
+                    if (foundClass) {
+                        selectedClass = foundClass;
+                    } else {
+                        selectedClass = { slug: slug, name: name };
+                    }
+                } catch (e) {
+                    selectedClass = { slug: slug, name: name };
+                }
+            } else {
+                selectedClass = { slug: slug, name: name };
+            }
             
             // Hide selection, show management
             document.getElementById('classSelection').style.display = 'none';
             document.getElementById('classManagement').style.display = 'block';
             document.getElementById('currentClassName').textContent = name;
             document.getElementById('<%= hfSelectedClassSlug.ClientID %>').value = slug;
+            
+            // Update Students tab info
+            if (selectedClass.ClassCode) {
+                document.getElementById('classCodeDisplay').textContent = selectedClass.ClassCode;
+            }
+            if (selectedClass.StudentCount !== undefined) {
+                document.getElementById('totalStudentsDisplay').textContent = selectedClass.StudentCount;
+                // For now, assume 50% are active (you can enhance this with real data later)
+                document.getElementById('activeStudentsDisplay').textContent = Math.floor(selectedClass.StudentCount * 0.5);
+            }
             
             console.log('Class selected, loading data...');
             // Load forum posts and levels for this class
@@ -350,32 +437,39 @@
         }
 
         function loadLevelsForClass(classSlug) {
-            console.log('Loading levels for class:', classSlug);
+            console.log('[LEVELS] Loading levels for class:', classSlug);
             
             if (!classSlug) {
-                console.warn('No class slug provided');
+                console.warn('[LEVELS] No class slug provided');
                 showNoLevels();
                 return;
             }
             
             // Parse levels from hidden field
             const levelsField = document.getElementById('<%= hfLevelsJson.ClientID %>');
-            console.log('Levels field:', levelsField?.value);
+            console.log('[LEVELS] Levels field element:', levelsField);
+            console.log('[LEVELS] Levels field value:', levelsField?.value);
+            console.log('[LEVELS] Levels field value length:', levelsField?.value?.length);
             
             if (!levelsField || !levelsField.value) {
-                console.warn('No levels data in hidden field');
+                console.warn('[LEVELS] No levels data in hidden field');
                 showNoLevels();
                 return;
             }
 
             try {
                 const allLevels = JSON.parse(levelsField.value);
-                console.log('All levels:', allLevels);
-                const classLevels = allLevels.filter(l => l.ClassSlug === classSlug);
-                console.log('Filtered levels for class:', classLevels);
+                console.log('[LEVELS] All levels parsed:', allLevels);
+                console.log('[LEVELS] All levels count:', allLevels.length);
+                const classLevels = allLevels.filter(l => {
+                    console.log(`[LEVELS] Checking level: ${l.LevelSlug}, ClassSlug: ${l.ClassSlug} vs ${classSlug}`);
+                    return l.ClassSlug === classSlug;
+                });
+                console.log('[LEVELS] Filtered levels for class:', classLevels);
+                console.log('[LEVELS] Filtered levels count:', classLevels.length);
                 renderLevels(classLevels);
             } catch (error) {
-                console.error('Error loading levels:', error);
+                console.error('[LEVELS] Error loading levels:', error);
                 showNoLevels();
             }
         }
@@ -544,8 +638,14 @@
                 return;
             }
             
+            // Get the class slug (handle both capital and lowercase property names)
+            const classSlug = selectedClass.ClassSlug || selectedClass.slug;
+            const className = selectedClass.ClassName || selectedClass.name;
+            
+            console.log('[CreateLevel] Redirecting with:', { classSlug, className });
+            
             // Redirect to create_level page
-            window.location.href = `create_level.aspx?class=${selectedClass.slug}&className=${encodeURIComponent(selectedClass.name)}`;
+            window.location.href = `create_level.aspx?class=${classSlug}&className=${encodeURIComponent(className)}`;
         }
 
         function openCreatePostModal() {
@@ -554,8 +654,25 @@
                 return;
             }
             
+            // Get the class slug (handle both capital and lowercase property names)
+            const classSlug = selectedClass.ClassSlug || selectedClass.slug;
+            const className = selectedClass.ClassName || selectedClass.name;
+            
             // Redirect to create post page
-            window.location.href = `create_forum_post.aspx?class=${selectedClass.slug}&className=${encodeURIComponent(selectedClass.name)}`;
+            window.location.href = `create_forum_post.aspx?class=${classSlug}&className=${encodeURIComponent(className)}`;
+        }
+
+        function openAddStudentsPage() {
+            if (!selectedClass) {
+                alert('Please select a class first.');
+                return;
+            }
+            
+            // Get the class slug (handle both capital and lowercase property names)
+            const classSlug = selectedClass.ClassSlug || selectedClass.slug;
+            
+            // Redirect to add students page
+            window.location.href = `add_students.aspx?class=${classSlug}`;
         }
 
         function loadForumPosts(classSlug) {
@@ -657,8 +774,11 @@
                 return;
             }
             
+            // Get the class slug (handle both capital and lowercase property names)
+            const classSlug = selectedClass.ClassSlug || selectedClass.slug;
+            
             // Redirect to view post page
-            window.location.href = `view_forum_post.aspx?post=${postSlug}&class=${selectedClass.slug}`;
+            window.location.href = `view_forum_post.aspx?post=${postSlug}&class=${classSlug}`;
         }
 
         function formatDate(dateString) {
@@ -707,6 +827,49 @@
             // Show modal
             const modal = new bootstrap.Modal(document.getElementById('deleteClassModal'));
             modal.show();
+        }
+
+        function editLevel(levelSlug) {
+            if (!selectedClass) {
+                alert('Please select a class first.');
+                return;
+            }
+            
+            // Get the class slug (handle both capital and lowercase property names)
+            const classSlug = selectedClass.ClassSlug || selectedClass.slug;
+            const className = selectedClass.ClassName || selectedClass.name;
+            
+            window.location.href = `edit_level.aspx?level=${levelSlug}&class=${classSlug}&className=${encodeURIComponent(className)}`;
+        }
+
+        function manageSlides(levelSlug, levelTitle) {
+            if (!selectedClass) {
+                alert('Please select a class first.');
+                return;
+            }
+            
+            // Get the class slug (handle both capital and lowercase property names)
+            const classSlug = selectedClass.ClassSlug || selectedClass.slug;
+            
+            window.location.href = `manage_slides.aspx?level=${levelSlug}&class=${classSlug}&levelTitle=${encodeURIComponent(levelTitle)}`;
+        }
+
+        function editQuiz(levelSlug, quizSlug) {
+            console.log('[Quiz] Editing quiz:', { levelSlug, quizSlug });
+            
+            if (!selectedClass) {
+                alert('Please select a class first.');
+                return;
+            }
+            
+            // Get the class slug (handle both capital and lowercase property names)
+            const classSlug = selectedClass.ClassSlug || selectedClass.slug;
+            
+            if (quizSlug) {
+                window.location.href = `edit_quiz.aspx?quiz=${quizSlug}&level=${levelSlug}&class=${classSlug}`;
+            } else {
+                alert('No quiz found for this level. Create quiz questions first.');
+            }
         }
     </script>
 </asp:Content>
