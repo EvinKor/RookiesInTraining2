@@ -143,6 +143,7 @@
     <Content Include="Pages\teacher\add_questions.aspx" />
     <Content Include="Pages\teacher\class_detail.aspx" />
     <Content Include="Pages\admin\dashboard_admin.aspx" />
+    <Content Include="Pages\admin\Users.aspx" />
     <Content Include="Pages\student\dashboard_student.aspx" />
     <Content Include="Pages\teacher\dashboard_teacher.aspx" />
     <Content Include="Pages\teacher\manage_slides.aspx" />
@@ -345,6 +346,13 @@
     </Compile>
     <Compile Include="Pages\admin\dashboard_admin.aspx.designer.cs">
       <DependentUpon>dashboard_admin.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\admin\Users.aspx.cs">
+      <DependentUpon>Users.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\admin\Users.aspx.designer.cs">
+      <DependentUpon>Users.aspx</DependentUpon>
     </Compile>
     <Compile Include="Pages\student\dashboard_student.aspx.cs">
       <DependentUpon>dashboard_student.aspx</DependentUpon>

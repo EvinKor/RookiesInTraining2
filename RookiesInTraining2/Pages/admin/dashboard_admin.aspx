@@ -10,7 +10,7 @@
     <!-- Welcome Section -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="d-ffghjhghjjhgvhjklex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h2 class="mb-1">Admin Console</h2>
                     <p class="text-muted mb-0">System Overview & Management</p>
@@ -23,7 +23,7 @@
         </div>
     </div>
 
-    <!-- System Stats Cards -->
+    <!-- Stats Cards -->
     <div class="row g-3 mb-4">
         <div class="col-md-3">
             <div class="card border-0 shadow-sm h-100">
@@ -139,7 +139,8 @@
                                             <td class="ps-4">
                                                 <div class="d-flex align-items-center">
                                                     <img src="<%# Eval("AvatarUrl") %>" class="rounded-circle me-2" 
-                                                         style="width: 32px; height: 32px; object-fit: cover;" />
+                                                         style="width: 32px; height: 32px; object-fit: cover;" 
+                                                         onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2240%22 fill=%22%23667eea%22/%3E%3Ctext x=%2250%22 y=%2265%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22white%22%3EA%3C/text%3E%3C/svg%3E';" />
                                                     <span class="fw-semibold"><%# Eval("DisplayName") %></span>
                                                 </div>
                                             </td>
@@ -266,5 +267,38 @@
         </div>
     </div>
 
-</asp:Content>
+    <style>
+        /* Light Theme Dashboard */
+        body {
+            background: #f5f7fa !important;
+        }
 
+        .card {
+            background: white;
+            border: 1px solid #e8ecf1;
+        }
+
+        .card-header {
+            background: #ffffff !important;
+            border-bottom: 1px solid #e8ecf1;
+        }
+
+        /* Stat Cards */
+        .bg-primary.bg-opacity-10,
+        .bg-success.bg-opacity-10,
+        .bg-warning.bg-opacity-10,
+        .bg-info.bg-opacity-10 {
+            background: #f0f4ff !important;
+        }
+
+        /* Text Colors for Light Theme */
+        h2, h3, h4, h5, h6 {
+            color: #2d3748 !important;
+        }
+        
+        .text-primary {
+            color: #667eea !important;
+        }
+    </style>
+
+</asp:Content>

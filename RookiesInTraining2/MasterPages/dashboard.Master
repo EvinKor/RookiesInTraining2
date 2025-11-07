@@ -91,7 +91,7 @@
                   <asp:HyperLink runat="server" ID="lkAdminDash" NavigateUrl="~/Pages/Dashboard_Admin.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
                     <i class="bi bi-house me-2"></i>Dashboard
                   </asp:HyperLink>
-                  <asp:HyperLink runat="server" NavigateUrl="~/Pages/Users.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
+                  <asp:HyperLink runat="server" NavigateUrl="~/Pages/admin/Users.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
                     <i class="bi bi-people me-2"></i>Manage Users
                   </asp:HyperLink>
                   <asp:HyperLink runat="server" NavigateUrl="~/Pages/Reports.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">

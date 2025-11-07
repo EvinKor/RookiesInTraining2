@@ -47,9 +47,10 @@ namespace RookiesInTraining2.Pages
                     }
 
                     // (2) Hash password and insert user
+                    // Only students can register - teachers must be created by admin
                     cmd.Parameters.Clear();
                     string slug = NewSlugUnique(fullName, SlugExists, maxLen: 40);
-                    string role = rblRole.SelectedValue; // Get selected role (student or teacher)
+                    string role = "student"; // Force student role - only admin can create teachers
                     string passwordHash = HashPassword(password);
 
                     cmd.CommandText = @"
