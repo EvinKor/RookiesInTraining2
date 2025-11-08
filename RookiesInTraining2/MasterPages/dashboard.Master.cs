@@ -27,6 +27,15 @@ namespace RookiesInTraining2.MasterPages
                 {
                     imgAvatar.InnerHtml = $"<span class='user-initial'>{fullName[0]}</span>";
                 }
+
+                // Set profile settings link based on role
+                SetProfileSettingsLink(role);
+            }
+            else
+            {
+                // Also set on postback to ensure it's always visible
+                string role = Session["Role"]?.ToString() ?? "";
+                SetProfileSettingsLink(role);
             }
 
             // Wire up logout button
@@ -58,6 +67,34 @@ namespace RookiesInTraining2.MasterPages
                     return "Student";
                 default:
                     return "User";
+            }
+        }
+
+        private void SetProfileSettingsLink(string role)
+        {
+            if (string.IsNullOrEmpty(role))
+            {
+                lnkProfileSettings.Visible = false;
+                return;
+            }
+
+            switch (role.ToLower())
+            {
+                case "admin":
+                    lnkProfileSettings.NavigateUrl = "~/Pages/admin/Profile.aspx";
+                    lnkProfileSettings.Visible = true;
+                    break;
+                case "teacher":
+                    lnkProfileSettings.NavigateUrl = "~/Pages/teacher/Profile.aspx";
+                    lnkProfileSettings.Visible = true;
+                    break;
+                case "student":
+                    lnkProfileSettings.NavigateUrl = "~/Pages/student/Profile.aspx";
+                    lnkProfileSettings.Visible = true;
+                    break;
+                default:
+                    lnkProfileSettings.Visible = false;
+                    break;
             }
         }
     }

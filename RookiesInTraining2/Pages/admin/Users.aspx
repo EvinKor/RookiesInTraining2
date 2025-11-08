@@ -19,6 +19,7 @@
                     <p class="text-muted mb-0">Manage all users in the system</p>
                 </div>
                 <div>
+                    <asp:Button ID="btnExportCSV" runat="server" Text="Export CSV" CssClass="btn btn-outline-primary me-2" OnClick="btnExportCSV_Click" />
                     <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createUserModal">
                         <i class="bi bi-person-plus me-2"></i>Create New User
                     </button>
@@ -35,7 +36,7 @@
                 <asp:TextBox ID="txtSearch" runat="server" CssClass="form-control" placeholder="Search by name or email..." AutoPostBack="true" OnTextChanged="txtSearch_TextChanged" />
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <asp:DropDownList ID="ddlRoleFilter" runat="server" CssClass="form-select" AutoPostBack="true" OnSelectedIndexChanged="ddlRoleFilter_SelectedIndexChanged">
                 <asp:ListItem Value="" Text="All Roles" />
                 <asp:ListItem Value="student" Text="Students" />
@@ -43,7 +44,14 @@
                 <asp:ListItem Value="admin" Text="Admins" />
             </asp:DropDownList>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
+            <asp:DropDownList ID="ddlStatusFilter" runat="server" CssClass="form-select" AutoPostBack="true" OnSelectedIndexChanged="ddlStatusFilter_SelectedIndexChanged">
+                <asp:ListItem Value="" Text="All Status" />
+                <asp:ListItem Value="active" Text="Active" />
+                <asp:ListItem Value="blocked" Text="Blocked" />
+            </asp:DropDownList>
+        </div>
+        <div class="col-md-2">
             <asp:Label ID="lblUserCount" runat="server" CssClass="form-control text-muted" />
         </div>
     </div>
@@ -58,6 +66,7 @@
                             <th class="ps-4">User</th>
                             <th>Email</th>
                             <th>Role</th>
+                            <th>Status</th>
                             <th>Registered</th>
                             <th class="text-end pe-4">Actions</th>
                         </tr>
@@ -65,7 +74,13 @@
                     <tbody>
                         <asp:Repeater ID="rptUsers" runat="server" OnItemCommand="rptUsers_ItemCommand">
                             <ItemTemplate>
-                                <tr>
+                                <tr class="user-row-clickable" 
+                                    style="cursor: pointer;"
+                                    data-user-slug="<%# Server.HtmlEncode(Eval("UserSlug").ToString()) %>"
+                                    data-display-name="<%# Server.HtmlEncode(Eval("DisplayName").ToString()) %>"
+                                    data-email="<%# Server.HtmlEncode(Eval("Email").ToString()) %>"
+                                    data-role="<%# Server.HtmlEncode(Eval("Role").ToString()) %>"
+                                    data-created-at="<%# Server.HtmlEncode(Eval("CreatedAt").ToString()) %>">
                                     <td class="ps-4">
                                         <div class="d-flex align-items-center">
                                             <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center me-2" 
@@ -83,24 +98,48 @@
                                         <span class="badge bg-<%# GetRoleBadgeColor(Eval("Role").ToString()) %>">
                                             <%# GetRoleText(Eval("Role").ToString()) %>
                                         </span>
-                                    </td> 
+                                    </td>
+                                    <td><%# GetStatusBadge(Convert.ToBoolean(Eval("IsBlocked"))) %></td>
                                     <td><%# Eval("CreatedAt") %></td>
-                                    <td class="text-end pe-4">
-                                        <button type="button" class="btn btn-sm btn-outline-info me-1 view-user-btn" 
-                                                data-user-slug="<%# Server.HtmlEncode(Eval("UserSlug").ToString()) %>"
-                                                data-display-name="<%# Server.HtmlEncode(Eval("DisplayName").ToString()) %>"
-                                                data-email="<%# Server.HtmlEncode(Eval("Email").ToString()) %>"
-                                                data-role="<%# Server.HtmlEncode(Eval("Role").ToString()) %>"
-                                                data-created-at="<%# Server.HtmlEncode(Eval("CreatedAt").ToString()) %>">
-                                            <i class="bi bi-eye"></i>
-                                        </button>
-                                        <asp:LinkButton ID="btnDelete" runat="server" 
-                                                        CommandName="DeleteUser" 
-                                                        CommandArgument='<%# Eval("UserSlug") %>'
-                                                        CssClass="btn btn-sm btn-outline-danger"
-                                                        OnClientClick="return confirm('Are you sure you want to delete this user? This action cannot be undone.');">
-                                            <i class="bi bi-trash"></i>
-                                        </asp:LinkButton>
+                                    <td class="text-end pe-4" onclick="event.stopPropagation();">
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary edit-user-btn <%# Convert.ToBoolean(Eval("IsCurrentAdmin")) ? "disabled" : "" %>" 
+                                                    <%# Convert.ToBoolean(Eval("IsCurrentAdmin")) ? "disabled=\"disabled\"" : "" %>
+                                                    data-user-slug="<%# Server.HtmlEncode(Eval("UserSlug").ToString()) %>"
+                                                    data-display-name="<%# Server.HtmlEncode(Eval("DisplayName").ToString()) %>"
+                                                    data-email="<%# Server.HtmlEncode(Eval("Email").ToString()) %>"
+                                                    data-role="<%# Server.HtmlEncode(Eval("Role").ToString()) %>"
+                                                    data-is-blocked="<%# Convert.ToBoolean(Eval("IsBlocked")).ToString().ToLower() %>"
+                                                    title="<%# Convert.ToBoolean(Eval("IsCurrentAdmin")) ? "Cannot edit your own account" : "Edit User" %>">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-info change-role-btn <%# Convert.ToBoolean(Eval("IsCurrentAdmin")) ? "disabled" : "" %>" 
+                                                    <%# Convert.ToBoolean(Eval("IsCurrentAdmin")) ? "disabled=\"disabled\"" : "" %>
+                                                    data-user-slug="<%# Server.HtmlEncode(Eval("UserSlug").ToString()) %>"
+                                                    data-role="<%# Server.HtmlEncode(Eval("Role").ToString()) %>"
+                                                    data-display-name="<%# Server.HtmlEncode(Eval("DisplayName").ToString()) %>"
+                                                    title="<%# Convert.ToBoolean(Eval("IsCurrentAdmin")) ? "Cannot change your own role" : "Change Role" %>">
+                                                <i class="bi bi-person-badge"></i>
+                                            </button>
+                                            <asp:LinkButton ID="btnBlockUnblock" runat="server" 
+                                                            CommandName='<%# Convert.ToBoolean(Eval("IsBlocked")) ? "UnblockUser" : "BlockUser" %>'
+                                                            CommandArgument='<%# Eval("UserSlug") %>'
+                                                            CssClass='<%# GetBlockUnblockCssClass(Convert.ToBoolean(Eval("IsCurrentAdmin")), Convert.ToBoolean(Eval("IsBlocked"))) %>'
+                                                            Enabled='<%# !Convert.ToBoolean(Eval("IsCurrentAdmin")) %>'
+                                                            OnClientClick='<%# GetBlockUnblockOnClientClick(Convert.ToBoolean(Eval("IsCurrentAdmin")), Convert.ToBoolean(Eval("IsBlocked"))) %>'
+                                                            title='<%# GetBlockUnblockTitle(Convert.ToBoolean(Eval("IsCurrentAdmin")), Convert.ToBoolean(Eval("IsBlocked"))) %>'>
+                                                <i class='<%# Convert.ToBoolean(Eval("IsBlocked")) ? "bi bi-unlock" : "bi bi-lock" %>'></i>
+                                            </asp:LinkButton>
+                                            <asp:LinkButton ID="btnDelete" runat="server" 
+                                                            CommandName="DeleteUser" 
+                                                            CommandArgument='<%# Eval("UserSlug") %>'
+                                                            CssClass='<%# GetDeleteCssClass(Convert.ToBoolean(Eval("IsCurrentAdmin"))) %>'
+                                                            Enabled='<%# !Convert.ToBoolean(Eval("IsCurrentAdmin")) %>'
+                                                            OnClientClick='<%# GetDeleteOnClientClick(Convert.ToBoolean(Eval("IsCurrentAdmin"))) %>'
+                                                            title='<%# GetDeleteTitle(Convert.ToBoolean(Eval("IsCurrentAdmin"))) %>'>
+                                                <i class="bi bi-trash"></i>
+                                            </asp:LinkButton>
+                                        </div>
                                     </td>
                                 </tr>
                             </ItemTemplate>
@@ -229,6 +268,97 @@
         </div>
     </div>
 
+    <!-- Edit User Modal -->
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <asp:Panel ID="pnlEditUser" runat="server" DefaultButton="btnUpdateUser">
+                    <div class="modal-body">
+                        <asp:Label ID="lblEditError" runat="server" CssClass="text-danger small" />
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Display Name <span class="text-danger">*</span></label>
+                            <asp:TextBox ID="txtEditDisplayName" runat="server" CssClass="form-control" />
+                            <asp:RequiredFieldValidator ID="rfvEditDisplayName" runat="server" 
+                                ControlToValidate="txtEditDisplayName" ValidationGroup="EditUserGroup"
+                                CssClass="text-danger small" ErrorMessage="Display name is required." Display="Dynamic" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Email <span class="text-danger">*</span></label>
+                            <asp:TextBox ID="txtEditEmail" runat="server" CssClass="form-control" TextMode="Email" />
+                            <asp:RequiredFieldValidator ID="rfvEditEmail" runat="server" 
+                                ControlToValidate="txtEditEmail" ValidationGroup="EditUserGroup"
+                                CssClass="text-danger small" ErrorMessage="Email is required." Display="Dynamic" />
+                            <asp:RegularExpressionValidator ID="revEditEmail" runat="server"
+                                ControlToValidate="txtEditEmail" ValidationGroup="EditUserGroup"
+                                ValidationExpression="\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*"
+                                CssClass="text-danger small" ErrorMessage="Invalid email format." Display="Dynamic" />
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <asp:CheckBox ID="chkEditIsBlocked" runat="server" CssClass="form-check-input" />
+                                <label class="form-check-label" for="<%= chkEditIsBlocked.ClientID %>">
+                                    Block User
+                                </label>
+                            </div>
+                            <small class="text-muted">Blocked users cannot log in to the system</small>
+                        </div>
+
+                        <asp:HiddenField ID="hfEditUserSlug" runat="server" />
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <asp:Button ID="btnUpdateUser" runat="server" Text="Update User" 
+                            CssClass="btn btn-primary" ValidationGroup="EditUserGroup" 
+                            OnClick="btnUpdateUser_Click" />
+                    </div>
+                </asp:Panel>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Role Modal -->
+    <div class="modal fade" id="changeRoleModal" tabindex="-1" aria-labelledby="changeRoleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="changeRoleModalLabel">Change User Role</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <asp:Panel ID="pnlChangeRole" runat="server" DefaultButton="btnChangeRole">
+                    <div class="modal-body">
+                        <p class="mb-3">Change role for: <strong id="changeRoleUserName"></strong></p>
+                        <p class="mb-3">Current role: <strong id="changeRoleCurrentRole"></strong></p>
+                        <asp:Label ID="lblChangeRoleError" runat="server" CssClass="text-danger small" />
+                        
+                        <div class="mb-3">
+                            <label class="form-label">New Role <span class="text-danger">*</span></label>
+                            <asp:DropDownList ID="ddlChangeRole" runat="server" CssClass="form-select">
+                                <asp:ListItem Value="student" Text="Student" />
+                                <asp:ListItem Value="teacher" Text="Teacher" />
+                            </asp:DropDownList>
+                            <small class="text-muted">Note: Cannot change role to Admin via this interface</small>
+                        </div>
+
+                        <asp:HiddenField ID="hfChangeRoleUserSlug" runat="server" />
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <asp:Button ID="btnChangeRole" runat="server" Text="Change Role" 
+                            CssClass="btn btn-primary" 
+                            OnClick="btnChangeRole_Click" />
+                    </div>
+                </asp:Panel>
+            </div>
+        </div>
+    </div>
+
     <style>
         /* Light Theme Dashboard */
         body {
@@ -283,6 +413,7 @@
     <asp:HiddenField ID="hfModalDisplayName" runat="server" />
     <asp:HiddenField ID="hfModalEmail" runat="server" />
     <asp:HiddenField ID="hfModalRole" runat="server" />
+    <asp:HiddenField ID="hfModalIsBlocked" runat="server" />
     <asp:HiddenField ID="hfModalCreatedAt" runat="server" />
     <asp:HiddenField ID="hfShowModal" runat="server" Value="false" />
 
@@ -307,6 +438,11 @@
                 var userSlug = document.getElementById('<%= hfModalUserSlug.ClientID %>').value;
                 var displayName = document.getElementById('<%= hfModalDisplayName.ClientID %>').value;
                 var email = document.getElementById('<%= hfModalEmail.ClientID %>').value;
+                
+                // Remove query string from URL after showing modal
+                if (window.history && window.history.replaceState) {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
                 var role = document.getElementById('<%= hfModalRole.ClientID %>').value;
                 var createdAt = document.getElementById('<%= hfModalCreatedAt.ClientID %>').value;
                 
@@ -324,7 +460,88 @@
             var modal = new bootstrap.Modal(document.getElementById('userDetailsModal'));
             modal.show();
         }
+
+        // Edit User Modal
+        document.querySelectorAll('.edit-user-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                // Don't open modal if button is disabled
+                if (this.disabled || this.classList.contains('disabled')) {
+                    return;
+                }
+                
+                document.getElementById('<%= hfEditUserSlug.ClientID %>').value = this.getAttribute('data-user-slug');
+                document.getElementById('<%= txtEditDisplayName.ClientID %>').value = this.getAttribute('data-display-name');
+                document.getElementById('<%= txtEditEmail.ClientID %>').value = this.getAttribute('data-email');
+                document.getElementById('<%= chkEditIsBlocked.ClientID %>').checked = this.getAttribute('data-is-blocked') === 'true';
+                
+                var modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+                modal.show();
+            });
+        });
+
+        // Change Role Modal
+        document.querySelectorAll('.change-role-btn').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                // Don't open modal if button is disabled
+                if (this.disabled || this.classList.contains('disabled')) {
+                    return;
+                }
+                
+                var userSlug = this.getAttribute('data-user-slug');
+                var currentRole = this.getAttribute('data-role');
+                var displayName = this.getAttribute('data-display-name');
+                
+                document.getElementById('<%= hfChangeRoleUserSlug.ClientID %>').value = userSlug;
+                document.getElementById('changeRoleUserName').textContent = displayName;
+                document.getElementById('changeRoleCurrentRole').textContent = currentRole.charAt(0).toUpperCase() + currentRole.slice(1);
+                document.getElementById('<%= ddlChangeRole.ClientID %>').value = currentRole === 'admin' ? 'student' : currentRole;
+                document.getElementById('<%= lblChangeRoleError.ClientID %>').textContent = '';
+                
+                var modal = new bootstrap.Modal(document.getElementById('changeRoleModal'));
+                modal.show();
+            });
+        });
+
+        // Make user rows clickable to show details
+        document.querySelectorAll('.user-row-clickable').forEach(function(row) {
+            row.addEventListener('click', function(e) {
+                // Don't trigger if clicking on action buttons
+                if (e.target.closest('.btn-group, .btn, button, a')) {
+                    return;
+                }
+                
+                var userSlug = this.getAttribute('data-user-slug');
+                
+                // Navigate to the same page with user query parameter
+                var currentUrl = window.location.pathname;
+                window.location.href = currentUrl + '?user=' + encodeURIComponent(userSlug);
+            });
+        });
+
+        // Prevent row click when clicking action buttons
+        document.querySelectorAll('.edit-user-btn').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        });
     </script>
+
+    <style>
+        /* Clickable user row hover effect */
+        .user-row-clickable:hover {
+            background-color: #f8f9fa !important;
+        }
+        
+        /* Disabled button styling */
+        .btn.disabled,
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+    </style>
 
 </asp:Content>
 

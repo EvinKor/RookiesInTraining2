@@ -105,3 +105,5 @@ namespace RookiesInTraining2.Pages
         protected global::System.Web.UI.WebControls.Label lblPageMessage;
     }
 }
+
+
