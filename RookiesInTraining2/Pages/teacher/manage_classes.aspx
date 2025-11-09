@@ -175,8 +175,7 @@
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="storymodeTabBtn" data-bs-toggle="tab" data-bs-target="#storymodeTab"
-                            type="button" role="tab" aria-controls="storymodeTab" aria-selected="false"
-                            onclick="console.log('Switched to Storymode tab'); loadLevelsForClass(selectedClass?.slug);">
+                            type="button" role="tab" aria-controls="storymodeTab" aria-selected="false">
                         <i class="bi bi-book-half me-2"></i>Class Storymode
                     </button>
                 </li>
@@ -350,6 +349,21 @@
             const classSlug = urlParams.get('class');
             const tabParam = urlParams.get('tab');
             
+            // Add event listener for Storymode tab to load levels when shown
+            const storymodeTabBtn = document.getElementById('storymodeTabBtn');
+            if (storymodeTabBtn) {
+                storymodeTabBtn.addEventListener('shown.bs.tab', function (event) {
+                    console.log('[TAB EVENT] Storymode tab shown');
+                    if (selectedClass) {
+                        const classSlug = selectedClass.slug || selectedClass.ClassSlug;
+                        console.log('[TAB EVENT] Loading levels for class:', classSlug);
+                        loadLevelsForClass(classSlug);
+                    } else {
+                        console.warn('[TAB EVENT] No selected class');
+                    }
+                });
+            }
+            
             if (classSlug) {
                 // Find the class name from the classes list
                 const classesField = document.getElementById('<%= hfClassesJson.ClientID %>');
@@ -393,15 +407,35 @@
                     const classes = JSON.parse(classesField.value);
                     const foundClass = classes.find(c => c.ClassSlug === slug);
                     if (foundClass) {
-                        selectedClass = foundClass;
+                        // Normalize the object to have both naming conventions
+                        selectedClass = {
+                            ...foundClass,
+                            slug: foundClass.ClassSlug,
+                            name: foundClass.ClassName
+                        };
                     } else {
-                        selectedClass = { slug: slug, name: name };
+                        selectedClass = { 
+                            slug: slug, 
+                            name: name,
+                            ClassSlug: slug,
+                            ClassName: name
+                        };
                     }
                 } catch (e) {
-                    selectedClass = { slug: slug, name: name };
+                    selectedClass = { 
+                        slug: slug, 
+                        name: name,
+                        ClassSlug: slug,
+                        ClassName: name
+                    };
                 }
             } else {
-                selectedClass = { slug: slug, name: name };
+                selectedClass = { 
+                    slug: slug, 
+                    name: name,
+                    ClassSlug: slug,
+                    ClassName: name
+                };
             }
             
             // Hide selection, show management
@@ -437,10 +471,18 @@
         }
 
         function loadLevelsForClass(classSlug) {
-            console.log('[LEVELS] Loading levels for class:', classSlug);
+            console.log('[LEVELS] ========== Loading levels for class ==========');
+            console.log('[LEVELS] Class slug parameter:', classSlug);
+            console.log('[LEVELS] Selected class object:', selectedClass);
+            
+            // If no classSlug provided but we have selectedClass, use that
+            if (!classSlug && selectedClass) {
+                classSlug = selectedClass.slug || selectedClass.ClassSlug;
+                console.log('[LEVELS] Using class slug from selectedClass:', classSlug);
+            }
             
             if (!classSlug) {
-                console.warn('[LEVELS] No class slug provided');
+                console.warn('[LEVELS] No class slug available');
                 showNoLevels();
                 return;
             }
@@ -448,28 +490,42 @@
             // Parse levels from hidden field
             const levelsField = document.getElementById('<%= hfLevelsJson.ClientID %>');
             console.log('[LEVELS] Levels field element:', levelsField);
-            console.log('[LEVELS] Levels field value:', levelsField?.value);
-            console.log('[LEVELS] Levels field value length:', levelsField?.value?.length);
             
-            if (!levelsField || !levelsField.value) {
-                console.warn('[LEVELS] No levels data in hidden field');
+            if (!levelsField) {
+                console.error('[LEVELS] Hidden field not found!');
+                showNoLevels();
+                return;
+            }
+            
+            console.log('[LEVELS] Levels field value length:', levelsField.value?.length);
+            console.log('[LEVELS] First 100 chars of value:', levelsField.value?.substring(0, 100));
+            
+            if (!levelsField.value || levelsField.value === '[]') {
+                console.warn('[LEVELS] No levels data in hidden field (empty or [])');
                 showNoLevels();
                 return;
             }
 
             try {
                 const allLevels = JSON.parse(levelsField.value);
-                console.log('[LEVELS] All levels parsed:', allLevels);
-                console.log('[LEVELS] All levels count:', allLevels.length);
+                console.log('[LEVELS] All levels parsed successfully');
+                console.log('[LEVELS] Total levels count:', allLevels.length);
+                console.log('[LEVELS] All levels:', allLevels);
+                
                 const classLevels = allLevels.filter(l => {
-                    console.log(`[LEVELS] Checking level: ${l.LevelSlug}, ClassSlug: ${l.ClassSlug} vs ${classSlug}`);
-                    return l.ClassSlug === classSlug;
+                    const matches = l.ClassSlug === classSlug;
+                    console.log(`[LEVELS] Level "${l.Title}" (${l.LevelSlug}): ClassSlug="${l.ClassSlug}" ${matches ? '✓ MATCH' : '✗ no match'}`);
+                    return matches;
                 });
+                
                 console.log('[LEVELS] Filtered levels for class:', classLevels);
                 console.log('[LEVELS] Filtered levels count:', classLevels.length);
+                console.log('[LEVELS] ===========================================');
+                
                 renderLevels(classLevels);
             } catch (error) {
-                console.error('[LEVELS] Error loading levels:', error);
+                console.error('[LEVELS] Error parsing/loading levels:', error);
+                console.error('[LEVELS] Error stack:', error.stack);
                 showNoLevels();
             }
         }

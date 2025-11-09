@@ -161,17 +161,25 @@ namespace RookiesInTraining2.Pages.teacher
                     rptAvailableStudents.DataSource = students;
                     rptAvailableStudents.DataBind();
                     System.Diagnostics.Debug.WriteLine($"[AddStudents][LoadAvailableStudents] Repeater bound successfully. Item count: {rptAvailableStudents.Items.Count}");
+                    rptAvailableStudents.Visible = true;
                     lblNoAvailable.Visible = false;
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"[AddStudents][LoadAvailableStudents] No students to display");
+                    System.Diagnostics.Debug.WriteLine($"[AddStudents][LoadAvailableStudents] No students to display - clearing repeater");
+                    rptAvailableStudents.DataSource = null;
+                    rptAvailableStudents.DataBind();
+                    rptAvailableStudents.Visible = false;
                     lblNoAvailable.Visible = true;
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[AddStudents] Error loading available students: {ex.Message}");
+                rptAvailableStudents.DataSource = null;
+                rptAvailableStudents.DataBind();
+                rptAvailableStudents.Visible = false;
+                lblAvailableCount.Text = "0";
                 lblNoAvailable.Visible = true;
             }
         }
@@ -223,17 +231,25 @@ namespace RookiesInTraining2.Pages.teacher
                     rptEnrolledStudents.DataSource = students;
                     rptEnrolledStudents.DataBind();
                     System.Diagnostics.Debug.WriteLine($"[AddStudents][LoadEnrolledStudents] Repeater bound successfully. Item count: {rptEnrolledStudents.Items.Count}");
+                    rptEnrolledStudents.Visible = true;
                     lblNoEnrolled.Visible = false;
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"[AddStudents][LoadEnrolledStudents] No enrolled students to display");
+                    System.Diagnostics.Debug.WriteLine($"[AddStudents][LoadEnrolledStudents] No enrolled students to display - clearing repeater");
+                    rptEnrolledStudents.DataSource = null;
+                    rptEnrolledStudents.DataBind();
+                    rptEnrolledStudents.Visible = false;
                     lblNoEnrolled.Visible = true;
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[AddStudents] Error loading enrolled students: {ex.Message}");
+                rptEnrolledStudents.DataSource = null;
+                rptEnrolledStudents.DataBind();
+                rptEnrolledStudents.Visible = false;
+                lblEnrolledCount.Text = "0";
                 lblNoEnrolled.Visible = true;
             }
         }

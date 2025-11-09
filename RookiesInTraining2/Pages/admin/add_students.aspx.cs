@@ -154,16 +154,24 @@ namespace RookiesInTraining2.Pages.admin
                 {
                     rptAvailableStudents.DataSource = students;
                     rptAvailableStudents.DataBind();
+                    rptAvailableStudents.Visible = true;
                     lblNoAvailable.Visible = false;
                 }
                 else
                 {
+                    rptAvailableStudents.DataSource = null;
+                    rptAvailableStudents.DataBind();
+                    rptAvailableStudents.Visible = false;
                     lblNoAvailable.Visible = true;
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[AddStudents] Error loading available students: {ex.Message}");
+                rptAvailableStudents.DataSource = null;
+                rptAvailableStudents.DataBind();
+                rptAvailableStudents.Visible = false;
+                lblAvailableCount.Text = "0";
                 lblNoAvailable.Visible = true;
             }
         }
@@ -212,16 +220,24 @@ namespace RookiesInTraining2.Pages.admin
                 {
                     rptEnrolledStudents.DataSource = students;
                     rptEnrolledStudents.DataBind();
+                    rptEnrolledStudents.Visible = true;
                     lblNoEnrolled.Visible = false;
                 }
                 else
                 {
+                    rptEnrolledStudents.DataSource = null;
+                    rptEnrolledStudents.DataBind();
+                    rptEnrolledStudents.Visible = false;
                     lblNoEnrolled.Visible = true;
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[AddStudents] Error loading enrolled students: {ex.Message}");
+                rptEnrolledStudents.DataSource = null;
+                rptEnrolledStudents.DataBind();
+                rptEnrolledStudents.Visible = false;
+                lblEnrolledCount.Text = "0";
                 lblNoEnrolled.Visible = true;
             }
         }

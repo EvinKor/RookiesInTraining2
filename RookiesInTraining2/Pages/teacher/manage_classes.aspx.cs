@@ -39,6 +39,13 @@ namespace RookiesInTraining2.Pages.teacher
                 LoadAllLevels();
                 LoadAllForumPosts();
             }
+            else
+            {
+                // On postback, reload levels and forum posts to ensure data is available
+                // Classes list is already in repeater's ViewState
+                LoadAllLevels();
+                LoadAllForumPosts();
+            }
         }
 
         private void LoadClasses()

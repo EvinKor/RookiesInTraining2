@@ -77,13 +77,19 @@
         const col = document.createElement('div');
         col.className = 'col-md-6 col-lg-4';
 
+        // Determine the icon class - ensure it has the 'bi' prefix
+        const iconClass = classItem.Icon || 'bi-book';
+        const fullIconClass = iconClass.startsWith('bi ') ? iconClass : 'bi ' + iconClass;
+        
+        console.log(`[Class Card] ${classItem.ClassName}: Icon="${iconClass}" → FullClass="${fullIconClass}"`);
+        
         col.innerHTML = `
             <div class="class-card clickable-card" 
                  style="--class-color: ${classItem.Color}; cursor: pointer;"
                  onclick="window.location.href='manage_classes.aspx?class=${classItem.ClassSlug}'">
                 <div class="class-card-header">
                     <div class="class-icon">
-                        ${classItem.Icon || '📚'}
+                        <i class="${fullIconClass}"></i>
                     </div>
                     <h3 class="class-name">${escapeHtml(classItem.ClassName)}</h3>
                     <span class="class-code">${escapeHtml(classItem.ClassCode)}</span>
