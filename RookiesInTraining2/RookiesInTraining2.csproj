@@ -527,6 +527,44 @@
     <Compile Include="Pages\student\dashboard_student.aspx.designer.cs">
       <DependentUpon>dashboard_student.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Pages\student\join_class.aspx.cs">
+      <DependentUpon>join_class.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\student\join_class.aspx.designer.cs">
+      <DependentUpon>join_class.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\student\Profile.aspx.cs">
+      <DependentUpon>Profile.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\student\Profile.aspx.designer.cs">
+      <DependentUpon>Profile.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\student\student_class.aspx.cs">
+      <DependentUpon>student_class.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\student\student_class.aspx.designer.cs">
+      <DependentUpon>student_class.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\student\take_level.aspx.cs">
+      <DependentUpon>take_level.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\student\take_level.aspx.designer.cs">
+      <DependentUpon>take_level.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\student\take_quiz.aspx.cs">
+      <DependentUpon>take_quiz.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\student\take_quiz.aspx.designer.cs">
+      <DependentUpon>take_quiz.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="api\SaveQuizAttempt.ashx.cs">
+      <DependentUpon>SaveQuizAttempt.ashx</DependentUpon>
+    </Compile>
     <Compile Include="Pages\teacher\dashboard_teacher.aspx.cs">
       <DependentUpon>dashboard_teacher.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

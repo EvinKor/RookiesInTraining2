@@ -119,7 +119,7 @@ namespace RookiesInTraining2.api
             {
                 System.Diagnostics.Debug.WriteLine($"[SaveQuizAttempt] Error: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"[SaveQuizAttempt] Stack: {ex.StackTrace}");
-                context.Response.Write($"{{\"success\":false,\"error\":\"{ex.Message.Replace("\"", "\\\"")}\"}}}");
+                context.Response.Write($"{{\"success\":false,\"error\":\"{ex.Message.Replace("\"", "\\\"")}\"}}");
             }
         }
 
