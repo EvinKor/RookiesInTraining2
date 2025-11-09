@@ -81,13 +81,8 @@
             ValidationGroup="RegGroup" CssClass="text-danger small d-block mt-1" ErrorMessage="Passwords do not match." />
         </div>
 
-        <div class="mb-4">
-          <label class="form-label fw-bold">I am registering as:</label>
-          <asp:RadioButtonList ID="rblRole" runat="server" CssClass="role-selector" RepeatDirection="Horizontal">
-            <asp:ListItem Value="student" Selected="True" Text="👨‍🎓 Student"></asp:ListItem>
-            <asp:ListItem Value="teacher" Text="👨‍🏫 Teacher"></asp:ListItem>
-          </asp:RadioButtonList>
-          <small class="text-muted">Choose your role in the platform</small>
+        <div class="alert alert-info mb-4">
+          <small><i class="bi bi-info-circle me-1"></i><strong>Note:</strong> Only student accounts can be created through registration. Teacher accounts must be created by an administrator.</small>
         </div>
 
         <asp:Label ID="lblRegError" runat="server" CssClass="text-danger small d-block mb-2" />

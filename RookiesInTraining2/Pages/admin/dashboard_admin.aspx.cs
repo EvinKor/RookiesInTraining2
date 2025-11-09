@@ -77,7 +77,7 @@ namespace RookiesInTraining2.Pages
                         WHERE is_deleted = 0 AND role_global = 'student'", con))
                     {
                         lblTotalStudents.Text = cmd.ExecuteScalar().ToString();
-                        lblActiveStudents.Text = cmd.ExecuteScalar().ToString(); // TODO: Implement active logic
+                        lblActiveStudents.Text = cmd.ExecuteScalar().ToString();
                     }
 
                     // Teachers
@@ -88,12 +88,34 @@ namespace RookiesInTraining2.Pages
                     {
                         lblTotalTeachers.Text = cmd.ExecuteScalar().ToString();
                     }
-                }
 
-                // Placeholder for courses data (if table exists)
-                lblTotalCourses.Text = "0";
-                lblActiveCourses.Text = "0";
-                lblDepartments.Text = "0";
+                    // Total Classes
+                    using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.Classes WHERE is_deleted = 0", con))
+                    {
+                        lblTotalCourses.Text = cmd.ExecuteScalar().ToString();
+                    }
+
+                    // Active Classes (classes with enrollments)
+                    using (var cmd = new SqlCommand(@"
+                        SELECT COUNT(DISTINCT c.class_slug)
+                        FROM dbo.Classes c
+                        INNER JOIN dbo.Enrollments e ON c.class_slug = e.class_slug
+                        WHERE c.is_deleted = 0 AND e.is_deleted = 0", con))
+                    {
+                        lblActiveCourses.Text = cmd.ExecuteScalar().ToString();
+                    }
+
+                    // Forum Posts Count
+                    using (var cmd = new SqlCommand("SELECT COUNT(*) FROM dbo.ForumPosts WHERE is_deleted = 0", con))
+                    {
+                        var postCount = Convert.ToInt32(cmd.ExecuteScalar());
+                        // Store in a label if exists, or use a placeholder
+                        if (lblDepartments != null)
+                        {
+                            lblDepartments.Text = postCount.ToString();
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -111,6 +133,7 @@ namespace RookiesInTraining2.Pages
                     con.Open();
                     cmd.CommandText = @"
                         SELECT TOP 5
+                            user_slug as UserSlug,
                             display_name as DisplayName,
                             email as Email,
                             role_global as Role,
@@ -127,6 +150,7 @@ namespace RookiesInTraining2.Pages
                         {
                             users.Add(new
                             {
+                                UserSlug = reader["UserSlug"].ToString(),
                                 DisplayName = reader["DisplayName"].ToString(),
                                 Email = reader["Email"].ToString(),
                                 Role = reader["Role"].ToString(),
@@ -159,24 +183,60 @@ namespace RookiesInTraining2.Pages
         {
             try
             {
-                // Sample data - replace with actual system logs when implemented
-                var logs = new List<dynamic>
+                using (var con = new SqlConnection(ConnStr))
+                using (var cmd = con.CreateCommand())
                 {
-                    new { Icon = "person-check", StatusColor = "success", LogMessage = "New user 'Zhang San' successfully registered", Timestamp = "5 minutes ago" },
-                    new { Icon = "shield-check", StatusColor = "info", LogMessage = "Security scan completed, no threats found", Timestamp = "1 hour ago" },
-                    new { Icon = "database", StatusColor = "success", LogMessage = "Database backup completed successfully", Timestamp = "3 hours ago" },
-                    new { Icon = "exclamation-triangle", StatusColor = "warning", LogMessage = "Storage usage reached 75%", Timestamp = "5 hours ago" }
-                };
+                    con.Open();
+                    cmd.CommandText = @"
+                        SELECT TOP 10
+                            al.action_type,
+                            al.details,
+                            u.display_name as admin_name,
+                            FORMAT(al.created_at, 'yyyy-MM-dd HH:mm') as created_at,
+                            DATEDIFF(minute, al.created_at, GETUTCDATE()) as minutes_ago
+                        FROM dbo.AdminLogs al
+                        LEFT JOIN dbo.Users u ON al.admin_slug = u.user_slug
+                        ORDER BY al.created_at DESC";
 
-                if (logs.Count > 0)
-                {
-                    rptSystemLogs.DataSource = logs;
-                    rptSystemLogs.DataBind();
-                    lblNoLogsMessage.Visible = false;
-                }
-                else
-                {
-                    lblNoLogsMessage.Visible = true;
+                    var logs = new List<dynamic>();
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            int minutesAgo = Convert.ToInt32(reader["minutes_ago"]);
+                            string timeAgo = minutesAgo < 60 ? $"{minutesAgo} minutes ago" :
+                                             minutesAgo < 1440 ? $"{minutesAgo / 60} hours ago" :
+                                             $"{minutesAgo / 1440} days ago";
+
+                            string actionType = reader["action_type"].ToString();
+                            string icon = "info-circle";
+                            string color = "info";
+                            
+                            if (actionType.Contains("delete")) { icon = "trash"; color = "danger"; }
+                            else if (actionType.Contains("create")) { icon = "plus-circle"; color = "success"; }
+                            else if (actionType.Contains("block")) { icon = "lock"; color = "warning"; }
+                            else if (actionType.Contains("unblock")) { icon = "unlock"; color = "success"; }
+
+                            logs.Add(new
+                            {
+                                Icon = icon,
+                                StatusColor = color,
+                                LogMessage = $"{reader["admin_name"]} - {actionType.Replace("_", " ")}: {reader["details"]}",
+                                Timestamp = timeAgo
+                            });
+                        }
+                    }
+
+                    if (logs.Count > 0)
+                    {
+                        rptSystemLogs.DataSource = logs;
+                        rptSystemLogs.DataBind();
+                        lblNoLogsMessage.Visible = false;
+                    }
+                    else
+                    {
+                        lblNoLogsMessage.Visible = true;
+                    }
                 }
             }
             catch (Exception ex)

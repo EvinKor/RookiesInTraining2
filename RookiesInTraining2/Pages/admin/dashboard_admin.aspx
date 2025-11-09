@@ -10,7 +10,7 @@
     <!-- Welcome Section -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="d-ffghjhghjjhgvhjklex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h2 class="mb-1">Admin Console</h2>
                     <p class="text-muted mb-0">System Overview & Management</p>
@@ -23,7 +23,7 @@
         </div>
     </div>
 
-    <!-- System Stats Cards -->
+    <!-- Stats Cards -->
     <div class="row g-3 mb-4">
         <div class="col-md-3">
             <div class="card border-0 shadow-sm h-100">
@@ -47,24 +47,28 @@
         </div>
         
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="bg-success bg-opacity-10 rounded-3 p-3">
-                                <i class="bi bi-book text-success fs-3"></i>
+            <a href="Classes.aspx" class="text-decoration-none" style="color: inherit;">
+                <div class="card border-0 shadow-sm h-100" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" 
+                     onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)'" 
+                     onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="bg-success bg-opacity-10 rounded-3 p-3">
+                                    <i class="bi bi-book text-success fs-3"></i>
+                                </div>
                             </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="text-muted mb-1 small">Total Courses</h6>
-                            <h3 class="mb-0">
-                                <asp:Label ID="lblTotalCourses" runat="server" Text="0" />
-                            </h3>
-                            <small class="text-info"><asp:Label ID="lblActiveCourses" runat="server" Text="0" /> active</small>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="text-muted mb-1 small">Total Courses</h6>
+                                <h3 class="mb-0">
+                                    <asp:Label ID="lblTotalCourses" runat="server" Text="0" />
+                                </h3>
+                                <small class="text-info"><asp:Label ID="lblActiveCourses" runat="server" Text="0" /> active</small>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
         
         <div class="col-md-3">
@@ -102,7 +106,7 @@
                             <h3 class="mb-0">
                                 <asp:Label ID="lblTotalTeachers" runat="server" Text="0" />
                             </h3>
-                            <small class="text-muted"><asp:Label ID="lblDepartments" runat="server" Text="0" /> departments</small>
+                            <small class="text-muted"><asp:Label ID="lblDepartments" runat="server" Text="0" /> forum posts</small>
                         </div>
                     </div>
                 </div>
@@ -128,18 +132,18 @@
                                     <th class="border-0 ps-4">User</th>
                                     <th class="border-0">Email</th>
                                     <th class="border-0">Role</th>
-                                    <th class="border-0">Registered</th>
-                                    <th class="border-0 text-end pe-4">Actions</th>
+                                    <th class="border-0 pe-4">Registered</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <asp:Repeater ID="rptRecentUsers" runat="server">
                                     <ItemTemplate>
-                                        <tr>
+                                        <tr class="user-row-clickable" style="cursor: pointer;" onclick="window.location.href='Users.aspx?user=<%# Server.UrlEncode(Eval("UserSlug").ToString()) %>';">
                                             <td class="ps-4">
                                                 <div class="d-flex align-items-center">
                                                     <img src="<%# Eval("AvatarUrl") %>" class="rounded-circle me-2" 
-                                                         style="width: 32px; height: 32px; object-fit: cover;" />
+                                                         style="width: 32px; height: 32px; object-fit: cover;" 
+                                                         onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2240%22 fill=%22%23667eea%22/%3E%3Ctext x=%2250%22 y=%2265%22 font-size=%2240%22 text-anchor=%22middle%22 fill=%22white%22%3EA%3C/text%3E%3C/svg%3E';" />
                                                     <span class="fw-semibold"><%# Eval("DisplayName") %></span>
                                                 </div>
                                             </td>
@@ -149,12 +153,7 @@
                                                     <%# GetRoleText(Eval("Role").ToString()) %>
                                                 </span>
                                             </td>
-                                            <td><%# Eval("CreatedAt") %></td>
-                                            <td class="text-end pe-4">
-                                                <a href="#" class="btn btn-sm btn-outline-secondary">
-                                                    <i class="bi bi-pencil"></i>
-                                                </a>
-                                            </td>
+                                            <td class="pe-4"><%# Eval("CreatedAt") %></td>
                                         </tr>
                                     </ItemTemplate>
                                 </asp:Repeater>
@@ -215,8 +214,8 @@
                         <a href="Reports.aspx" class="btn btn-outline-info text-start">
                             <i class="bi bi-file-earmark-bar-graph me-2"></i>Generate Report
                         </a>
-                        <a href="Settings.aspx" class="btn btn-outline-warning text-start">
-                            <i class="bi bi-gear me-2"></i>System Settings
+                        <a href="Profile.aspx" class="btn btn-outline-warning text-start">
+                            <i class="bi bi-gear me-2"></i>Settings
                         </a>
                     </div>
                 </div>
@@ -269,5 +268,57 @@
         </div>
     </div>
 
-</asp:Content>
+    <style>
+        /* Light Theme Dashboard */
+        body {
+            background: #f5f7fa !important;
+        }
 
+        .card {
+            background: white;
+            border: 1px solid #e8ecf1;
+        }
+
+        .card-header {
+            background: #ffffff !important;
+            border-bottom: 1px solid #e8ecf1;
+        }
+
+        /* Stat Cards */
+        .bg-primary.bg-opacity-10,
+        .bg-success.bg-opacity-10,
+        .bg-warning.bg-opacity-10,
+        .bg-info.bg-opacity-10 {
+            background: #f0f4ff !important;
+        }
+
+        /* Text Colors for Light Theme */
+        h2, h3, h4, h5, h6 {
+            color: #2d3748 !important;
+        }
+        
+        .text-primary {
+            color: #667eea !important;
+        }
+
+        /* Ensure Bootstrap Icons display correctly */
+        .bi {
+            display: inline-block;
+            font-family: "bootstrap-icons" !important;
+            font-style: normal;
+            font-weight: normal !important;
+            font-variant: normal;
+            text-transform: none;
+            line-height: 1;
+            vertical-align: -.125em;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Clickable user row */
+        .user-row-clickable:hover {
+            background-color: #f8f9fa !important;
+        }
+    </style>
+
+</asp:Content>

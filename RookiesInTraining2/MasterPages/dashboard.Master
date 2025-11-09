@@ -18,6 +18,12 @@
     .card { background:#111827; border-color:#1f2937; }
     .table { --bs-table-bg: transparent; }
     .content-wrap { padding-top: 72px; } /* space for fixed navbar */
+    #lnkProfileSettings {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
   </style>
 </head>
 <body>
@@ -31,11 +37,16 @@
         </button>
         <a class="navbar-brand text-light fw-semibold" href="#">Rookies in Training</a>
 
-        <div class="ms-auto d-flex align-items-center gap-3">
+        <div class="ms-auto d-flex align-items-center gap-2">
           <asp:Label ID="lblUser" runat="server" CssClass="text-secondary small"></asp:Label>
           <div id="imgAvatar" runat="server" class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold" style="width:36px;height:36px;">
             <span class="user-initial">U</span>
           </div>
+          <asp:HyperLink ID="lnkProfileSettings" runat="server" 
+            CssClass="btn btn-sm btn-outline-light d-flex align-items-center justify-content-center" 
+            title="Profile Settings" style="width:38px;height:38px;padding:0;">
+            <i class="bi bi-gear"></i>
+          </asp:HyperLink>
           <asp:Button ID="btnLogout" runat="server" Text="Logout" CssClass="btn btn-sm btn-outline-light" />
         </div>
       </div>
@@ -88,16 +99,19 @@
 
               <asp:RoleGroup Roles="admin">
                 <ContentTemplate>
-                  <asp:HyperLink runat="server" ID="lkAdminDash" NavigateUrl="~/Pages/Dashboard_Admin.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
+                  <asp:HyperLink runat="server" ID="lkAdminDash" NavigateUrl="~/Pages/admin/dashboard_admin.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
                     <i class="bi bi-house me-2"></i>Dashboard
                   </asp:HyperLink>
-                  <asp:HyperLink runat="server" NavigateUrl="~/Pages/Users.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
+                  <asp:HyperLink runat="server" NavigateUrl="~/Pages/admin/Users.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
                     <i class="bi bi-people me-2"></i>Manage Users
                   </asp:HyperLink>
-                  <asp:HyperLink runat="server" NavigateUrl="~/Pages/Reports.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
-                    <i class="bi bi-bar-chart me-2"></i>Reports
+                  <asp:HyperLink runat="server" NavigateUrl="~/Pages/admin/Classes.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
+                    <i class="bi bi-book me-2"></i>Classes
                   </asp:HyperLink>
-                  <asp:HyperLink runat="server" NavigateUrl="~/Pages/Settings.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
+                  <asp:HyperLink runat="server" NavigateUrl="~/Pages/admin/Forum.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
+                    <i class="bi bi-chat-dots me-2"></i>Forum Moderation
+                  </asp:HyperLink>
+                  <asp:HyperLink runat="server" NavigateUrl="~/Pages/admin/Profile.aspx" CssClass="list-group-item list-group-item-action bg-transparent sidebar-link">
                     <i class="bi bi-gear me-2"></i>Settings
                   </asp:HyperLink>
                 </ContentTemplate>
