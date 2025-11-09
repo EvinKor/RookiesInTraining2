@@ -20,6 +20,9 @@
                 </div>
                 <div>
                     <asp:Button ID="btnExportCSV" runat="server" Text="Export CSV" CssClass="btn btn-outline-primary me-2" OnClick="btnExportCSV_Click" />
+                    <a href="<%= ResolveUrl("~/Pages/admin/admin_create_module.aspx") %>" class="btn btn-success">
+                        <i class="bi bi-plus-circle me-2"></i>Create New Class
+                    </a>
                 </div>
             </div>
         </div>

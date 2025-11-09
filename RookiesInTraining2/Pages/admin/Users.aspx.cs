@@ -29,9 +29,20 @@ namespace RookiesInTraining2.Pages
 
             // Preserve query string user parameter
             string userSlug = Request.QueryString["user"];
+            string roleParam = Request.QueryString["role"];
 
             if (!IsPostBack)
             {
+                // Check if role filter is in query string
+                if (!string.IsNullOrEmpty(roleParam))
+                {
+                    // Set the role filter dropdown
+                    if (ddlRoleFilter.Items.FindByValue(roleParam) != null)
+                    {
+                        ddlRoleFilter.SelectedValue = roleParam;
+                    }
+                }
+                
                 // Check if user slug is in query string to show details modal
                 if (!string.IsNullOrEmpty(userSlug))
                 {

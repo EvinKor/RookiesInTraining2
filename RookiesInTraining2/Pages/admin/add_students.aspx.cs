@@ -43,8 +43,8 @@ namespace RookiesInTraining2.Pages.admin
 
                 ViewState["ClassSlug"] = classSlug;
                 
-                // Set back link
-                lnkBack.NavigateUrl = $"~/Pages/admin/manage_classes.aspx?class={classSlug}";
+                // Set back link to students tab
+                lnkBack.NavigateUrl = $"~/Pages/admin/manage_classes.aspx?class={classSlug}&tab=students";
 
                 // Load class info
                 LoadClassInfo(classSlug);
@@ -180,13 +180,13 @@ namespace RookiesInTraining2.Pages.admin
                     using (var cmd = con.CreateCommand())
                     {
                         cmd.CommandText = @"
-                            SELECT u.user_slug, u.full_name, u.email, e.enrolled_at
+                            SELECT u.user_slug, u.full_name, u.email, e.joined_at
                             FROM Enrollments e
                             INNER JOIN Users u ON e.user_slug = u.user_slug
                             WHERE e.class_slug = @classSlug 
                               AND e.role_in_class = 'student'
                               AND e.is_deleted = 0
-                            ORDER BY e.enrolled_at DESC";
+                            ORDER BY e.joined_at DESC";
 
                         cmd.Parameters.AddWithValue("@classSlug", classSlug);
 
@@ -199,7 +199,7 @@ namespace RookiesInTraining2.Pages.admin
                                     UserSlug = reader["user_slug"].ToString(),
                                     FullName = reader["full_name"].ToString(),
                                     Email = reader["email"].ToString(),
-                                    EnrolledAt = Convert.ToDateTime(reader["enrolled_at"])
+                                    EnrolledAt = Convert.ToDateTime(reader["joined_at"])
                                 });
                             }
                         }
@@ -283,15 +283,20 @@ namespace RookiesInTraining2.Pages.admin
                         // Insert new enrollment
                         using (var cmd = con.CreateCommand())
                         {
+                            // Generate enrollment slug (format: enroll-{32-char-guid})
+                            string enrollmentSlug = $"enroll-{Guid.NewGuid():N}";
+                            
                             cmd.CommandText = @"
                                 INSERT INTO Enrollments 
-                                (user_slug, class_slug, role_in_class, enrolled_at, is_deleted)
+                                (enrollment_slug, user_slug, class_slug, role_in_class, joined_at, is_deleted)
                                 VALUES 
-                                (@studentSlug, @classSlug, 'student', SYSUTCDATETIME(), 0)";
+                                (@enrollmentSlug, @studentSlug, @classSlug, 'student', SYSUTCDATETIME(), 0)";
 
+                            cmd.Parameters.AddWithValue("@enrollmentSlug", enrollmentSlug);
                             cmd.Parameters.AddWithValue("@studentSlug", studentSlug);
                             cmd.Parameters.AddWithValue("@classSlug", classSlug);
 
+                            System.Diagnostics.Debug.WriteLine($"[AddStudents] Inserting with enrollment slug: {enrollmentSlug}");
                             int rowsAffected = cmd.ExecuteNonQuery();
                             System.Diagnostics.Debug.WriteLine($"[AddStudents] INSERT completed. Rows affected: {rowsAffected}");
                         }

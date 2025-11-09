@@ -80,7 +80,7 @@
                         </p>
                     </div>
                     <asp:HyperLink ID="lnkBack" runat="server" CssClass="btn btn-outline-secondary btn-lg">
-                        <i class="bi bi-arrow-left me-2"></i>Back to Class
+                        <i class="bi bi-arrow-left me-2"></i>Back to Students
                     </asp:HyperLink>
                 </div>
             </div>

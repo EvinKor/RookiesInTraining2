@@ -26,24 +26,28 @@
     <!-- Stats Cards -->
     <div class="row g-3 mb-4">
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="bg-primary bg-opacity-10 rounded-3 p-3">
-                                <i class="bi bi-people text-primary fs-3"></i>
+            <a href="Users.aspx" class="text-decoration-none" style="color: inherit;">
+                <div class="card border-0 shadow-sm h-100" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" 
+                     onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)'" 
+                     onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="bg-primary bg-opacity-10 rounded-3 p-3">
+                                    <i class="bi bi-people text-primary fs-3"></i>
+                                </div>
                             </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="text-muted mb-1 small">Total Users</h6>
-                            <h3 class="mb-0">
-                                <asp:Label ID="lblTotalUsers" runat="server" Text="0" />
-                            </h3>
-                            <small class="text-success"><i class="bi bi-arrow-up"></i> <asp:Label ID="lblNewUsers" runat="server" Text="0" /> new this month</small>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="text-muted mb-1 small">Total Users</h6>
+                                <h3 class="mb-0">
+                                    <asp:Label ID="lblTotalUsers" runat="server" Text="0" />
+                                </h3>
+                                <small class="text-success"><i class="bi bi-arrow-up"></i> <asp:Label ID="lblNewUsers" runat="server" Text="0" /> new this month</small>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
         
         <div class="col-md-3">
@@ -72,45 +76,53 @@
         </div>
         
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="bg-warning bg-opacity-10 rounded-3 p-3">
-                                <i class="bi bi-mortarboard text-warning fs-3"></i>
+            <a href="Users.aspx?role=student" class="text-decoration-none" style="color: inherit;">
+                <div class="card border-0 shadow-sm h-100" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" 
+                     onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)'" 
+                     onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="bg-warning bg-opacity-10 rounded-3 p-3">
+                                    <i class="bi bi-mortarboard text-warning fs-3"></i>
+                                </div>
                             </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="text-muted mb-1 small">Total Students</h6>
-                            <h3 class="mb-0">
-                                <asp:Label ID="lblTotalStudents" runat="server" Text="0" />
-                            </h3>
-                            <small class="text-muted"><asp:Label ID="lblActiveStudents" runat="server" Text="0" /> active</small>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="text-muted mb-1 small">Total Students</h6>
+                                <h3 class="mb-0">
+                                    <asp:Label ID="lblTotalStudents" runat="server" Text="0" />
+                                </h3>
+                                <small class="text-muted"><asp:Label ID="lblActiveStudents" runat="server" Text="0" /> active</small>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
         
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="bg-info bg-opacity-10 rounded-3 p-3">
-                                <i class="bi bi-person-badge text-info fs-3"></i>
+            <a href="Users.aspx?role=teacher" class="text-decoration-none" style="color: inherit;">
+                <div class="card border-0 shadow-sm h-100" style="cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" 
+                     onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)'" 
+                     onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="bg-info bg-opacity-10 rounded-3 p-3">
+                                    <i class="bi bi-person-badge text-info fs-3"></i>
+                                </div>
                             </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="text-muted mb-1 small">Total Teachers</h6>
-                            <h3 class="mb-0">
-                                <asp:Label ID="lblTotalTeachers" runat="server" Text="0" />
-                            </h3>
-                            <small class="text-muted"><asp:Label ID="lblDepartments" runat="server" Text="0" /> forum posts</small>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="text-muted mb-1 small">Total Teachers</h6>
+                                <h3 class="mb-0">
+                                    <asp:Label ID="lblTotalTeachers" runat="server" Text="0" />
+                                </h3>
+                                <small class="text-muted"><asp:Label ID="lblDepartments" runat="server" Text="0" /> forum posts</small>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 
@@ -205,10 +217,10 @@
                         <asp:HyperLink runat="server" NavigateUrl="~/Pages/game/game_dashboard.aspx" CssClass="btn btn-outline-success text-start">
                             <i class="bi bi-controller me-2"></i>Multiplayer Quiz Game
                         </asp:HyperLink>
-                        <a href="Users.aspx" class="btn btn-outline-primary text-start">
+                        <a href="Users.aspx?create=user" class="btn btn-outline-primary text-start">
                             <i class="bi bi-person-plus me-2"></i>Add New User
                         </a>
-                        <a href="#" class="btn btn-outline-secondary text-start">
+                        <a href="<%= ResolveUrl("~/Pages/admin/admin_create_module.aspx") %>" class="btn btn-outline-secondary text-start">
                             <i class="bi bi-book me-2"></i>Create Course
                         </a>
                         <a href="Reports.aspx" class="btn btn-outline-info text-start">

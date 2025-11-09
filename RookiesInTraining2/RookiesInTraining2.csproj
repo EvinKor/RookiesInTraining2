@@ -195,6 +195,13 @@
     <Content Include="Pages\admin\Reports.aspx" />
     <Content Include="Pages\admin\manage_classes.aspx" />
     <Content Include="Pages\admin\add_students.aspx" />
+    <Content Include="Pages\admin\create_forum_post.aspx" />
+    <Content Include="Pages\admin\create_level.aspx" />
+    <Content Include="Pages\admin\create_quiz.aspx" />
+    <Content Include="Pages\admin\edit_level.aspx" />
+    <Content Include="Pages\admin\manage_slides.aspx" />
+    <Content Include="Pages\admin\view_forum_post.aspx" />
+    <Content Include="Pages\admin\admin_create_module.aspx" />
     <Content Include="Pages\student\dashboard_student.aspx" />
     <Content Include="Pages\teacher\dashboard_teacher.aspx" />
     <Content Include="Pages\teacher\manage_slides.aspx" />
@@ -519,6 +526,55 @@
     </Compile>
     <Compile Include="Pages\admin\add_students.aspx.designer.cs">
       <DependentUpon>add_students.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\admin\create_forum_post.aspx.cs">
+      <DependentUpon>create_forum_post.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\admin\create_forum_post.aspx.designer.cs">
+      <DependentUpon>create_forum_post.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\admin\create_level.aspx.cs">
+      <DependentUpon>create_level.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\admin\create_level.aspx.designer.cs">
+      <DependentUpon>create_level.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\admin\create_quiz.aspx.cs">
+      <DependentUpon>create_quiz.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\admin\create_quiz.aspx.designer.cs">
+      <DependentUpon>create_quiz.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\admin\edit_level.aspx.cs">
+      <DependentUpon>edit_level.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\admin\edit_level.aspx.designer.cs">
+      <DependentUpon>edit_level.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\admin\manage_slides.aspx.cs">
+      <DependentUpon>manage_slides.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\admin\manage_slides.aspx.designer.cs">
+      <DependentUpon>manage_slides.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\admin\view_forum_post.aspx.cs">
+      <DependentUpon>view_forum_post.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\admin\view_forum_post.aspx.designer.cs">
+      <DependentUpon>view_forum_post.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\admin\admin_create_module.aspx.cs">
+      <DependentUpon>admin_create_module.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\admin\admin_create_module.aspx.designer.cs">
+      <DependentUpon>admin_create_module.aspx</DependentUpon>
     </Compile>
     <Compile Include="Pages\student\dashboard_student.aspx.cs">
       <DependentUpon>dashboard_student.aspx</DependentUpon>

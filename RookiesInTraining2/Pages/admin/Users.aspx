@@ -526,6 +526,23 @@
                 e.stopPropagation();
             });
         });
+
+        // Auto-open create user modal if create=user parameter is in URL
+        window.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const createParam = urlParams.get('create');
+            
+            if (createParam === 'user') {
+                // Remove the create parameter from URL to prevent reopening on refresh
+                urlParams.delete('create');
+                const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+                window.history.replaceState({}, '', newUrl);
+                
+                // Open the create user modal
+                const createModal = new bootstrap.Modal(document.getElementById('createUserModal'));
+                createModal.show();
+            }
+        });
     </script>
 
     <style>

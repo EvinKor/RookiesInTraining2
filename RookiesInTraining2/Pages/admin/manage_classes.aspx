@@ -329,12 +329,18 @@
                         if (foundClass) {
                             selectClass(foundClass.ClassSlug, foundClass.ClassName);
                             
-                            // Auto-switch to Story Mode tab if requested, otherwise ensure Forum tab is active
+                            // Auto-switch to requested tab
                             if (tabParam === 'storymode') {
                                 setTimeout(() => {
                                     const storymodeTab = new bootstrap.Tab(document.getElementById('storymodeTabBtn'));
                                     storymodeTab.show();
                                     console.log('Auto-switched to Story Mode tab');
+                                }, 100);
+                            } else if (tabParam === 'students') {
+                                setTimeout(() => {
+                                    const studentsTab = new bootstrap.Tab(document.getElementById('studentsTabBtn'));
+                                    studentsTab.show();
+                                    console.log('Auto-switched to Students tab');
                                 }, 100);
                             } else {
                                 // Ensure Forum tab is active by default
@@ -593,8 +599,8 @@
             // Get the class slug (handle both capital and lowercase property names)
             const classSlug = selectedClass.ClassSlug || selectedClass.slug;
             
-            // Redirect to view post page
-            window.location.href = `../teacher/view_forum_post.aspx?post=${postSlug}&class=${classSlug}`;
+            // Redirect to view post page (admin version)
+            window.location.href = `view_forum_post.aspx?post=${postSlug}&class=${classSlug}`;
         }
 
         function formatDate(dateString) {
@@ -649,7 +655,8 @@
             const classSlug = selectedClass.ClassSlug || selectedClass.slug;
             const className = selectedClass.ClassName || selectedClass.name;
             
-            window.location.href = `../teacher/create_forum_post.aspx?class=${classSlug}&className=${encodeURIComponent(className)}`;
+            // Redirect to admin version of create forum post
+            window.location.href = `create_forum_post.aspx?class=${classSlug}&className=${encodeURIComponent(className)}`;
         }
 
         function openAddStudentsPage() {
@@ -659,7 +666,8 @@
             }
             
             const classSlug = selectedClass.ClassSlug || selectedClass.slug;
-            window.location.href = `../teacher/add_students.aspx?class=${classSlug}`;
+            // Redirect to admin version of add students
+            window.location.href = `add_students.aspx?class=${classSlug}`;
         }
 
         function openCreateLevelStorymode() {
@@ -671,7 +679,8 @@
             const classSlug = selectedClass.ClassSlug || selectedClass.slug;
             const className = selectedClass.ClassName || selectedClass.name;
             
-            window.location.href = `../teacher/create_level.aspx?class=${classSlug}&className=${encodeURIComponent(className)}`;
+            // Redirect to admin version of create level
+            window.location.href = `create_level.aspx?class=${classSlug}&className=${encodeURIComponent(className)}`;
         }
 
         function editLevel(levelSlug) {
@@ -681,7 +690,8 @@
             }
             
             const classSlug = selectedClass.ClassSlug || selectedClass.slug;
-            window.location.href = `../teacher/create_level.aspx?level=${levelSlug}&class=${classSlug}`;
+            // Redirect to admin version of edit level
+            window.location.href = `edit_level.aspx?level=${levelSlug}&class=${classSlug}`;
         }
 
         function manageSlides(levelSlug, levelTitle) {
@@ -691,7 +701,8 @@
             }
             
             const classSlug = selectedClass.ClassSlug || selectedClass.slug;
-            window.location.href = `../teacher/manage_slides.aspx?level=${levelSlug}&class=${classSlug}&title=${encodeURIComponent(levelTitle)}`;
+            // Redirect to admin version of manage slides
+            window.location.href = `manage_slides.aspx?level=${levelSlug}&class=${classSlug}&levelTitle=${encodeURIComponent(levelTitle)}`;
         }
 
         function editQuiz(levelSlug, quizSlug) {
@@ -701,10 +712,11 @@
             }
             
             const classSlug = selectedClass.ClassSlug || selectedClass.slug;
+            // Redirect to admin version of create quiz
             if (quizSlug) {
-                window.location.href = `../teacher/create_quiz.aspx?quiz=${quizSlug}&level=${levelSlug}&class=${classSlug}`;
+                window.location.href = `create_quiz.aspx?quiz=${quizSlug}&level=${levelSlug}&class=${classSlug}`;
             } else {
-                window.location.href = `../teacher/create_quiz.aspx?level=${levelSlug}&class=${classSlug}`;
+                window.location.href = `create_quiz.aspx?level=${levelSlug}&class=${classSlug}`;
             }
         }
     </script>

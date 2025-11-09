@@ -67,6 +67,24 @@ namespace RookiesInTraining2.Pages.game
         {
             return Session["email"]?.ToString() ?? Session["Email"]?.ToString() ?? "";
         }
+
+        protected string GetBackUrl()
+        {
+            // Determine where to redirect based on user's role
+            string role = Session["Role"]?.ToString() ?? Session["role"]?.ToString() ?? "";
+            
+            switch (role.ToLower())
+            {
+                case "admin":
+                    return ResolveUrl("~/Pages/admin/dashboard_admin.aspx");
+                case "teacher":
+                    return ResolveUrl("~/Pages/teacher/dashboard_teacher.aspx");
+                case "student":
+                    return ResolveUrl("~/Pages/student/dashboard_student.aspx");
+                default:
+                    return ResolveUrl("~/Pages/Login.aspx");
+            }
+        }
     }
 }
 
