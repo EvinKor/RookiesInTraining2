@@ -1,25 +1,85 @@
-﻿<%@ Page Title="Add Students - Teacher"
+<%@ Page Title="Add Students - Admin"
     Language="C#"
-    MasterPageFile="~/MasterPages/MyMain.Master"
+    MasterPageFile="~/MasterPages/dashboard.Master"
     AutoEventWireup="true"
     CodeBehind="add_students.aspx.cs"
-    Inherits="RookiesInTraining2.Pages.teacher.add_students" %>
+    Inherits="RookiesInTraining2.Pages.admin.add_students"
+    EnableViewState="true" %>
 
-<asp:Content ID="Content1" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
+<asp:Content ID="Content1" ContentPlaceHolderID="DashboardContent" runat="server">
+    
+    <style>
+        body {
+            background: #f5f7fa !important;
+        }
+        .card {
+            background: white;
+            border: 1px solid #e8ecf1;
+        }
+        h2, h3, h4, h5, h6 {
+            color: #2d3748 !important;
+        }
+        .text-muted {
+            color: #6c757d !important;
+        }
+        .card-header.bg-light {
+            background-color: #f8f9fa !important;
+            color: #2d3748 !important;
+        }
+        .card-header.bg-success {
+            background-color: #28a745 !important;
+            color: white !important;
+        }
+        .form-control {
+            background-color: white;
+            border-color: #ced4da;
+            color: #212529;
+        }
+        .form-control:focus {
+            background-color: white;
+            border-color: #80bdff;
+            color: #212529;
+        }
+        .btn-outline-secondary {
+            color: #6c757d;
+            border-color: #6c757d;
+        }
+        .btn-outline-secondary:hover {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
+        }
+        .text-primary {
+            color: #0d6efd !important;
+        }
+        .bg-primary {
+            background-color: #0d6efd !important;
+        }
+        .bg-success {
+            background-color: #28a745 !important;
+        }
+        .hover-item {
+            transition: all 0.2s ease;
+        }
+        .hover-item:hover {
+            background: #f8f9fa !important;
+            border-color: #28a745 !important;
+        }
+    </style>
     
     <div class="container mt-4">
         <!-- Header -->
-        <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);">
-            <div class="card-body text-white p-4">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h2 class="mb-2"><i class="bi bi-person-plus-fill me-2"></i>Add Students to Class</h2>
-                        <p class="mb-0 opacity-90">
+                        <h2 class="mb-2"><i class="bi bi-person-plus-fill me-2 text-primary"></i>Add Students to Class</h2>
+                        <p class="mb-0 text-muted">
                             <strong><asp:Label ID="lblClassName" runat="server" /></strong>
                             <span class="ms-3"><i class="bi bi-code me-1"></i>Code: <asp:Label ID="lblClassCode" runat="server" /></span>
                         </p>
                     </div>
-                    <asp:HyperLink ID="lnkBack" runat="server" CssClass="btn btn-light btn-lg">
+                    <asp:HyperLink ID="lnkBack" runat="server" CssClass="btn btn-outline-secondary btn-lg">
                         <i class="bi bi-arrow-left me-2"></i>Back to Class
                     </asp:HyperLink>
                 </div>
@@ -140,16 +200,6 @@
             </div>
         </div>
     </div>
-
-    <style>
-        .hover-item {
-            transition: all 0.2s ease;
-        }
-        .hover-item:hover {
-            background: #f8f9fa;
-            border-color: #28a745 !important;
-        }
-    </style>
 
     <script type="text/javascript">
         console.log('[AddStudents] Page loaded');
