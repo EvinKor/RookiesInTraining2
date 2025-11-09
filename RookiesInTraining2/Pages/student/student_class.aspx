@@ -119,11 +119,18 @@
         });
 
         function loadLevels() {
+            console.log('[StudentClass] ===== Loading Levels =====');
+            
             const levelsField = document.getElementById('<%= hfLevelsJson.ClientID %>');
+            console.log('[StudentClass] Levels field:', levelsField);
+            console.log('[StudentClass] Levels field value:', levelsField?.value);
+            console.log('[StudentClass] Levels field value length:', levelsField?.value?.length);
+            
             const container = document.getElementById('levelsContainer');
             const noLevels = document.getElementById('noLevels');
             
-            if (!levelsField || !levelsField.value) {
+            if (!levelsField || !levelsField.value || levelsField.value === '[]') {
+                console.log('[StudentClass] No levels data found, showing empty state');
                 container.style.display = 'none';
                 noLevels.style.display = 'block';
                 return;
@@ -131,13 +138,17 @@
             
             try {
                 const levels = JSON.parse(levelsField.value);
+                console.log('[StudentClass] Parsed levels:', levels);
+                console.log('[StudentClass] Levels count:', levels.length);
                 
                 if (levels.length === 0) {
+                    console.log('[StudentClass] Levels array is empty, showing empty state');
                     container.style.display = 'none';
                     noLevels.style.display = 'block';
                     return;
                 }
                 
+                console.log('[StudentClass] Rendering levels...');
                 container.style.display = 'flex';
                 noLevels.style.display = 'none';
                 
@@ -173,8 +184,12 @@
                         </div>
                     </div>
                 `).join('');
+                
+                console.log('[StudentClass] ✅ Successfully rendered ' + levels.length + ' levels');
             } catch (error) {
-                console.error('Error loading levels:', error);
+                console.error('[StudentClass] ❌ Error loading levels:', error);
+                console.error('[StudentClass] Error stack:', error.stack);
+                container.style.display = 'none';
                 noLevels.style.display = 'block';
             }
         }

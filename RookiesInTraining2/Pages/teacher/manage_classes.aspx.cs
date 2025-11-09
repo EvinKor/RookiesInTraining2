@@ -120,7 +120,7 @@ namespace RookiesInTraining2.Pages.teacher
                     cmd.CommandText = @"
                         SELECT 
                             l.level_slug, l.class_slug, l.level_number, l.title, l.description,
-                            l.content_type, l.xp_reward, l.estimated_minutes, l.is_published, l.quiz_slug
+                            l.xp_reward, l.estimated_minutes, l.quiz_slug, l.is_published
                         FROM Levels l
                         INNER JOIN Classes c ON c.class_slug = l.class_slug
                         WHERE c.teacher_slug = @teacherSlug 
@@ -138,17 +138,17 @@ namespace RookiesInTraining2.Pages.teacher
                             {
                                 LevelSlug = reader["level_slug"].ToString(),
                                 ClassSlug = reader["class_slug"].ToString(),
-                                LevelNumber = Convert.ToInt32(reader["level_number"]),
+                                LevelNumber = reader["level_number"] != DBNull.Value ? Convert.ToInt32(reader["level_number"]) : 0,
                                 Title = reader["title"].ToString(),
-                                Description = reader["description"].ToString(),
-                                ContentType = reader["content_type"].ToString(),
-                                XpReward = Convert.ToInt32(reader["xp_reward"]),
-                                EstimatedMinutes = Convert.ToInt32(reader["estimated_minutes"]),
-                                IsPublished = Convert.ToBoolean(reader["is_published"]),
+                                Description = reader["description"]?.ToString() ?? "",
+                                ContentType = "learning", // Default
+                                XpReward = reader["xp_reward"] != DBNull.Value ? Convert.ToInt32(reader["xp_reward"]) : 100,
+                                EstimatedMinutes = reader["estimated_minutes"] != DBNull.Value ? Convert.ToInt32(reader["estimated_minutes"]) : 30,
+                                IsPublished = reader["is_published"] != DBNull.Value ? Convert.ToBoolean(reader["is_published"]) : true,
                                 QuizSlug = reader["quiz_slug"]?.ToString()
                             };
                             levels.Add(level);
-                            System.Diagnostics.Debug.WriteLine($"[ManageClasses][LoadAllLevels] Added level: {level.LevelSlug} for class: {level.ClassSlug}");
+                            System.Diagnostics.Debug.WriteLine($"[ManageClasses][LoadAllLevels] Added level: {level.Title} ({level.LevelSlug}) for class: {level.ClassSlug}");
                         }
                     }
                 }

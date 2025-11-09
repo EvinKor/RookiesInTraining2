@@ -175,6 +175,7 @@
     <Content Include="Pages\student\join_class.aspx" />
     <Content Include="Pages\student\student_class.aspx" />
     <Content Include="Pages\student\take_level.aspx" />
+    <Content Include="Pages\student\take_quiz.aspx" />
     <Content Include="Pages\teacher\add_students.aspx" />
     <Content Include="Pages\teacher\create_forum_post.aspx" />
     <Content Include="Pages\teacher\create_level.aspx" />
@@ -368,6 +369,13 @@
     </Compile>
     <Compile Include="Pages\student\take_level.aspx.designer.cs">
       <DependentUpon>take_level.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\student\take_quiz.aspx.cs">
+      <DependentUpon>take_quiz.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\student\take_quiz.aspx.designer.cs">
+      <DependentUpon>take_quiz.aspx</DependentUpon>
     </Compile>
     <Compile Include="Pages\teacher\add_students.aspx.cs">
       <DependentUpon>add_students.aspx</DependentUpon>

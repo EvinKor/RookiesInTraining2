@@ -86,6 +86,9 @@ namespace RookiesInTraining2.Pages.student
 
             try
             {
+                System.Diagnostics.Debug.WriteLine($"[StudentClass] Loading levels for class: {classSlug}");
+                System.Diagnostics.Debug.WriteLine($"[StudentClass] Student slug: {studentSlug}");
+
                 using (var con = new SqlConnection(ConnStr))
                 {
                     con.Open();
@@ -93,51 +96,54 @@ namespace RookiesInTraining2.Pages.student
                     {
                         cmd.CommandText = @"
                             SELECT 
-                                l.level_slug AS LevelSlug,
-                                l.level_number AS LevelNumber,
-                                l.title AS Title,
-                                l.description AS Description,
-                                l.estimated_minutes AS EstimatedMinutes,
-                                l.xp_reward AS XpReward,
-                                l.quiz_slug AS QuizSlug,
-                                CASE WHEN slp.is_completed = 1 THEN 1 ELSE 0 END AS IsCompleted
+                                l.level_slug,
+                                l.title,
+                                l.level_number,
+                                l.description,
+                                l.xp_reward,
+                                l.estimated_minutes,
+                                l.quiz_slug
                             FROM Levels l
-                            LEFT JOIN StudentLevelProgress slp ON l.level_slug = slp.level_slug 
-                                AND slp.student_slug = @studentSlug
                             WHERE l.class_slug = @classSlug 
-                              AND l.is_published = 1 
                               AND l.is_deleted = 0
                             ORDER BY l.level_number ASC";
 
                         cmd.Parameters.AddWithValue("@classSlug", classSlug);
-                        cmd.Parameters.AddWithValue("@studentSlug", studentSlug);
+
+                        System.Diagnostics.Debug.WriteLine($"[StudentClass] SQL Query: {cmd.CommandText}");
 
                         using (var reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
                             {
+                                string levelTitle = reader["title"].ToString();
+                                System.Diagnostics.Debug.WriteLine($"[StudentClass] Found level: {levelTitle}");
+                                
                                 levels.Add(new
                                 {
-                                    LevelSlug = reader["LevelSlug"].ToString(),
-                                    LevelNumber = Convert.ToInt32(reader["LevelNumber"]),
-                                    Title = reader["Title"].ToString(),
-                                    Description = reader["Description"].ToString(),
-                                    EstimatedMinutes = Convert.ToInt32(reader["EstimatedMinutes"]),
-                                    XpReward = Convert.ToInt32(reader["XpReward"]),
-                                    QuizSlug = reader["QuizSlug"]?.ToString(),
-                                    IsCompleted = Convert.ToInt32(reader["IsCompleted"]) == 1
+                                    LevelSlug = reader["level_slug"].ToString(),
+                                    LevelNumber = reader["level_number"] != DBNull.Value ? Convert.ToInt32(reader["level_number"]) : 0,
+                                    Title = levelTitle,
+                                    Description = reader["description"]?.ToString() ?? "",
+                                    EstimatedMinutes = reader["estimated_minutes"] != DBNull.Value ? Convert.ToInt32(reader["estimated_minutes"]) : 30,
+                                    XpReward = reader["xp_reward"] != DBNull.Value ? Convert.ToInt32(reader["xp_reward"]) : 100,
+                                    QuizSlug = reader["quiz_slug"]?.ToString() ?? "",
+                                    IsCompleted = false // Will check progress separately
                                 });
                             }
                         }
                     }
                 }
 
+                System.Diagnostics.Debug.WriteLine($"[StudentClass] Total levels loaded: {levels.Count}");
                 var serializer = new JavaScriptSerializer();
                 hfLevelsJson.Value = serializer.Serialize(levels);
+                System.Diagnostics.Debug.WriteLine($"[StudentClass] Levels JSON: {hfLevelsJson.Value}");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[StudentClass] Error loading levels: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[StudentClass] Stack trace: {ex.StackTrace}");
                 hfLevelsJson.Value = "[]";
             }
         }

@@ -303,7 +303,7 @@
     <div class="game-dashboard">
         <!-- Hero Section -->
         <div class="hero-section">
-            <h1>🎮 Multiplayer Quiz Battle</h1>
+            <h1>Multiplayer Quiz Battle</h1>
             <p>Compete with friends in real-time quiz challenges!</p>
             
             <div class="action-buttons">
