@@ -203,10 +203,13 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
+                        <asp:HyperLink runat="server" NavigateUrl="~/Pages/game/game_dashboard.aspx" CssClass="btn btn-outline-success text-start">
+                            <i class="bi bi-controller me-2"></i>Multiplayer Quiz Game
+                        </asp:HyperLink>
                         <a href="Users.aspx" class="btn btn-outline-primary text-start">
                             <i class="bi bi-person-plus me-2"></i>Add New User
                         </a>
-                        <a href="#" class="btn btn-outline-success text-start">
+                        <a href="#" class="btn btn-outline-secondary text-start">
                             <i class="bi bi-book me-2"></i>Create Course
                         </a>
                         <a href="Reports.aspx" class="btn btn-outline-info text-start">

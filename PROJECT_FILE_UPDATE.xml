@@ -1,0 +1,88 @@
+<!--
+========================================
+ADD THESE TO YOUR .csproj FILE
+========================================
+
+Instructions:
+1. Right-click your project in Solution Explorer
+2. Click "Edit Project File" (or "Unload Project" then "Edit .csproj")
+3. Find an existing <ItemGroup> section with <Content> or <Compile> items
+4. Add the items below to that section (or create a new <ItemGroup>)
+5. Save the file
+6. If you unloaded, right-click and "Reload Project"
+
+========================================
+-->
+
+<!-- Game Pages - ASPX Files -->
+<Content Include="Pages\game\game_dashboard.aspx" />
+<Content Include="Pages\game\create_lobby.aspx" />
+<Content Include="Pages\game\lobby_room.aspx" />
+<Content Include="Pages\game\game_play.aspx" />
+<Content Include="Pages\game\game_results.aspx" />
+
+<!-- Game Pages - Code Files -->
+<Compile Include="Pages\game\game_dashboard.aspx.cs">
+  <DependentUpon>game_dashboard.aspx</DependentUpon>
+  <SubType>ASPXCodeBehind</SubType>
+</Compile>
+<Compile Include="Pages\game\game_dashboard.aspx.designer.cs">
+  <DependentUpon>game_dashboard.aspx</DependentUpon>
+</Compile>
+
+<Compile Include="Pages\game\create_lobby.aspx.cs">
+  <DependentUpon>create_lobby.aspx</DependentUpon>
+  <SubType>ASPXCodeBehind</SubType>
+</Compile>
+<Compile Include="Pages\game\create_lobby.aspx.designer.cs">
+  <DependentUpon>create_lobby.aspx</DependentUpon>
+</Compile>
+
+<Compile Include="Pages\game\lobby_room.aspx.cs">
+  <DependentUpon>lobby_room.aspx</DependentUpon>
+  <SubType>ASPXCodeBehind</SubType>
+</Compile>
+<Compile Include="Pages\game\lobby_room.aspx.designer.cs">
+  <DependentUpon>lobby_room.aspx</DependentUpon>
+</Compile>
+
+<Compile Include="Pages\game\game_play.aspx.cs">
+  <DependentUpon>game_play.aspx</DependentUpon>
+  <SubType>ASPXCodeBehind</SubType>
+</Compile>
+<Compile Include="Pages\game\game_play.aspx.designer.cs">
+  <DependentUpon>game_play.aspx</DependentUpon>
+</Compile>
+
+<Compile Include="Pages\game\game_results.aspx.cs">
+  <DependentUpon>game_results.aspx</DependentUpon>
+  <SubType>ASPXCodeBehind</SubType>
+</Compile>
+<Compile Include="Pages\game\game_results.aspx.designer.cs">
+  <DependentUpon>game_results.aspx</DependentUpon>
+</Compile>
+
+<!-- API Handlers -->
+<Content Include="api\GetUserClasses.ashx" />
+<Content Include="api\GetClassQuizzes.ashx" />
+<Content Include="api\GetQuizQuestions.ashx" />
+
+<!-- Supabase Configuration -->
+<Compile Include="Helpers\SupabaseConfig.cs" />
+
+<!-- Game Master Page -->
+<Content Include="MasterPages\GameMaster.Master" />
+<Compile Include="MasterPages\GameMaster.master.cs">
+  <DependentUpon>GameMaster.Master</DependentUpon>
+  <SubType>ASPXCodeBehind</SubType>
+</Compile>
+<Compile Include="MasterPages\GameMaster.master.designer.cs">
+  <DependentUpon>GameMaster.Master</DependentUpon>
+</Compile>
+
+<!-- Documentation (Optional - for reference) -->
+<None Include="SUPABASE_MULTIPLAYER_SCHEMA.sql" />
+<None Include="MULTIPLAYER_GAME_SETUP_GUIDE.md" />
+<None Include="SUPABASE_WEB_CONFIG_TEMPLATE.txt" />
+<None Include="PROJECT_FILE_UPDATE.xml" />
+

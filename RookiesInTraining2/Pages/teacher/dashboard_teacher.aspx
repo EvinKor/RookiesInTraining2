@@ -114,9 +114,14 @@
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center py-3">
                     <h5 class="mb-0"><i class="bi bi-collection me-2"></i>My Classes</h5>
-                    <a href="<%= ResolveUrl("~/Pages/teacher/teacher_create_module.aspx") %>" class="btn btn-sm btn-success">
-                        <i class="bi bi-plus-circle me-1"></i>Create New Class
-                    </a>
+                    <div class="d-flex gap-2">
+                        <asp:HyperLink runat="server" NavigateUrl="~/Pages/game/game_dashboard.aspx" CssClass="btn btn-sm btn-primary">
+                            <i class="bi bi-controller me-1"></i>Multiplayer Game
+                        </asp:HyperLink>
+                        <a href="<%= ResolveUrl("~/Pages/teacher/teacher_create_module.aspx") %>" class="btn btn-sm btn-success">
+                            <i class="bi bi-plus-circle me-1"></i>Create New Class
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body">
                     <!-- Classes Grid -->

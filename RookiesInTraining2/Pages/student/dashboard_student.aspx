@@ -53,6 +53,11 @@
                             <button id="btnContinue" class="btn btn-primary btn-lg px-4 py-2" type="button">
                                 <i class="bi bi-play-circle-fill me-2"></i>Continue Learning
                             </button>
+                            <asp:HyperLink ID="lnkMultiplayerGame" runat="server" 
+                                          NavigateUrl="~/Pages/game/game_dashboard.aspx"
+                                          CssClass="btn btn-success btn-lg px-4 py-2">
+                                <i class="bi bi-controller me-2"></i>Multiplayer Quiz Game
+                            </asp:HyperLink>
                             <asp:Button ID="btnLogout" runat="server" 
                                         CssClass="btn btn-outline-secondary" 
                                         Text="Logout"

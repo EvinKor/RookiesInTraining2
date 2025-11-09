@@ -1,0 +1,38 @@
+<!-- 
+  ================================================================
+  SUPABASE CONFIGURATION
+  ================================================================
+  Copy this section to your Web.config file under <appSettings>
+  Replace with your actual Supabase credentials
+  ================================================================
+-->
+
+<appSettings>
+  <!-- Supabase Configuration -->
+  <add key="SupabaseUrl" value="https://YOUR_PROJECT_ID.supabase.co" />
+  <add key="SupabaseAnonKey" value="YOUR_SUPABASE_ANON_KEY_HERE" />
+</appSettings>
+
+<!-- 
+  ================================================================
+  HOW TO GET YOUR SUPABASE CREDENTIALS:
+  ================================================================
+  
+  1. Go to https://supabase.com/dashboard
+  2. Select your project
+  3. Click "Settings" > "API"
+  4. Copy:
+     - Project URL (e.g., https://abcdefgh.supabase.co)
+     - anon/public key (long string starting with "eyJ...")
+  
+  5. Paste them in Web.config
+  
+  6. Then in Global.asax.cs Application_Start(), add:
+  
+     string supabaseUrl = ConfigurationManager.AppSettings["SupabaseUrl"];
+     string supabaseKey = ConfigurationManager.AppSettings["SupabaseAnonKey"];
+     SupabaseHelper.Configure(supabaseUrl, supabaseKey);
+  
+  ================================================================
+-->
+

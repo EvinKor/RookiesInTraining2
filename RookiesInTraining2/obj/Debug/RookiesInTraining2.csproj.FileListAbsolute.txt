@@ -1,3 +1,5 @@
+C:\Users\Craaazyyyy\Documents\www\RookiesInTraining2\RookiesInTraining2\obj\Debug\RookiesInTraining2.csproj.AssemblyReference.cache
+C:\Users\Craaazyyyy\Documents\www\RookiesInTraining2\RookiesInTraining2\obj\Debug\RookiesInTraining2.csproj.CoreCompileInputs.cache
 C:\Users\Craaazyyyy\Documents\www\RookiesInTraining2\RookiesInTraining2\bin\RookiesInTraining2.dll.config
 C:\Users\Craaazyyyy\Documents\www\RookiesInTraining2\RookiesInTraining2\bin\RookiesInTraining2.dll
 C:\Users\Craaazyyyy\Documents\www\RookiesInTraining2\RookiesInTraining2\bin\RookiesInTraining2.pdb
@@ -65,8 +67,6 @@ C:\Users\Craaazyyyy\Documents\www\RookiesInTraining2\RookiesInTraining2\bin\Newt
 C:\Users\Craaazyyyy\Documents\www\RookiesInTraining2\RookiesInTraining2\bin\Antlr3.Runtime.pdb
 C:\Users\Craaazyyyy\Documents\www\RookiesInTraining2\RookiesInTraining2\bin\Microsoft.AspNet.FriendlyUrls.xml
 C:\Users\Craaazyyyy\Documents\www\RookiesInTraining2\RookiesInTraining2\bin\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.xml
-C:\Users\Craaazyyyy\Documents\www\RookiesInTraining2\RookiesInTraining2\obj\Debug\RookiesInTraining2.csproj.AssemblyReference.cache
-C:\Users\Craaazyyyy\Documents\www\RookiesInTraining2\RookiesInTraining2\obj\Debug\RookiesInTraining2.csproj.CoreCompileInputs.cache
 C:\Users\Craaazyyyy\Documents\www\RookiesInTraining2\RookiesInTraining2\obj\Debug\RookiesI.D7DDBAFE.Up2Date
 C:\Users\Craaazyyyy\Documents\www\RookiesInTraining2\RookiesInTraining2\obj\Debug\RookiesInTraining2.dll
 C:\Users\Craaazyyyy\Documents\www\RookiesInTraining2\RookiesInTraining2\obj\Debug\RookiesInTraining2.pdb

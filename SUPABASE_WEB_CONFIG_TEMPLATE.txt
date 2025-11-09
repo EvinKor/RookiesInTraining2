@@ -1,0 +1,43 @@
+============================================
+ADD THESE TO YOUR Web.config FILE
+============================================
+
+In the <appSettings> section, add:
+
+  <appSettings>
+    <!-- Existing settings... -->
+    
+    <!-- Supabase Configuration for Multiplayer Game -->
+    <add key="SupabaseUrl" value="YOUR_SUPABASE_URL_HERE" />
+    <add key="SupabaseKey" value="YOUR_SUPABASE_ANON_KEY_HERE" />
+    <add key="SupabaseServiceKey" value="YOUR_SUPABASE_SERVICE_KEY_HERE" />
+  </appSettings>
+
+============================================
+HOW TO GET YOUR SUPABASE CREDENTIALS:
+============================================
+
+1. Go to your Supabase Dashboard: https://app.supabase.com
+2. Select your project (or create a new one)
+3. Go to Settings > API
+4. Copy the following:
+   - Project URL (e.g., https://xxxxx.supabase.co)
+   - anon/public key (for SupabaseKey)
+   - service_role key (for SupabaseServiceKey) - Keep this SECRET!
+
+Example:
+  <add key="SupabaseUrl" value="https://abcdefghijklmn.supabase.co" />
+  <add key="SupabaseKey" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." />
+  <add key="SupabaseServiceKey" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." />
+
+============================================
+IMPORTANT SECURITY NOTES:
+============================================
+
+⚠️ NEVER commit SupabaseServiceKey to Git!
+✅ Use the anon key for client-side operations
+✅ Use the service key only for server-side admin operations
+✅ Set up proper Row Level Security (RLS) policies in Supabase
+
+============================================
+
