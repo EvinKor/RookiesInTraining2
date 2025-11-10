@@ -109,8 +109,16 @@
 }
 
 .question-actions {
-    display: flex;
-    gap: 0.5rem;
+    display: none !important; /* Edit and Delete buttons removed - hidden */
+}
+
+/* Hide any edit/delete buttons in question items */
+.question-item .question-actions,
+.question-item button[onclick*="editQuestion"],
+.question-item button[onclick*="deleteQuestion"],
+.question-item .bi-pencil,
+.question-item .bi-trash {
+    display: none !important;
 }
 
 /* ===== Option Input Groups ===== */

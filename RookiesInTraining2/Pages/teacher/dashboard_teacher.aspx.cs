@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Globalization;
+using System.Linq;
 using System.Web.Script.Serialization;
 using System.Web.UI;
 
@@ -53,13 +54,18 @@ namespace RookiesInTraining2.Pages
         {
             try
             {
-                // Placeholder data - replace with actual queries
-                lblTodayClasses.Text = "2";
-                lblMyCourses.Text = "5";
-                lblTotalStudents.Text = "120";
-                lblPendingAssignments.Text = "8";
-                lblMaterials.Text = "45";
-                lblPendingCount.Text = "8";
+                // Only set values for labels that still exist
+                // lblTodayClasses is in the welcome section
+                lblTodayClasses.Text = "2"; // Placeholder - can be replaced with actual query
+                
+                // lblPendingCount is in the Pending Assignments card
+                lblPendingCount.Text = "8"; // Placeholder - can be replaced with actual query
+                
+                // Note: The following labels were removed when stat cards were removed:
+                // - lblMyCourses
+                // - lblTotalStudents
+                // - lblPendingAssignments
+                // - lblMaterials
             }
             catch (Exception ex)
             {
@@ -72,14 +78,106 @@ namespace RookiesInTraining2.Pages
         {
             try
             {
-                // Sample data
-                var activities = new List<dynamic>
+                var activities = new List<dynamic>();
+
+                using (var con = new SqlConnection(ConnStr))
                 {
-                    new { Icon = "person-check", IconColor = "success", ActivityText = "Student 'Li Ming' submitted assignment", TimeAgo = "30 minutes ago" },
-                    new { Icon = "file-earmark-plus", IconColor = "primary", ActivityText = "Uploaded new material 'Chapter 5 PPT'", TimeAgo = "2 hours ago" },
-                    new { Icon = "clipboard-check", IconColor = "info", ActivityText = "Graded 15 assignments", TimeAgo = "Yesterday" },
-                    new { Icon = "star", IconColor = "warning", ActivityText = "Received positive feedback", TimeAgo = "2 days ago" }
-                };
+                    con.Open();
+
+                    // Get recently created classes (last 30 days, limit 10)
+                    using (var cmd = con.CreateCommand())
+                    {
+                        cmd.CommandText = @"
+                            SELECT TOP 10
+                                class_name AS ClassName,
+                                created_at AS ActivityDate,
+                                'class_created' AS ActivityType
+                            FROM Classes
+                            WHERE teacher_slug = @teacherSlug 
+                              AND is_deleted = 0
+                              AND created_at >= DATEADD(day, -30, GETUTCDATE())
+                            ORDER BY created_at DESC";
+
+                        cmd.Parameters.AddWithValue("@teacherSlug", userSlug);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                DateTime activityDate = Convert.ToDateTime(reader["ActivityDate"]);
+                                activities.Add(new
+                                {
+                                    Icon = "collection",
+                                    IconColor = "primary",
+                                    ActivityText = $"Created class '{reader["ClassName"]}'",
+                                    TimeAgo = GetTimeAgo(activityDate),
+                                    ActivityDate = activityDate
+                                });
+                            }
+                        }
+                    }
+
+                    // Get recently joined students (last 30 days, limit 10)
+                    using (var cmd = con.CreateCommand())
+                    {
+                        cmd.CommandText = @"
+                            SELECT TOP 10
+                                u.full_name AS StudentName,
+                                c.class_name AS ClassName,
+                                e.joined_at AS ActivityDate,
+                                'student_joined' AS ActivityType
+                            FROM Enrollments e
+                            INNER JOIN Users u ON e.user_slug = u.user_slug
+                            INNER JOIN Classes c ON e.class_slug = c.class_slug
+                            WHERE c.teacher_slug = @teacherSlug
+                              AND e.role_in_class = 'student'
+                              AND e.is_deleted = 0
+                              AND c.is_deleted = 0
+                              AND e.joined_at >= DATEADD(day, -30, GETUTCDATE())
+                            ORDER BY e.joined_at DESC";
+
+                        cmd.Parameters.AddWithValue("@teacherSlug", userSlug);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                DateTime activityDate = Convert.ToDateTime(reader["ActivityDate"]);
+                                activities.Add(new
+                                {
+                                    Icon = "person-plus",
+                                    IconColor = "success",
+                                    ActivityText = $"Student '{reader["StudentName"]}' joined '{reader["ClassName"]}'",
+                                    TimeAgo = GetTimeAgo(activityDate),
+                                    ActivityDate = activityDate
+                                });
+                            }
+                        }
+                    }
+                }
+
+                // Sort by date (most recent first) and take top 10
+                var sortedActivities = activities
+                    .OrderByDescending(a => 
+                    {
+                        var prop = a.GetType().GetProperty("ActivityDate");
+                        return prop != null ? (DateTime)prop.GetValue(a) : DateTime.MinValue;
+                    })
+                    .Take(10)
+                    .ToList();
+
+                var finalActivities = new List<dynamic>();
+                foreach (var activity in sortedActivities)
+                {
+                    finalActivities.Add(new
+                    {
+                        Icon = activity.GetType().GetProperty("Icon").GetValue(activity).ToString(),
+                        IconColor = activity.GetType().GetProperty("IconColor").GetValue(activity).ToString(),
+                        ActivityText = activity.GetType().GetProperty("ActivityText").GetValue(activity).ToString(),
+                        TimeAgo = activity.GetType().GetProperty("TimeAgo").GetValue(activity).ToString()
+                    });
+                }
+                activities = finalActivities;
 
                 if (activities.Count > 0)
                 {
@@ -95,7 +193,32 @@ namespace RookiesInTraining2.Pages
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[TeacherDash] Error loading activity: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[TeacherDash] Stack trace: {ex.StackTrace}");
                 lblNoActivityMessage.Visible = true;
+            }
+        }
+
+        private string GetTimeAgo(DateTime dateTime)
+        {
+            TimeSpan timeSpan = DateTime.UtcNow - dateTime;
+
+            if (timeSpan.TotalMinutes < 1)
+                return "Just now";
+            else if (timeSpan.TotalMinutes < 60)
+                return $"{(int)timeSpan.TotalMinutes} minute{(timeSpan.TotalMinutes >= 2 ? "s" : "")} ago";
+            else if (timeSpan.TotalHours < 24)
+                return $"{(int)timeSpan.TotalHours} hour{(timeSpan.TotalHours >= 2 ? "s" : "")} ago";
+            else if (timeSpan.TotalDays < 7)
+                return $"{(int)timeSpan.TotalDays} day{(timeSpan.TotalDays >= 2 ? "s" : "")} ago";
+            else if (timeSpan.TotalDays < 30)
+            {
+                int weeks = (int)(timeSpan.TotalDays / 7);
+                return $"{weeks} week{(weeks >= 2 ? "s" : "")} ago";
+            }
+            else
+            {
+                int months = (int)(timeSpan.TotalDays / 30);
+                return $"{months} month{(months >= 2 ? "s" : "")} ago";
             }
         }
 
@@ -187,6 +310,9 @@ namespace RookiesInTraining2.Pages
                     }
                 }
 
+                // Set the classes count in the label
+                lblMyClassesCount.Text = classes.Count.ToString();
+
                 // Serialize to JSON for JavaScript
                 var serializer = new JavaScriptSerializer();
                 string json = serializer.Serialize(classes);
@@ -203,6 +329,7 @@ namespace RookiesInTraining2.Pages
                 System.Diagnostics.Debug.WriteLine($"[Dashboard] Stack trace: {ex.StackTrace}");
                 System.Diagnostics.Debug.WriteLine($"[Dashboard] ========== LoadClasses END (ERROR) ==========");
                 hfClassesJson.Value = "[]";
+                lblMyClassesCount.Text = "0";
             }
         }
     }

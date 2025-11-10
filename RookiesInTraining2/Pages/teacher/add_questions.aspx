@@ -127,22 +127,34 @@
                             </div>
                         </div>
 
-                        <div class="option-group mb-2">
+                        <div class="option-group mb-2" id="option3Group" style="display: none;">
                             <div class="input-group">
                                 <div class="input-group-text">
                                     <input type="radio" name="correctAnswer" value="2" id="radio2">
                                 </div>
                                 <asp:TextBox ID="txtOption3" runat="server" CssClass="form-control" placeholder="Option 3" MaxLength="500" />
+                                <button type="button" class="btn btn-outline-danger" onclick="removeOption(3)" title="Remove Option 3">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
                             </div>
                         </div>
 
-                        <div class="option-group">
+                        <div class="option-group mb-2" id="option4Group" style="display: none;">
                             <div class="input-group">
                                 <div class="input-group-text">
                                     <input type="radio" name="correctAnswer" value="3" id="radio3">
                                 </div>
                                 <asp:TextBox ID="txtOption4" runat="server" CssClass="form-control" placeholder="Option 4" MaxLength="500" />
+                                <button type="button" class="btn btn-outline-danger" onclick="removeOption(4)" title="Remove Option 4">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
                             </div>
+                        </div>
+
+                        <div id="addOptionBtnContainer" class="mb-2">
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="btnAddOption" onclick="addOption()">
+                                <i class="bi bi-plus-circle me-1"></i>Add Option
+                            </button>
                         </div>
 
                         <small class="text-muted">Select the correct answer by clicking the radio button</small>
@@ -195,6 +207,10 @@
             correctAnswerFieldId: '<%= hfCorrectAnswerIdx.ClientID %>'
         };
 
+        // Track which options are visible (options 1 and 2 are always visible)
+        let option3Visible = false;
+        let option4Visible = false;
+
         // Update hidden field when radio changes
         document.addEventListener('DOMContentLoaded', function() {
             const radios = document.querySelectorAll('input[name="correctAnswer"]');
@@ -203,7 +219,98 @@
                     document.getElementById(window.QUIZ_DATA.correctAnswerFieldId).value = this.value;
                 });
             });
+            
+            // Initialize option visibility
+            updateOptionVisibility();
         });
+
+        function addOption() {
+            // Add the next available option
+            if (!option3Visible && !option4Visible) {
+                option3Visible = true;
+            } else if (option3Visible && !option4Visible) {
+                option4Visible = true;
+            }
+            updateOptionVisibility();
+        }
+
+        function removeOption(optionNumber) {
+            // Minimum 2 options required (options 1 and 2 cannot be removed)
+            if (optionNumber === 1 || optionNumber === 2) {
+                return;
+            }
+
+            // Handle removal based on which option is being removed
+            if (optionNumber === 4) {
+                // Remove option 4 only
+                document.getElementById('<%= txtOption4.ClientID %>').value = '';
+                // If option 4 was selected, reset to option 1
+                const radio3 = document.getElementById('radio3');
+                if (radio3 && radio3.checked) {
+                    document.getElementById('radio0').checked = true;
+                    document.getElementById(window.QUIZ_DATA.correctAnswerFieldId).value = '0';
+                }
+                option4Visible = false;
+            } else if (optionNumber === 3) {
+                // Remove option 3 only
+                document.getElementById('<%= txtOption3.ClientID %>').value = '';
+                // If option 3 was selected, reset to option 1
+                const radio2 = document.getElementById('radio2');
+                if (radio2 && radio2.checked) {
+                    document.getElementById('radio0').checked = true;
+                    document.getElementById(window.QUIZ_DATA.correctAnswerFieldId).value = '0';
+                }
+                option3Visible = false;
+            }
+
+            updateOptionVisibility();
+        }
+
+        function updateOptionVisibility() {
+            const option3Group = document.getElementById('option3Group');
+            const option4Group = document.getElementById('option4Group');
+            const addOptionBtnContainer = document.getElementById('addOptionBtnContainer');
+
+            // Show/hide option 3
+            if (option3Visible) {
+                option3Group.style.display = 'block';
+            } else {
+                option3Group.style.display = 'none';
+            }
+
+            // Show/hide option 4
+            if (option4Visible) {
+                option4Group.style.display = 'block';
+            } else {
+                option4Group.style.display = 'none';
+            }
+
+            // Show/hide "Add Option" button (only show if we have less than 4 options)
+            const totalVisible = 2 + (option3Visible ? 1 : 0) + (option4Visible ? 1 : 0);
+            if (totalVisible < 4) {
+                addOptionBtnContainer.style.display = 'block';
+            } else {
+                addOptionBtnContainer.style.display = 'none';
+            }
+        }
+
+        // Make functions globally accessible
+        window.addOption = addOption;
+        window.removeOption = removeOption;
+        window.updateOptionVisibility = updateOptionVisibility;
+        
+        // Create getters/setters to keep variables in sync with global scope
+        Object.defineProperty(window, 'option3Visible', {
+            get: function() { return option3Visible; },
+            set: function(value) { option3Visible = value; }
+        });
+        Object.defineProperty(window, 'option4Visible', {
+            get: function() { return option4Visible; },
+            set: function(value) { option4Visible = value; }
+        });
+        
+        // Initialize on page load
+        updateOptionVisibility();
     </script>
 
     <script src="<%= ResolveUrl("~/Scripts/add-questions.js") %>"></script>

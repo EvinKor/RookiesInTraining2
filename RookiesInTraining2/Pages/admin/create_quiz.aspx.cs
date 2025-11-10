@@ -101,7 +101,8 @@ namespace RookiesInTraining2.Pages.admin
             int timeLimit = int.Parse(txtTimeLimit.Text);
             int passingScore = int.Parse(txtPassingScore.Text);
             string mode = ddlQuizMode.SelectedValue;
-            bool publish = chkPublishQuiz.Checked;
+            // chkPublishQuiz checkbox removed - default to false
+            bool publish = false;
             string adminSlug = Session["UserSlug"]?.ToString() ?? "";
             
             System.Diagnostics.Debug.WriteLine($"[CreateQuiz] Creating quiz: {quizTitle}");

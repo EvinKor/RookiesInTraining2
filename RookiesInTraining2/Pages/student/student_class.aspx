@@ -18,11 +18,6 @@
                             <i class="bi bi-code me-1"></i>Code: <strong><asp:Label ID="lblClassCode" runat="server" /></strong>
                         </p>
                     </div>
-                    <asp:HyperLink ID="lnkBack" runat="server" 
-                                  NavigateUrl="~/Pages/student/dashboard_student.aspx"
-                                  CssClass="btn btn-light btn-lg">
-                        <i class="bi bi-arrow-left me-2"></i>Dashboard
-                    </asp:HyperLink>
                 </div>
             </div>
         </div>
@@ -114,7 +109,34 @@
         let classSlug = '<%= Request.QueryString["class"] %>';
         
         window.addEventListener('DOMContentLoaded', function() {
-            loadLevels();
+            // Check for tab parameter in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            
+            if (tabParam === 'forum') {
+                // Activate forum tab
+                const forumTab = document.getElementById('forumTab');
+                const forumContent = document.getElementById('forumContent');
+                const levelsTab = document.getElementById('levelsTab');
+                const levelsContent = document.getElementById('levelsContent');
+                
+                if (forumTab && forumContent && levelsTab && levelsContent) {
+                    // Remove active class from levels tab
+                    levelsTab.classList.remove('active');
+                    levelsContent.classList.remove('show', 'active');
+                    
+                    // Add active class to forum tab
+                    forumTab.classList.add('active');
+                    forumContent.classList.add('show', 'active');
+                    
+                    // Load forum posts
+                    loadForumPosts();
+                }
+            } else {
+                // Default: load levels
+                loadLevels();
+            }
+            
             loadProgress();
         });
 

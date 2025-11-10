@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.UI;
+using RookiesInTraining2.Helpers;
 
 namespace RookiesInTraining2.Pages.admin
 {
@@ -49,6 +50,10 @@ namespace RookiesInTraining2.Pages.admin
                 // Load post and replies
                 LoadPost(postSlug, classSlug);
                 LoadReplies(postSlug);
+                
+                // Populate edit post modal fields
+                txtEditPostTitle.Text = lblPostTitle.Text;
+                txtEditPostContent.Text = lblContent.Text;
             }
         }
 
@@ -160,6 +165,272 @@ namespace RookiesInTraining2.Pages.admin
             }
         }
 
+        protected void btnDeletePost_Click(object sender, EventArgs e)
+        {
+            string adminSlug = Session["UserSlug"]?.ToString();
+            string postSlug = hfPostSlug.Value;
+            string classSlug = hfClassSlug.Value;
+
+            try
+            {
+                using (var con = new SqlConnection(ConnStr))
+                {
+                    con.Open();
+                    using (var tx = con.BeginTransaction())
+                    {
+                        try
+                        {
+                            // Get post title for logging
+                            string postTitle = "";
+                            using (var cmd = con.CreateCommand())
+                            {
+                                cmd.Transaction = tx;
+                                cmd.CommandText = "SELECT title FROM ForumPosts WHERE post_slug = @slug";
+                                cmd.Parameters.AddWithValue("@slug", postSlug);
+                                postTitle = cmd.ExecuteScalar()?.ToString() ?? "Unknown";
+                            }
+
+                            // Soft delete all replies first
+                            using (var cmd = con.CreateCommand())
+                            {
+                                cmd.Transaction = tx;
+                                cmd.CommandText = @"
+                                    UPDATE ForumReplies 
+                                    SET is_deleted = 1, updated_at = SYSUTCDATETIME()
+                                    WHERE post_slug = @postSlug";
+                                cmd.Parameters.AddWithValue("@postSlug", postSlug);
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            // Soft delete the post
+                            using (var cmd = con.CreateCommand())
+                            {
+                                cmd.Transaction = tx;
+                                cmd.CommandText = @"
+                                    UPDATE ForumPosts 
+                                    SET is_deleted = 1, updated_at = SYSUTCDATETIME()
+                                    WHERE post_slug = @postSlug";
+                                cmd.Parameters.AddWithValue("@postSlug", postSlug);
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            tx.Commit();
+
+                            // Log admin action
+                            AdminAuditLogger.LogAction(adminSlug, "delete_post", "post", postSlug, 
+                                $"Deleted post: {postTitle}");
+
+                            // Redirect back to forum
+                            Response.Redirect($"~/Pages/admin/manage_classes.aspx?class={classSlug}", false);
+                        }
+                        catch (Exception ex)
+                        {
+                            tx.Rollback();
+                            throw ex;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ViewPost] Error deleting post: {ex.Message}");
+                ClientScript.RegisterStartupScript(this.GetType(), "showError",
+                    $"alert('Error deleting post: {Server.HtmlEncode(ex.Message)}');", true);
+            }
+        }
+
+        protected void btnUpdatePost_Click(object sender, EventArgs e)
+        {
+            string adminSlug = Session["UserSlug"]?.ToString();
+            string postSlug = hfPostSlug.Value;
+            string classSlug = hfClassSlug.Value;
+            string title = txtEditPostTitle.Text.Trim();
+            string content = txtEditPostContent.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(content))
+            {
+                lblEditPostError.Text = "Title and content are required.";
+                lblEditPostError.Visible = true;
+                return;
+            }
+
+            try
+            {
+                using (var con = new SqlConnection(ConnStr))
+                using (var cmd = con.CreateCommand())
+                {
+                    con.Open();
+
+                    // Get original post title for logging
+                    string originalTitle = "";
+                    cmd.CommandText = "SELECT title FROM ForumPosts WHERE post_slug = @slug";
+                    cmd.Parameters.AddWithValue("@slug", postSlug);
+                    var titleResult = cmd.ExecuteScalar();
+                    if (titleResult != null)
+                    {
+                        originalTitle = titleResult.ToString();
+                    }
+
+                    // Update the post
+                    cmd.Parameters.Clear();
+                    cmd.CommandText = @"
+                        UPDATE ForumPosts 
+                        SET title = @title, 
+                            content = @content, 
+                            updated_at = SYSUTCDATETIME()
+                        WHERE post_slug = @postSlug AND is_deleted = 0";
+                    
+                    cmd.Parameters.AddWithValue("@title", title);
+                    cmd.Parameters.AddWithValue("@content", content);
+                    cmd.Parameters.AddWithValue("@postSlug", postSlug);
+
+                    int rowsAffected = cmd.ExecuteNonQuery();
+                    if (rowsAffected > 0)
+                    {
+                        // Log admin action
+                        AdminAuditLogger.LogAction(adminSlug, "edit_post", "post", postSlug, 
+                            $"Edited post: {originalTitle}");
+
+                        // Reload the page to show updated content
+                        Response.Redirect($"~/Pages/admin/view_forum_post.aspx?post={postSlug}&class={classSlug}", false);
+                    }
+                    else
+                    {
+                        lblEditPostError.Text = "Post not found or could not be updated.";
+                        lblEditPostError.Visible = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ViewPost] Error updating post: {ex.Message}");
+                lblEditPostError.Text = $"Error updating post: {Server.HtmlEncode(ex.Message)}";
+                lblEditPostError.Visible = true;
+            }
+        }
+
+        protected void btnUpdateReply_Click(object sender, EventArgs e)
+        {
+            string adminSlug = Session["UserSlug"]?.ToString();
+            string replySlug = hfEditReplySlug.Value;
+            string postSlug = hfPostSlug.Value;
+            string classSlug = hfClassSlug.Value;
+            string content = txtEditReplyContent.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                lblEditReplyError.Text = "Content is required.";
+                lblEditReplyError.Visible = true;
+                return;
+            }
+
+            try
+            {
+                using (var con = new SqlConnection(ConnStr))
+                using (var cmd = con.CreateCommand())
+                {
+                    con.Open();
+
+                    // Get original reply content for logging
+                    string originalContent = "";
+                    cmd.CommandText = "SELECT content FROM ForumReplies WHERE reply_slug = @slug";
+                    cmd.Parameters.AddWithValue("@slug", replySlug);
+                    var contentResult = cmd.ExecuteScalar();
+                    if (contentResult != null)
+                    {
+                        originalContent = contentResult.ToString();
+                        if (originalContent.Length > 50) originalContent = originalContent.Substring(0, 50) + "...";
+                    }
+
+                    // Update the reply
+                    cmd.Parameters.Clear();
+                    cmd.CommandText = @"
+                        UPDATE ForumReplies 
+                        SET content = @content, 
+                            updated_at = SYSUTCDATETIME()
+                        WHERE reply_slug = @replySlug AND is_deleted = 0";
+                    
+                    cmd.Parameters.AddWithValue("@content", content);
+                    cmd.Parameters.AddWithValue("@replySlug", replySlug);
+
+                    int rowsAffected = cmd.ExecuteNonQuery();
+                    if (rowsAffected > 0)
+                    {
+                        // Log admin action
+                        AdminAuditLogger.LogAction(adminSlug, "edit_reply", "reply", replySlug, 
+                            $"Edited reply: {originalContent}");
+
+                        // Reload the page to show updated content
+                        Response.Redirect($"~/Pages/admin/view_forum_post.aspx?post={postSlug}&class={classSlug}", false);
+                    }
+                    else
+                    {
+                        lblEditReplyError.Text = "Reply not found or could not be updated.";
+                        lblEditReplyError.Visible = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[ViewPost] Error updating reply: {ex.Message}");
+                lblEditReplyError.Text = $"Error updating reply: {Server.HtmlEncode(ex.Message)}";
+                lblEditReplyError.Visible = true;
+            }
+        }
+
+        protected void rptReplies_ItemCommand(object source, System.Web.UI.WebControls.RepeaterCommandEventArgs e)
+        {
+            if (e.CommandName == "DeleteReply")
+            {
+                string adminSlug = Session["UserSlug"]?.ToString();
+                string replySlug = e.CommandArgument.ToString();
+                string postSlug = hfPostSlug.Value;
+                string classSlug = hfClassSlug.Value;
+
+                try
+                {
+                    using (var con = new SqlConnection(ConnStr))
+                    using (var cmd = con.CreateCommand())
+                    {
+                        con.Open();
+
+                        // Get reply content for logging
+                        string replyContent = "";
+                        cmd.CommandText = "SELECT content FROM ForumReplies WHERE reply_slug = @slug";
+                        cmd.Parameters.AddWithValue("@slug", replySlug);
+                        var content = cmd.ExecuteScalar();
+                        if (content != null)
+                        {
+                            replyContent = content.ToString();
+                            if (replyContent.Length > 50) replyContent = replyContent.Substring(0, 50) + "...";
+                        }
+
+                        // Soft delete the reply
+                        cmd.Parameters.Clear();
+                        cmd.CommandText = @"
+                            UPDATE ForumReplies 
+                            SET is_deleted = 1, updated_at = SYSUTCDATETIME()
+                            WHERE reply_slug = @replySlug";
+                        cmd.Parameters.AddWithValue("@replySlug", replySlug);
+                        cmd.ExecuteNonQuery();
+
+                        // Log admin action
+                        AdminAuditLogger.LogAction(adminSlug, "delete_reply", "reply", replySlug, 
+                            $"Deleted reply: {replyContent}");
+
+                        // Reload the page
+                        Response.Redirect($"~/Pages/admin/view_forum_post.aspx?post={postSlug}&class={classSlug}", false);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[ViewPost] Error deleting reply: {ex.Message}");
+                    ClientScript.RegisterStartupScript(this.GetType(), "showError",
+                        $"alert('Error deleting reply: {Server.HtmlEncode(ex.Message)}');", true);
+                }
+            }
+        }
+
         protected void btnPostReply_Click(object sender, EventArgs e)
         {
             if (!Page.IsValid) return;
@@ -255,5 +526,6 @@ namespace RookiesInTraining2.Pages.admin
         }
     }
 }
+
 
 

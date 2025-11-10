@@ -23,88 +23,6 @@
         </div>
     </div>
 
-    <!-- Stats Cards -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="bg-primary bg-opacity-10 rounded-3 p-3">
-                                <i class="bi bi-book text-primary fs-3"></i>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="text-muted mb-1 small">My Courses</h6>
-                            <h3 class="mb-0">
-                                <asp:Label ID="lblMyCourses" runat="server" Text="0" />
-                            </h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="bg-success bg-opacity-10 rounded-3 p-3">
-                                <i class="bi bi-people text-success fs-3"></i>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="text-muted mb-1 small">Total Students</h6>
-                            <h3 class="mb-0">
-                                <asp:Label ID="lblTotalStudents" runat="server" Text="0" />
-                            </h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="bg-warning bg-opacity-10 rounded-3 p-3">
-                                <i class="bi bi-clipboard-check text-warning fs-3"></i>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="text-muted mb-1 small">Pending Assignments</h6>
-                            <h3 class="mb-0">
-                                <asp:Label ID="lblPendingAssignments" runat="server" Text="0" />
-                            </h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-shrink-0">
-                            <div class="bg-info bg-opacity-10 rounded-3 p-3">
-                                <i class="bi bi-file-earmark-text text-info fs-3"></i>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="text-muted mb-1 small">Teaching Materials</h6>
-                            <h3 class="mb-0">
-                                <asp:Label ID="lblMaterials" runat="server" Text="0" />
-                            </h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Two Column Layout -->
     <div class="row g-4">
@@ -113,7 +31,12 @@
             <!-- My Classes -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center py-3">
-                    <h5 class="mb-0"><i class="bi bi-collection me-2"></i>My Classes</h5>
+                    <h5 class="mb-0">
+                        <i class="bi bi-collection me-2"></i>My Classes
+                        <span class="badge bg-primary ms-2">
+                            <asp:Label ID="lblMyClassesCount" runat="server" Text="0" />
+                        </span>
+                    </h5>
                     <div class="d-flex gap-2">
                         <asp:HyperLink runat="server" NavigateUrl="~/Pages/game/game_dashboard.aspx" CssClass="btn btn-sm btn-primary">
                             <i class="bi bi-controller me-1"></i>Multiplayer Game
@@ -129,7 +52,7 @@
                         <!-- Class cards will be rendered here by JavaScript -->
                     </div>
                     
-                    <!-- View More Button -->
+                    <!-- View All Classes Button -->
                     <div id="viewMoreClasses" class="text-center mt-4" style="display: none;">
                         <a href="<%= ResolveUrl("~/Pages/teacher/manage_classes.aspx") %>" 
                            class="btn btn-outline-primary btn-lg">
@@ -194,17 +117,14 @@
                         <a href="<%= ResolveUrl("~/Pages/teacher/manage_classes.aspx") %>" class="btn btn-primary text-start">
                             <i class="bi bi-gear me-2"></i>Manage Classes
                         </a>
-                        <a href="#" class="btn btn-outline-success text-start">
-                            <i class="bi bi-file-earmark-plus me-2"></i>Upload Materials
+                        <a href="<%= ResolveUrl("~/Pages/game/game_dashboard.aspx") %>" class="btn btn-outline-primary text-start">
+                            <i class="bi bi-controller me-2"></i>Create Multiplayer
                         </a>
-                        <a href="#" class="btn btn-outline-info text-start">
-                            <i class="bi bi-magic me-2"></i>AI Quiz Generator
+                        <a href="<%= ResolveUrl("~/Pages/teacher/students.aspx") %>" class="btn btn-outline-success text-start" style="border: 2px solid #28a745;">
+                            <i class="bi bi-people me-2"></i>Student List
                         </a>
-                        <a href="#" class="btn btn-outline-warning text-start">
-                            <i class="bi bi-clipboard-check me-2"></i>Grade Assignments
-                        </a>
-                        <a href="#" class="btn btn-outline-secondary text-start">
-                            <i class="bi bi-graph-up-arrow me-2"></i>View Performance
+                        <a href="<%= ResolveUrl("~/Pages/teacher/Profile.aspx") %>" class="btn btn-outline-secondary text-start">
+                            <i class="bi bi-gear me-2"></i>Settings
                         </a>
                     </div>
                 </div>
@@ -262,19 +182,9 @@
     </script>
 
     <style>
-        /* Light Theme Dashboard */
+        /* Consistent Dashboard Styling */
         body {
-            background: #f5f7fa !important;
-        }
-
-        .card {
-            background: white;
-            border: 1px solid #e8ecf1;
-        }
-
-        .card-header {
-            background: #ffffff !important;
-            border-bottom: 1px solid #e8ecf1;
+            background: #f9fafb !important;
         }
 
         /* Class Cards */

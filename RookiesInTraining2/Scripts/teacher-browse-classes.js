@@ -54,8 +54,8 @@
 
         grid.innerHTML = '';
 
-        // Limit to 6 classes (2 rows x 3 columns) for dashboard
-        const maxClasses = 6;
+        // Limit to 3 classes for dashboard
+        const maxClasses = 3;
         const classesToShow = classes.slice(0, maxClasses);
 
         classesToShow.forEach(function (classItem) {
@@ -63,7 +63,7 @@
             grid.appendChild(card);
         });
 
-        // Show "View More" button if there are more than 6 classes
+        // Show "View All Classes" button if there are more than 3 classes
         if (viewMoreBtn) {
             if (classes.length > maxClasses) {
                 viewMoreBtn.style.display = 'block';

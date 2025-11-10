@@ -42,42 +42,6 @@ namespace RookiesInTraining2.Pages
         protected global::System.Web.UI.WebControls.Label lblCurrentDate;
 
         /// <summary>
-        /// lblMyCourses control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblMyCourses;
-
-        /// <summary>
-        /// lblTotalStudents control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblTotalStudents;
-
-        /// <summary>
-        /// lblPendingAssignments control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblPendingAssignments;
-
-        /// <summary>
-        /// lblMaterials control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblMaterials;
-
-        /// <summary>
         /// rptActivity control.
         /// </summary>
         /// <remarks>
@@ -121,6 +85,15 @@ namespace RookiesInTraining2.Pages
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblNoPendingMessage;
+
+        /// <summary>
+        /// lblMyClassesCount control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblMyClassesCount;
 
         /// <summary>
         /// hfClassesJson control.

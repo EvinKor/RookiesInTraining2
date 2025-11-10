@@ -14,35 +14,65 @@ namespace RookiesInTraining2.MasterPages
                 return;
             }
 
-            if (!IsPostBack)
+            // Setup header on every load to ensure correct visibility
+            SetupHeader();
+        }
+
+        private void SetupHeader()
+        {
+            string role = Session["Role"]?.ToString()?.ToLowerInvariant() ?? "";
+            string currentPage = Request.AppRelativeCurrentExecutionFilePath.ToLower();
+            string path = Request.Path.ToLower();
+
+            // Check if we're on admin dashboard - check multiple ways to be sure
+            bool isAdminDashboard = role == "admin" && 
+                (currentPage.Contains("dashboard_admin.aspx") || 
+                 path.Contains("dashboard_admin.aspx") ||
+                 currentPage.Contains("admin/dashboard_admin") ||
+                 path.Contains("admin/dashboard_admin"));
+
+            if (isAdminDashboard)
             {
-                // Display user info
-                string fullName = Session["FullName"]?.ToString() ?? "用户";
-                string role = Session["Role"]?.ToString() ?? "";
-                
-                lblUser.Text = $"{fullName} ({GetRoleText(role)})";
-
-                // Set user initial
-                if (!string.IsNullOrEmpty(fullName) && fullName.Length > 0)
-                {
-                    imgAvatar.InnerHtml = $"<span class='user-initial'>{fullName[0]}</span>";
-                }
-
-                // Set profile settings link based on role
-                SetProfileSettingsLink(role);
+                // Show avatar, settings, logout
+                pnlAdminDashboardHeader.Visible = true;
+                pnlOtherPagesHeader.Visible = false;
+                SetupAdminDashboardHeader();
+            }
+            else if (role == "admin")
+            {
+                // Show dashboard button
+                pnlAdminDashboardHeader.Visible = false;
+                pnlOtherPagesHeader.Visible = true;
+                lnkDashboard.NavigateUrl = "~/Pages/admin/dashboard_admin.aspx";
             }
             else
             {
-                // Also set on postback to ensure it's always visible
-                string role = Session["Role"]?.ToString() ?? "";
-                SetProfileSettingsLink(role);
+                // For other roles or fallback, show dashboard header
+                pnlAdminDashboardHeader.Visible = true;
+                pnlOtherPagesHeader.Visible = false;
+                SetupAdminDashboardHeader();
             }
-
-            // Wire up logout button
-            btnLogout.Click += BtnLogout_Click;
         }
 
-        private void BtnLogout_Click(object sender, EventArgs e)
+        private void SetupAdminDashboardHeader()
+        {
+            string fullName = Session["FullName"]?.ToString() ?? "User";
+            string role = Session["Role"]?.ToString() ?? "";
+            
+            // Display user info
+            lblUser.Text = $"{fullName} ({GetRoleText(role)})";
+
+            // Set user initial
+            if (!string.IsNullOrEmpty(fullName) && fullName.Length > 0)
+            {
+                imgAvatar.InnerHtml = $"<span class='user-initial'>{fullName[0]}</span>";
+            }
+
+            // Set profile settings link based on role
+            SetProfileSettingsLink(role);
+        }
+
+        protected void BtnLogout_Click(object sender, EventArgs e)
         {
             // Clear session
             Session.Clear();
@@ -95,6 +125,22 @@ namespace RookiesInTraining2.MasterPages
                 default:
                     lnkProfileSettings.Visible = false;
                     break;
+            }
+        }
+
+        protected string GetDashboardUrl()
+        {
+            string role = Session["Role"]?.ToString()?.ToLowerInvariant() ?? "";
+            switch (role)
+            {
+                case "student":
+                    return ResolveUrl("~/Pages/student/dashboard_student.aspx");
+                case "teacher":
+                    return ResolveUrl("~/Pages/teacher/dashboard_teacher.aspx");
+                case "admin":
+                    return ResolveUrl("~/Pages/admin/dashboard_admin.aspx");
+                default:
+                    return ResolveUrl("~/Pages/Login.aspx");
             }
         }
     }

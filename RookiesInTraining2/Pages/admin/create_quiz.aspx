@@ -136,9 +136,6 @@
 
                 <div class="mb-4">
                     <div class="form-check form-switch">
-                        <asp:CheckBox ID="chkPublishQuiz" runat="server" 
-                                      CssClass="form-check-input"
-                                      Checked="false" />
                         <label class="form-check-label fw-bold">
                             <i class="bi bi-eye me-1"></i>Publish immediately
                         </label>

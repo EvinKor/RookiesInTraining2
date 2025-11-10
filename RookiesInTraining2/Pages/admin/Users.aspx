@@ -11,9 +11,6 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="d-flex align-items-center mb-3">
-                <a href="dashboard_admin.aspx" class="btn btn-outline-secondary me-3">
-                    <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
-                </a>
                 <div class="flex-grow-1">
                     <h2 class="mb-1">User Management</h2>
                     <p class="text-muted mb-0">Manage all users in the system</p>
@@ -302,8 +299,7 @@
 
                         <div class="mb-3">
                             <div class="form-check form-switch">
-                                <asp:CheckBox ID="chkEditIsBlocked" runat="server" CssClass="form-check-input" />
-                                <label class="form-check-label" for="<%= chkEditIsBlocked.ClientID %>">
+                                <label class="form-check-label">
                                     Block User
                                 </label>
                             </div>
@@ -472,7 +468,7 @@
                 document.getElementById('<%= hfEditUserSlug.ClientID %>').value = this.getAttribute('data-user-slug');
                 document.getElementById('<%= txtEditDisplayName.ClientID %>').value = this.getAttribute('data-display-name');
                 document.getElementById('<%= txtEditEmail.ClientID %>').value = this.getAttribute('data-email');
-                document.getElementById('<%= chkEditIsBlocked.ClientID %>').checked = this.getAttribute('data-is-blocked') === 'true';
+                // chkEditIsBlocked checkbox removed - blocked status is read-only
                 
                 var modal = new bootstrap.Modal(document.getElementById('editUserModal'));
                 modal.show();

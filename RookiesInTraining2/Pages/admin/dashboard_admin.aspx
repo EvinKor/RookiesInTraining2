@@ -181,7 +181,7 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center py-3">
                     <h5 class="mb-0"><i class="bi bi-activity me-2"></i>System Activity Log</h5>
-                    <a href="#" class="btn btn-sm btn-outline-secondary">View All</a>
+                    <asp:HyperLink ID="lnkViewAllLogs" runat="server" NavigateUrl="~/Pages/admin/ActivityLog.aspx" CssClass="btn btn-sm btn-outline-secondary">View All</asp:HyperLink>
                 </div>
                 <div class="card-body">
                     <asp:Repeater ID="rptSystemLogs" runat="server">
@@ -214,7 +214,7 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <asp:HyperLink runat="server" NavigateUrl="~/Pages/game/game_dashboard.aspx" CssClass="btn btn-outline-success text-start">
+                        <asp:HyperLink runat="server" NavigateUrl="~/Pages/game/game_dashboard.aspx" CssClass="btn btn-outline-success text-start" style="border: 2px solid #28a745;">
                             <i class="bi bi-controller me-2"></i>Multiplayer Quiz Game
                         </asp:HyperLink>
                         <a href="Users.aspx?create=user" class="btn btn-outline-primary text-start">
@@ -223,10 +223,10 @@
                         <a href="<%= ResolveUrl("~/Pages/admin/admin_create_module.aspx") %>" class="btn btn-outline-secondary text-start">
                             <i class="bi bi-book me-2"></i>Create Course
                         </a>
-                        <a href="Reports.aspx" class="btn btn-outline-info text-start">
+                        <a href="Reports.aspx" class="btn btn-outline-info text-start" style="border: 2px solid #0dcaf0;">
                             <i class="bi bi-file-earmark-bar-graph me-2"></i>Generate Report
                         </a>
-                        <a href="Profile.aspx" class="btn btn-outline-warning text-start">
+                        <a href="Profile.aspx" class="btn btn-outline-warning text-start" style="border: 2px solid #ffc107;">
                             <i class="bi bi-gear me-2"></i>Settings
                         </a>
                     </div>

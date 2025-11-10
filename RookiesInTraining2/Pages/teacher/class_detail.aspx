@@ -420,9 +420,6 @@
                         </div>
 
                         <div class="form-check form-switch mb-0">
-                            <asp:CheckBox ID="chkPublishLevel" runat="server" 
-                                          CssClass="form-check-input" 
-                                          Checked="true" />
                             <label class="form-check-label fw-semibold">
                                 <i class="bi bi-eye me-1"></i>Publish immediately (students can access)
                             </label>
@@ -507,9 +504,6 @@
                         </div>
 
                         <div class="form-check form-switch mb-3">
-                            <asp:CheckBox ID="chkPublishQuiz" runat="server" 
-                                          CssClass="form-check-input"
-                                          Checked="false" />
                             <label class="form-check-label fw-semibold">
                                 <i class="bi bi-eye me-1"></i>Publish immediately
                             </label>

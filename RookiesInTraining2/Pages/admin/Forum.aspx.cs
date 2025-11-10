@@ -39,6 +39,7 @@ namespace RookiesInTraining2.Pages
                         SELECT 
                             fp.post_slug as PostSlug,
                             fp.title as Title,
+                            fp.content as Content,
                             u.display_name as AuthorName,
                             c.class_name as ClassName,
                             (SELECT COUNT(*) FROM ForumReplies fr 
@@ -59,6 +60,7 @@ namespace RookiesInTraining2.Pages
                             {
                                 PostSlug = reader["PostSlug"].ToString(),
                                 Title = reader["Title"].ToString(),
+                                Content = reader["Content"]?.ToString() ?? "",
                                 AuthorName = reader["AuthorName"]?.ToString() ?? "Unknown",
                                 ClassName = reader["ClassName"]?.ToString() ?? "Unknown",
                                 ReplyCount = Convert.ToInt32(reader["ReplyCount"]),
@@ -217,6 +219,151 @@ namespace RookiesInTraining2.Pages
                     ClientScript.RegisterStartupScript(this.GetType(), "showError",
                         $"alert('Error deleting post: {Server.HtmlEncode(ex.Message)}');", true);
                 }
+            }
+        }
+
+        protected void btnUpdatePost_Click(object sender, EventArgs e)
+        {
+            string adminSlug = Session["UserSlug"]?.ToString();
+            string postSlug = hfEditPostSlug.Value;
+            string title = txtEditPostTitle.Text.Trim();
+            string content = txtEditPostContent.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(content))
+            {
+                lblEditPostError.Text = "Title and content are required.";
+                lblEditPostError.Visible = true;
+                return;
+            }
+
+            try
+            {
+                using (var con = new SqlConnection(ConnStr))
+                using (var cmd = con.CreateCommand())
+                {
+                    con.Open();
+
+                    // Get original post title for logging
+                    string originalTitle = "";
+                    cmd.CommandText = "SELECT title FROM ForumPosts WHERE post_slug = @slug";
+                    cmd.Parameters.AddWithValue("@slug", postSlug);
+                    var titleResult = cmd.ExecuteScalar();
+                    if (titleResult != null)
+                    {
+                        originalTitle = titleResult.ToString();
+                    }
+
+                    // Update the post
+                    cmd.Parameters.Clear();
+                    cmd.CommandText = @"
+                        UPDATE ForumPosts 
+                        SET title = @title, 
+                            content = @content, 
+                            updated_at = SYSUTCDATETIME()
+                        WHERE post_slug = @postSlug AND is_deleted = 0";
+                    
+                    cmd.Parameters.AddWithValue("@title", title);
+                    cmd.Parameters.AddWithValue("@content", content);
+                    cmd.Parameters.AddWithValue("@postSlug", postSlug);
+
+                    int rowsAffected = cmd.ExecuteNonQuery();
+                    if (rowsAffected > 0)
+                    {
+                        // Log admin action
+                        AdminAuditLogger.LogAction(adminSlug, "edit_post", "post", postSlug, 
+                            $"Edited post: {originalTitle}");
+
+                        // Reload data
+                        LoadPosts();
+                        LoadReplies();
+
+                        // Close modal via JavaScript
+                        ClientScript.RegisterStartupScript(this.GetType(), "closeEditPostModal",
+                            "setTimeout(function() { var modal = bootstrap.Modal.getInstance(document.getElementById('editPostModal')); if (modal) modal.hide(); }, 100);", true);
+                    }
+                    else
+                    {
+                        lblEditPostError.Text = "Post not found or could not be updated.";
+                        lblEditPostError.Visible = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Forum] Error updating post: {ex.Message}");
+                lblEditPostError.Text = $"Error updating post: {Server.HtmlEncode(ex.Message)}";
+                lblEditPostError.Visible = true;
+            }
+        }
+
+        protected void btnUpdateReply_Click(object sender, EventArgs e)
+        {
+            string adminSlug = Session["UserSlug"]?.ToString();
+            string replySlug = hfEditReplySlug.Value;
+            string content = txtEditReplyContent.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                lblEditReplyError.Text = "Content is required.";
+                lblEditReplyError.Visible = true;
+                return;
+            }
+
+            try
+            {
+                using (var con = new SqlConnection(ConnStr))
+                using (var cmd = con.CreateCommand())
+                {
+                    con.Open();
+
+                    // Get original reply content for logging
+                    string originalContent = "";
+                    cmd.CommandText = "SELECT content FROM ForumReplies WHERE reply_slug = @slug";
+                    cmd.Parameters.AddWithValue("@slug", replySlug);
+                    var contentResult = cmd.ExecuteScalar();
+                    if (contentResult != null)
+                    {
+                        originalContent = contentResult.ToString();
+                        if (originalContent.Length > 50) originalContent = originalContent.Substring(0, 50) + "...";
+                    }
+
+                    // Update the reply
+                    cmd.Parameters.Clear();
+                    cmd.CommandText = @"
+                        UPDATE ForumReplies 
+                        SET content = @content, 
+                            updated_at = SYSUTCDATETIME()
+                        WHERE reply_slug = @replySlug AND is_deleted = 0";
+                    
+                    cmd.Parameters.AddWithValue("@content", content);
+                    cmd.Parameters.AddWithValue("@replySlug", replySlug);
+
+                    int rowsAffected = cmd.ExecuteNonQuery();
+                    if (rowsAffected > 0)
+                    {
+                        // Log admin action
+                        AdminAuditLogger.LogAction(adminSlug, "edit_reply", "reply", replySlug, 
+                            $"Edited reply: {originalContent}");
+
+                        // Reload data
+                        LoadReplies();
+
+                        // Close modal via JavaScript
+                        ClientScript.RegisterStartupScript(this.GetType(), "closeEditReplyModal",
+                            "setTimeout(function() { var modal = bootstrap.Modal.getInstance(document.getElementById('editReplyModal')); if (modal) modal.hide(); }, 100);", true);
+                    }
+                    else
+                    {
+                        lblEditReplyError.Text = "Reply not found or could not be updated.";
+                        lblEditReplyError.Visible = true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Forum] Error updating reply: {ex.Message}");
+                lblEditReplyError.Text = $"Error updating reply: {Server.HtmlEncode(ex.Message)}";
+                lblEditReplyError.Visible = true;
             }
         }
 

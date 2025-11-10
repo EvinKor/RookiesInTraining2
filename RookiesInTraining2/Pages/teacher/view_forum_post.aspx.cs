@@ -43,8 +43,17 @@ namespace RookiesInTraining2.Pages.teacher
                 hfPostSlug.Value = postSlug;
                 hfClassSlug.Value = classSlug;
                 
-                // Set back link
-                lnkBack.NavigateUrl = $"~/Pages/teacher/manage_classes.aspx?class={classSlug}";
+                // Set back link based on user role
+                if (role == "student")
+                {
+                    // For students, redirect to student_class page with forum tab active
+                    lnkBack.NavigateUrl = $"~/Pages/student/student_class.aspx?class={classSlug}&tab=forum";
+                }
+                else
+                {
+                    // For teachers and admins, redirect to manage_classes page
+                    lnkBack.NavigateUrl = $"~/Pages/teacher/manage_classes.aspx?class={classSlug}";
+                }
 
                 // Load post and replies
                 LoadPost(postSlug, classSlug);
@@ -87,7 +96,16 @@ namespace RookiesInTraining2.Pages.teacher
                             }
                             else
                             {
-                                Response.Redirect($"~/Pages/teacher/manage_classes.aspx?class={classSlug}", false);
+                                // Redirect based on role
+                                string role = Convert.ToString(Session["Role"])?.ToLowerInvariant();
+                                if (role == "student")
+                                {
+                                    Response.Redirect($"~/Pages/student/student_class.aspx?class={classSlug}&tab=forum", false);
+                                }
+                                else
+                                {
+                                    Response.Redirect($"~/Pages/teacher/manage_classes.aspx?class={classSlug}", false);
+                                }
                             }
                         }
                     }
@@ -96,7 +114,16 @@ namespace RookiesInTraining2.Pages.teacher
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[ViewPost] Error loading post: {ex.Message}");
-                Response.Redirect($"~/Pages/teacher/manage_classes.aspx?class={classSlug}", false);
+                // Redirect based on role
+                string role = Convert.ToString(Session["Role"])?.ToLowerInvariant();
+                if (role == "student")
+                {
+                    Response.Redirect($"~/Pages/student/student_class.aspx?class={classSlug}&tab=forum", false);
+                }
+                else
+                {
+                    Response.Redirect($"~/Pages/teacher/manage_classes.aspx?class={classSlug}", false);
+                }
             }
         }
 

@@ -75,9 +75,18 @@
                             <i class="bi bi-clock ms-3 me-1"></i><asp:Label ID="lblDate" runat="server" />
                         </p>
                     </div>
-                    <asp:HyperLink ID="lnkBack" runat="server" CssClass="btn btn-outline-secondary btn-lg">
-                        <i class="bi bi-arrow-left me-2"></i>Back to Forum
-                    </asp:HyperLink>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-primary btn-lg" data-bs-toggle="modal" data-bs-target="#editPostModal">
+                            <i class="bi bi-pencil me-2"></i>Edit Post
+                        </button>
+                        <asp:Button ID="btnDeletePost" runat="server" Text="Delete Post" 
+                                    CssClass="btn btn-outline-danger btn-lg"
+                                    OnClick="btnDeletePost_Click"
+                                    OnClientClick="return confirm('Are you sure you want to delete this post? This will also delete all replies. This action cannot be undone.');" />
+                        <asp:HyperLink ID="lnkBack" runat="server" CssClass="btn btn-outline-secondary btn-lg">
+                            <i class="bi bi-arrow-left me-2"></i>Back to Forum
+                        </asp:HyperLink>
+                    </div>
                 </div>
             </div>
         </div>
@@ -88,7 +97,7 @@
                 <div class="alert alert-primary border-primary">
                     <h6 class="mb-2"><i class="bi bi-file-text me-2"></i>Original Post</h6>
                 </div>
-                <p style="white-space: pre-wrap; font-size: 1.1rem; line-height: 1.8;">
+                <p id="postContentDisplay" style="white-space: pre-wrap; font-size: 1.1rem; line-height: 1.8;">
                     <asp:Label ID="lblContent" runat="server" />
                 </p>
             </div>
@@ -103,7 +112,7 @@
                 </h5>
             </div>
             <div class="card-body p-4">
-                <asp:Repeater ID="rptReplies" runat="server">
+                <asp:Repeater ID="rptReplies" runat="server" OnItemCommand="rptReplies_ItemCommand">
                     <ItemTemplate>
                         <div class="card mb-3 border-start border-primary border-4">
                             <div class="card-body">
@@ -117,6 +126,24 @@
                                     <div class="flex-grow-1">
                                         <h6 class="mb-1"><%# Eval("AuthorName") %></h6>
                                         <small class="text-muted"><%# FormatDate(Convert.ToDateTime(Eval("CreatedAt"))) %></small>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary edit-reply-btn" 
+                                                    data-reply-slug="<%# Server.HtmlEncode(Eval("ReplySlug").ToString()) %>"
+                                                    data-reply-content="<%# Server.HtmlEncode(Eval("Content").ToString()) %>"
+                                                    title="Edit Reply">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <asp:LinkButton ID="btnDeleteReply" runat="server" 
+                                                            CommandName="DeleteReply" 
+                                                            CommandArgument='<%# Eval("ReplySlug") %>'
+                                                            CssClass="btn btn-sm btn-outline-danger"
+                                                            OnClientClick="return confirm('Are you sure you want to delete this reply? This action cannot be undone.');"
+                                                            title="Delete Reply">
+                                                <i class="bi bi-trash"></i>
+                                            </asp:LinkButton>
+                                        </div>
                                     </div>
                                 </div>
                                 <p class="mb-0 ms-5" style="white-space: pre-wrap;"><%# Eval("Content") %></p>
@@ -166,6 +193,109 @@
         </div>
     </div>
 
+    <!-- Edit Post Modal -->
+    <div class="modal fade" id="editPostModal" tabindex="-1" aria-labelledby="editPostModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editPostModalLabel">Edit Post</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <asp:Panel ID="pnlEditPost" runat="server" DefaultButton="btnUpdatePost">
+                    <div class="modal-body">
+                        <asp:Label ID="lblEditPostError" runat="server" CssClass="alert alert-danger" Visible="false" />
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Title <span class="text-danger">*</span></label>
+                            <asp:TextBox ID="txtEditPostTitle" runat="server" CssClass="form-control" MaxLength="200" />
+                            <asp:RequiredFieldValidator ID="rfvEditPostTitle" runat="server" 
+                                ControlToValidate="txtEditPostTitle" ValidationGroup="EditPostGroup"
+                                CssClass="text-danger small" ErrorMessage="Title is required." Display="Dynamic" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Content <span class="text-danger">*</span></label>
+                            <asp:TextBox ID="txtEditPostContent" runat="server" CssClass="form-control" 
+                                         TextMode="MultiLine" Rows="6" MaxLength="5000" />
+                            <asp:RequiredFieldValidator ID="rfvEditPostContent" runat="server" 
+                                ControlToValidate="txtEditPostContent" ValidationGroup="EditPostGroup"
+                                CssClass="text-danger small" ErrorMessage="Content is required." Display="Dynamic" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <asp:Button ID="btnUpdatePost" runat="server" Text="Update Post" 
+                                    CssClass="btn btn-primary" ValidationGroup="EditPostGroup" 
+                                    OnClick="btnUpdatePost_Click" />
+                    </div>
+                </asp:Panel>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Reply Modal -->
+    <div class="modal fade" id="editReplyModal" tabindex="-1" aria-labelledby="editReplyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editReplyModalLabel">Edit Reply</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <asp:Panel ID="pnlEditReply" runat="server" DefaultButton="btnUpdateReply">
+                    <div class="modal-body">
+                        <asp:Label ID="lblEditReplyError" runat="server" CssClass="alert alert-danger" Visible="false" />
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Content <span class="text-danger">*</span></label>
+                            <asp:TextBox ID="txtEditReplyContent" runat="server" CssClass="form-control" 
+                                         TextMode="MultiLine" Rows="6" MaxLength="5000" />
+                            <asp:RequiredFieldValidator ID="rfvEditReplyContent" runat="server" 
+                                ControlToValidate="txtEditReplyContent" ValidationGroup="EditReplyGroup"
+                                CssClass="text-danger small" ErrorMessage="Content is required." Display="Dynamic" />
+                        </div>
+
+                        <asp:HiddenField ID="hfEditReplySlug" runat="server" />
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <asp:Button ID="btnUpdateReply" runat="server" Text="Update Reply" 
+                                    CssClass="btn btn-primary" ValidationGroup="EditReplyGroup" 
+                                    OnClick="btnUpdateReply_Click" />
+                    </div>
+                </asp:Panel>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Populate edit post modal when opened
+            var editPostModal = document.getElementById('editPostModal');
+            if (editPostModal) {
+                editPostModal.addEventListener('show.bs.modal', function() {
+                    document.getElementById('<%= txtEditPostTitle.ClientID %>').value = document.getElementById('<%= lblPostTitle.ClientID %>').innerText;
+                    document.getElementById('<%= txtEditPostContent.ClientID %>').value = document.getElementById('<%= lblContent.ClientID %>').innerText;
+                });
+            }
+
+            // Edit Reply Button Handlers - Use event delegation for dynamically created buttons
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.edit-reply-btn')) {
+                    const btn = e.target.closest('.edit-reply-btn');
+                    const replySlug = btn.getAttribute('data-reply-slug');
+                    const replyContent = btn.getAttribute('data-reply-content');
+                    
+                    document.getElementById('<%= hfEditReplySlug.ClientID %>').value = replySlug;
+                    document.getElementById('<%= txtEditReplyContent.ClientID %>').value = replyContent;
+                    
+                    const modal = new bootstrap.Modal(document.getElementById('editReplyModal'));
+                    modal.show();
+                }
+            });
+        });
+    </script>
+
 </asp:Content>
+
 
 

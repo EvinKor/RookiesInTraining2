@@ -11,9 +11,6 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="d-flex align-items-center mb-3">
-                <a href="dashboard_admin.aspx" class="btn btn-outline-secondary me-3">
-                    <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
-                </a>
                 <div class="flex-grow-1">
                     <h2 class="mb-1">My Profile</h2>
                     <p class="text-muted mb-0">Update your profile information</p>

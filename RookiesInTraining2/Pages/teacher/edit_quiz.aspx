@@ -63,7 +63,6 @@
                 </div>
                 
                 <div class="form-check form-switch">
-                    <asp:CheckBox ID="chkPublished" runat="server" CssClass="form-check-input" />
                     <label class="form-check-label fw-bold">Published</label>
                 </div>
                 

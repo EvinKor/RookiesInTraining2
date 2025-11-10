@@ -78,7 +78,7 @@ namespace RookiesInTraining2.Pages.admin
                                 txtDescription.Text = reader["description"]?.ToString() ?? "";
                                 txtMinutes.Text = reader["estimated_minutes"]?.ToString() ?? "15";
                                 txtXP.Text = reader["xp_reward"]?.ToString() ?? "50";
-                                chkPublished.Checked = Convert.ToBoolean(reader["is_published"]);
+                                // chkPublished checkbox removed - published status is read-only
                                 
                                 string contentUrl = reader["content_url"]?.ToString();
                                 lblCurrentFile.Text = !string.IsNullOrEmpty(contentUrl) ? contentUrl : "None";
@@ -110,13 +110,26 @@ namespace RookiesInTraining2.Pages.admin
             string description = txtDescription.Text.Trim();
             int minutes = int.Parse(txtMinutes.Text);
             int xp = int.Parse(txtXP.Text);
-            bool published = chkPublished.Checked;
+            // chkPublished checkbox removed - preserve existing published status
+            bool published = false;
 
             try
             {
                 using (var con = new SqlConnection(ConnStr))
                 {
                     con.Open();
+                    
+                    // Get current published status from database
+                    using (var getPublishedCmd = con.CreateCommand())
+                    {
+                        getPublishedCmd.CommandText = "SELECT is_published FROM Levels WHERE level_slug = @levelSlug AND is_deleted = 0";
+                        getPublishedCmd.Parameters.AddWithValue("@levelSlug", levelSlug);
+                        object result = getPublishedCmd.ExecuteScalar();
+                        if (result != null)
+                        {
+                            published = Convert.ToBoolean(result);
+                        }
+                    }
 
                     // Handle file upload if present
                     string contentType = null;

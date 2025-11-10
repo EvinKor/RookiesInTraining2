@@ -16,8 +16,8 @@
             <div class="container-fluid py-4">
                 <div class="row align-items-center">
                     <div class="col-lg-8">
-                        <h1 class="mb-2">
-                            Welcome back, <span class="text-primary" id="studentName"></span>!                        </h1>
+                        <h1 class="mb-2" style="color: white;">
+                            Welcome back, <span id="studentName" style="color: #ffd700;"></span>!                        </h1>
                         <div class="d-flex flex-wrap gap-4 mt-3">
                             <div class="stat-badge">
                                 <i class="bi bi-star-fill text-warning"></i>
@@ -38,8 +38,8 @@
                         <!-- Overall Progress Bar -->
                         <div class="mt-3">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <small class="text-muted">Overall Progress</small>
-                                <small class="text-muted"><span id="progressPct">0</span>%</small>
+                                <small style="color: white;">Overall Progress</small>
+                                <small style="color: white;"><span id="progressPct">0</span>%</small>
                             </div>
                             <div class="progress" style="height: 8px;">
                                 <div id="overallProgress" class="progress-bar bg-primary" 
@@ -58,10 +58,6 @@
                                           CssClass="btn btn-success btn-lg px-4 py-2">
                                 <i class="bi bi-controller me-2"></i>Multiplayer Quiz Game
                             </asp:HyperLink>
-                            <asp:Button ID="btnLogout" runat="server" 
-                                        CssClass="btn btn-outline-secondary" 
-                                        Text="Logout"
-                                        OnClick="btnLogout_Click" />
                         </div>
                     </div>
                 </div>

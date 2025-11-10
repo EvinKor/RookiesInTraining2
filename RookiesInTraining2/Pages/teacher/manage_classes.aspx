@@ -77,14 +77,9 @@
     <div class="container-fluid">
         <!-- Header -->
         <div class="manage-header">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h2 class="mb-2"><i class="bi bi-gear-fill me-2"></i>Manage Classes</h2>
-                    <p class="mb-0 opacity-90">Select a class to manage or create a new one</p>
-                </div>
-                <a href="<%= ResolveUrl("~/Pages/teacher/dashboard_teacher.aspx") %>" class="btn btn-light">
-                    <i class="bi bi-arrow-left me-2"></i>Back to Dashboard
-                </a>
+            <div>
+                <h2 class="mb-2"><i class="bi bi-gear-fill me-2"></i>Manage Classes</h2>
+                <p class="mb-0 opacity-90">Select a class to manage or create a new one</p>
             </div>
         </div>
 

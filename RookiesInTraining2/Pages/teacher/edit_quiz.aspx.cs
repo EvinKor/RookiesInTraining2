@@ -82,7 +82,7 @@ namespace RookiesInTraining2.Pages.teacher
                                 ddlMode.SelectedValue = reader["mode"].ToString();
                                 txtTimeLimit.Text = reader["time_limit_minutes"].ToString();
                                 txtPassingScore.Text = reader["passing_score"].ToString();
-                                chkPublished.Checked = Convert.ToBoolean(reader["published"]);
+                                // chkPublished checkbox removed - published status is read-only
                             }
                         }
                     }
@@ -168,7 +168,8 @@ namespace RookiesInTraining2.Pages.teacher
             string mode = ddlMode.SelectedValue;
             int timeLimit = int.Parse(txtTimeLimit.Text);
             int passingScore = int.Parse(txtPassingScore.Text);
-            bool published = chkPublished.Checked;
+            // chkPublished checkbox removed - preserve existing published status
+            bool published = false;
 
             if (string.IsNullOrWhiteSpace(title))
             {
@@ -182,6 +183,18 @@ namespace RookiesInTraining2.Pages.teacher
                 using (var con = new SqlConnection(ConnStr))
                 {
                     con.Open();
+                    
+                    // Get current published status from database
+                    using (var getPublishedCmd = con.CreateCommand())
+                    {
+                        getPublishedCmd.CommandText = "SELECT published FROM Quizzes WHERE quiz_slug = @quizSlug AND is_deleted = 0";
+                        getPublishedCmd.Parameters.AddWithValue("@quizSlug", hfQuizSlug.Value);
+                        object result = getPublishedCmd.ExecuteScalar();
+                        if (result != null)
+                        {
+                            published = Convert.ToBoolean(result);
+                        }
+                    }
                     using (var cmd = con.CreateCommand())
                     {
                         cmd.CommandText = @"

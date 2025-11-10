@@ -39,12 +39,6 @@
     </style>
 
     <div class="wizard-container">
-        <div class="mb-4">
-            <a href="<%= ResolveUrl("~/Pages/teacher/teacher_browse_classes.aspx") %>" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-2"></i>Back to Classes
-            </a>
-        </div>
-
         <div class="card wizard-card">
             <div class="wizard-header">
                 <h2 class="mb-0 fw-bold"><i class="bi bi-plus-circle me-2"></i>Create New Class</h2>
@@ -172,7 +166,7 @@
                         <i class="bi bi-arrow-left me-2"></i>Previous
                     </button>
                     <div class="ms-auto d-flex gap-2">
-                        <a href="<%= ResolveUrl("~/Pages/teacher/teacher_browse_classes.aspx") %>" class="btn btn-lg btn-outline-secondary">
+                        <a href="<%= ResolveUrl("~/Pages/teacher/dashboard_teacher.aspx") %>" class="btn btn-lg btn-outline-secondary">
                             <i class="bi bi-x-lg me-2"></i>Cancel
                         </a>
                         <button type="button" id="btnNext" class="btn btn-lg btn-primary px-4" onclick="goNext()">

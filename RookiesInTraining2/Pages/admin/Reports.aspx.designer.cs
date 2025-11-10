@@ -15,14 +15,49 @@ namespace RookiesInTraining2.Pages
     {
 
         /// <summary>
+        /// btnExportCsv control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Button btnExportCsv;
+
+        /// <summary>
         /// btnPrint control.
         /// </summary>
         protected global::System.Web.UI.WebControls.Button btnPrint;
 
         /// <summary>
-        /// btnExportCsv control.
+        /// lblTotalStudents control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Button btnExportCsv;
+        protected global::System.Web.UI.WebControls.Label lblTotalStudents;
+
+        /// <summary>
+        /// lblActiveStudents control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblActiveStudents;
+
+        /// <summary>
+        /// lblTotalTeachers control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblTotalTeachers;
+
+        /// <summary>
+        /// lblActiveTeachers control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblActiveTeachers;
+
+        /// <summary>
+        /// lblTotalClasses control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblTotalClasses;
+
+        /// <summary>
+        /// lblActiveClasses control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblActiveClasses;
+
+        /// <summary>
+        /// ddlTimePeriod control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.DropDownList ddlTimePeriod;
 
         /// <summary>
         /// txtStartDate control.
@@ -35,9 +70,14 @@ namespace RookiesInTraining2.Pages
         protected global::System.Web.UI.WebControls.TextBox txtEndDate;
 
         /// <summary>
-        /// ddlRoleFilter control.
+        /// txtSearch control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.DropDownList ddlRoleFilter;
+        protected global::System.Web.UI.WebControls.TextBox txtSearch;
+
+        /// <summary>
+        /// ddlStatusFilter control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.DropDownList ddlStatusFilter;
 
         /// <summary>
         /// btnApplyFilters control.
@@ -45,14 +85,84 @@ namespace RookiesInTraining2.Pages
         protected global::System.Web.UI.WebControls.Button btnApplyFilters;
 
         /// <summary>
-        /// lblTotalUsers control.
+        /// lblNewStudents24h control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Label lblTotalUsers;
+        protected global::System.Web.UI.WebControls.Label lblNewStudents24h;
 
         /// <summary>
-        /// lblNewUsers control.
+        /// lblNewStudentsWeek control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Label lblNewUsers;
+        protected global::System.Web.UI.WebControls.Label lblNewStudentsWeek;
+
+        /// <summary>
+        /// lblNewStudentsMonth control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblNewStudentsMonth;
+
+        /// <summary>
+        /// lblBlockedStudents control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblBlockedStudents;
+
+        /// <summary>
+        /// lblLevel1Complete control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblLevel1Complete;
+
+        /// <summary>
+        /// lblLevel2Complete control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblLevel2Complete;
+
+        /// <summary>
+        /// lblLevel3Complete control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblLevel3Complete;
+
+        /// <summary>
+        /// lblAvgProgress control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblAvgProgress;
+
+        /// <summary>
+        /// lblFullProgress control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblFullProgress;
+
+        /// <summary>
+        /// lblStudentCount control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblStudentCount;
+
+        /// <summary>
+        /// gvStudents control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.GridView gvStudents;
+
+        /// <summary>
+        /// lblNoStudents control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblNoStudents;
+
+        /// <summary>
+        /// lblNewTeachers24h control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblNewTeachers24h;
+
+        /// <summary>
+        /// lblNewTeachersWeek control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblNewTeachersWeek;
+
+        /// <summary>
+        /// lblNewTeachersMonth control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblNewTeachersMonth;
+
+        /// <summary>
+        /// lblTotalClassesCreated control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblTotalClassesCreated;
 
         /// <summary>
         /// lblTeacherCount control.
@@ -60,39 +170,44 @@ namespace RookiesInTraining2.Pages
         protected global::System.Web.UI.WebControls.Label lblTeacherCount;
 
         /// <summary>
-        /// lblAverageDaily control.
+        /// gvTeachers control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Label lblAverageDaily;
+        protected global::System.Web.UI.WebControls.GridView gvTeachers;
 
         /// <summary>
-        /// rptRoleBreakdown control.
+        /// lblNoTeachers control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Repeater rptRoleBreakdown;
+        protected global::System.Web.UI.WebControls.Label lblNoTeachers;
 
         /// <summary>
-        /// lblResultCount control.
+        /// lblInactiveClasses control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Label lblResultCount;
+        protected global::System.Web.UI.WebControls.Label lblInactiveClasses;
 
         /// <summary>
-        /// gvReport control.
+        /// lblAvgStudentsPerClass control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.GridView gvReport;
+        protected global::System.Web.UI.WebControls.Label lblAvgStudentsPerClass;
 
         /// <summary>
-        /// lblNoResults control.
+        /// lblMostPopularClass control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Label lblNoResults;
+        protected global::System.Web.UI.WebControls.Label lblMostPopularClass;
 
         /// <summary>
-        /// rptRecentRegistrations control.
+        /// lblClassCount control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Repeater rptRecentRegistrations;
+        protected global::System.Web.UI.WebControls.Label lblClassCount;
 
         /// <summary>
-        /// lblNoRecent control.
+        /// gvClasses control.
         /// </summary>
-        protected global::System.Web.UI.WebControls.Label lblNoRecent;
+        protected global::System.Web.UI.WebControls.GridView gvClasses;
+
+        /// <summary>
+        /// lblNoClasses control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Label lblNoClasses;
 
         /// <summary>
         /// lblPageError control.
@@ -105,6 +220,3 @@ namespace RookiesInTraining2.Pages
         protected global::System.Web.UI.WebControls.Label lblPageMessage;
     }
 }
-
-
-
