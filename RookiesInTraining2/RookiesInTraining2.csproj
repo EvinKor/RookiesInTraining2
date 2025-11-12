@@ -172,11 +172,13 @@
     <Content Include="Pages\game\game_results.aspx" />
     <Content Include="Pages\game\lobby_room.aspx" />
     <Content Include="Pages\game\test_connection.aspx" />
+    <Content Include="Pages\student\create_forum_post.aspx" />
     <Content Include="Pages\student\join_class.aspx" />
     <Content Include="Pages\student\Profile.aspx" />
     <Content Include="Pages\student\student_class.aspx" />
     <Content Include="Pages\student\take_level.aspx" />
     <Content Include="Pages\student\take_quiz.aspx" />
+    <Content Include="Pages\student\view_forum_post.aspx" />
     <Content Include="Pages\teacher\add_students.aspx" />
     <Content Include="Pages\teacher\create_forum_post.aspx" />
     <Content Include="Pages\teacher\create_level.aspx" />
@@ -370,6 +372,13 @@
     <Compile Include="Pages\game\test_connection.aspx.designer.cs">
       <DependentUpon>test_connection.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Pages\student\create_forum_post.aspx.cs">
+      <DependentUpon>create_forum_post.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\student\create_forum_post.aspx.designer.cs">
+      <DependentUpon>create_forum_post.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Pages\student\join_class.aspx.cs">
       <DependentUpon>join_class.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -404,6 +413,13 @@
     </Compile>
     <Compile Include="Pages\student\Profile.aspx.designer.cs">
       <DependentUpon>Profile.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\student\view_forum_post.aspx.cs">
+      <DependentUpon>view_forum_post.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\student\view_forum_post.aspx.designer.cs">
+      <DependentUpon>view_forum_post.aspx</DependentUpon>
     </Compile>
     <Compile Include="Pages\teacher\add_students.aspx.cs">
       <DependentUpon>add_students.aspx</DependentUpon>

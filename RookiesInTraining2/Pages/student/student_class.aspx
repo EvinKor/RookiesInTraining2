@@ -65,6 +65,9 @@
                     <div class="card-body p-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h5 class="mb-0"><i class="bi bi-chat-dots me-2"></i>Discussion Forum</h5>
+                            <asp:HyperLink ID="lnkCreatePost" runat="server" CssClass="btn btn-primary">
+                                <i class="bi bi-plus-circle me-2"></i>Create New Post
+                            </asp:HyperLink>
                         </div>
                         
                         <div id="forumContainer">
@@ -241,7 +244,7 @@
                 
                 container.innerHTML = posts.map(post => `
                     <div class="card mb-3 hover-shadow" style="cursor: pointer;" 
-                         onclick="window.location.href='../teacher/view_forum_post.aspx?post=${post.PostSlug}&class=${classSlug}'">
+                         onclick="window.location.href='view_forum_post.aspx?post=${post.PostSlug}&class=${classSlug}'">
                         <div class="card-body">
                             <h6 class="mb-1">${escapeHtml(post.Title)}</h6>
                             <small class="text-muted">

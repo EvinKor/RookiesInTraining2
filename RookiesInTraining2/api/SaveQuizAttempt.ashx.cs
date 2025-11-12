@@ -3,12 +3,13 @@ using System.Configuration;
 using System.Data.SqlClient;
 using System.IO;
 using System.Web;
+using System.Web.SessionState;
 using System.Web.Script.Serialization;
 using System.Collections.Generic;
 
 namespace RookiesInTraining2.api
 {
-    public class SaveQuizAttempt : IHttpHandler
+    public class SaveQuizAttempt : IHttpHandler, IRequiresSessionState
     {
         private string ConnStr => ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
 
@@ -19,7 +20,7 @@ namespace RookiesInTraining2.api
             try
             {
                 // Check authentication
-                if (context.Session["UserSlug"] == null)
+                if (context.Session == null || context.Session["UserSlug"] == null)
                 {
                     context.Response.Write("{\"success\":false,\"error\":\"Not authenticated\"}");
                     return;

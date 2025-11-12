@@ -39,6 +39,9 @@ namespace RookiesInTraining2.Pages.student
 
                 hfClassSlug.Value = classSlug;
 
+                // Set the create post link
+                lnkCreatePost.NavigateUrl = $"~/Pages/student/create_forum_post.aspx?class={classSlug}";
+
                 // Load class data
                 LoadClassInfo(classSlug);
                 LoadLevels(classSlug);
