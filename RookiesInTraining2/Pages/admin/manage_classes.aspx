@@ -99,17 +99,24 @@
                     <ItemTemplate>
                         <div class="col-md-6 col-lg-4">
                             <div class="class-option" style="position: relative;">
-                                <!-- Delete Button (Top Right) -->
-                                <button type="button" class="btn btn-sm btn-danger delete-class-btn" 
-                                        style="position: absolute; top: 10px; right: 10px; z-index: 100;"
-                                        onclick="openDeleteModal('<%# Eval("ClassSlug") %>', '<%# Eval("ClassName") %>'); return false;">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                <!-- Action Buttons (Top Right) -->
+                                <div class="btn-group delete-class-btn" style="position: absolute; top: 10px; right: 10px; z-index: 100;">
+                                    <button type="button" class="btn btn-sm btn-primary" 
+                                            onclick="editClass('<%# Eval("ClassSlug") %>'); return false;"
+                                            title="Edit Class">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger" 
+                                            onclick="openDeleteModal('<%# Eval("ClassSlug") %>', '<%# Eval("ClassName") %>'); return false;"
+                                            title="Delete Class">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
                                 
                                 <!-- Clickable Card Area -->
                                 <div class="class-card-clickable" 
                                      onclick="selectClass('<%# Eval("ClassSlug") %>', '<%# Eval("ClassName") %>')" 
-                                     style="cursor: pointer; padding-right: 50px;">
+                                     style="cursor: pointer; padding-right: 100px;">
                                     <div class="d-flex align-items-start">
                                         <div class="flex-shrink-0 me-3">
                                             <div style="width: 50px; height: 50px; background: linear-gradient(135deg, <%# Eval("Color") %>, <%# Eval("Color") %>); 
@@ -665,6 +672,11 @@
             const classSlug = selectedClass.ClassSlug || selectedClass.slug;
             // Redirect to admin version of add students
             window.location.href = `add_students.aspx?class=${classSlug}`;
+        }
+
+        function editClass(classSlug) {
+            // Redirect to edit class page
+            window.location.href = `edit_class.aspx?class=${classSlug}`;
         }
 
         function openCreateLevelStorymode() {

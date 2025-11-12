@@ -34,15 +34,15 @@ namespace RookiesInTraining2.Pages.admin
                 string classSlug = Request.QueryString["class"];
                 if (string.IsNullOrWhiteSpace(classSlug))
                 {
-                    Response.Redirect("~/Pages/admin/manage_classes.aspx", false);
+                    Response.Redirect("~/Pages/admin/Classes.aspx", false);
                     return;
                 }
 
                 hfClassSlug.Value = classSlug;
                 
                 // Set back link to storymode tab
-                lnkBack.NavigateUrl = $"~/Pages/admin/manage_classes.aspx?class={classSlug}&tab=storymode";
-                lnkCancel.NavigateUrl = $"~/Pages/admin/manage_classes.aspx?class={classSlug}&tab=storymode";
+                lnkBack.NavigateUrl = $"~/Pages/admin/Classes.aspx?class={classSlug}&tab=storymode";
+                lnkCancel.NavigateUrl = $"~/Pages/admin/Classes.aspx?class={classSlug}&tab=storymode";
 
                 // Load next level number
                 LoadNextLevelNumber(classSlug);
@@ -169,8 +169,8 @@ namespace RookiesInTraining2.Pages.admin
 
                     System.Diagnostics.Debug.WriteLine($"[CreateLevel] Level created successfully: {levelSlug}");
 
-                    // Redirect back to manage classes (storymode tab)
-                    Response.Redirect($"~/Pages/admin/manage_classes.aspx?class={classSlug}&tab=storymode", false);
+                    // Redirect back to classes page (storymode tab)
+                    Response.Redirect($"~/Pages/admin/Classes.aspx?class={classSlug}&tab=storymode", false);
                 }
             }
             catch (Exception ex)

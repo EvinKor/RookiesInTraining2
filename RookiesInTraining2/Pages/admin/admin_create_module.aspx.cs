@@ -29,6 +29,8 @@ namespace RookiesInTraining2.Pages
             {
                 // Generate initial class code
                 txtClassCode.Text = GenerateRandomClassCode(6);
+                // Load teachers into dropdown
+                LoadTeachers();
             }
         }
 
@@ -36,8 +38,14 @@ namespace RookiesInTraining2.Pages
         {
             try
             {
-                // Get admin slug (acting as teacher)
-                string teacherSlug = Convert.ToString(Session["UserSlug"]);
+                // Get selected teacher slug from dropdown
+                string teacherSlug = ddlTeacher.SelectedValue;
+                
+                if (string.IsNullOrWhiteSpace(teacherSlug))
+                {
+                    ShowError("Please select a teacher for this class.");
+                    return;
+                }
 
                 // Parse JSON from hidden field
                 string json = hfDraftJson.Value;
@@ -106,7 +114,7 @@ namespace RookiesInTraining2.Pages
                                 cmd.ExecuteNonQuery();
                             }
 
-                            // Auto-enroll admin as teacher
+                            // Auto-enroll selected teacher
                             using (var cmd = con.CreateCommand())
                             {
                                 string enrollSlug = "enroll-" + Guid.NewGuid().ToString("N").Substring(0, 12);
@@ -245,6 +253,72 @@ namespace RookiesInTraining2.Pages
             }
         }
 
+        private void LoadTeachers()
+        {
+            try
+            {
+                ddlTeacher.Items.Clear();
+                ddlTeacher.Items.Add(new System.Web.UI.WebControls.ListItem("-- Select a Teacher --", ""));
+
+                using (var con = new SqlConnection(ConnStr))
+                {
+                    con.Open();
+                    using (var cmd = con.CreateCommand())
+                    {
+                        cmd.CommandText = @"
+                            SELECT 
+                                user_slug,
+                                ISNULL(display_name, full_name) AS display_name,
+                                email
+                            FROM dbo.Users
+                            WHERE role = 'teacher' 
+                              AND is_deleted = 0
+                              AND ISNULL(is_blocked, 0) = 0
+                            ORDER BY display_name, full_name";
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            int teacherCount = 0;
+                            while (reader.Read())
+                            {
+                                string userSlug = reader["user_slug"].ToString();
+                                string displayName = reader["display_name"].ToString();
+                                string email = reader["email"].ToString();
+                                
+                                ddlTeacher.Items.Add(new System.Web.UI.WebControls.ListItem(
+                                    $"{displayName} ({email})", 
+                                    userSlug));
+                                teacherCount++;
+                            }
+
+                            if (teacherCount == 0)
+                            {
+                                ddlTeacher.Items.Add(new System.Web.UI.WebControls.ListItem("No teachers available", ""));
+                                ddlTeacher.Enabled = false;
+                                System.Diagnostics.Debug.WriteLine("[LoadTeachers] No teachers found in database");
+                            }
+                            else
+                            {
+                                System.Diagnostics.Debug.WriteLine($"[LoadTeachers] Loaded {teacherCount} teacher(s)");
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LoadTeachers] Error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[LoadTeachers] Stack trace: {ex.StackTrace}");
+                
+                // Ensure dropdown is visible even on error
+                ddlTeacher.Items.Clear();
+                ddlTeacher.Items.Add(new System.Web.UI.WebControls.ListItem("-- Error loading teachers --", ""));
+                ddlTeacher.Enabled = false;
+                
+                ShowError("Error loading teachers. Please refresh the page.");
+            }
+        }
+
         private void ShowError(string message)
         {
             lblError.Text = message;
@@ -265,6 +339,8 @@ namespace RookiesInTraining2.Pages
             public string Icon { get; set; }
             public string Color { get; set; }
             public string ClassCode { get; set; }
+            public string TeacherSlug { get; set; }
+            public string TeacherName { get; set; }
         }
 
         public class LevelItem

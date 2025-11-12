@@ -93,6 +93,19 @@
                                      CssClass="form-control" placeholder="What will students learn?" MaxLength="500" />
                     </div>
 
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Assign Teacher <span class="text-danger">*</span></label>
+                        <asp:DropDownList ID="ddlTeacher" runat="server" CssClass="form-select form-select-lg">
+                        </asp:DropDownList>
+                        <asp:RequiredFieldValidator ID="rfvTeacher" runat="server" 
+                            ControlToValidate="ddlTeacher" 
+                            InitialValue=""
+                            CssClass="text-danger small d-block mt-1" 
+                            ErrorMessage="Please select a teacher for this class." 
+                            Display="Dynamic" />
+                        <small class="text-muted d-block mt-1">Select the teacher who will manage this class</small>
+                    </div>
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Class Code <span class="text-danger">*</span></label>
@@ -149,6 +162,7 @@
                         <div class="review-item"><span>Class Name:</span><strong id="reviewClassName"></strong></div>
                         <div class="review-item"><span>Class Code:</span><span class="badge bg-secondary" id="reviewClassCode"></span></div>
                         <div class="review-item"><span>Description:</span><span id="reviewDescription" class="text-muted"></span></div>
+                        <div class="review-item"><span>Teacher:</span><strong id="reviewTeacher"></strong></div>
                         <div class="review-item"><span>Icon:</span><span id="reviewIcon">📚</span></div>
                         <div class="review-item"><span>Color:</span><span id="reviewColor" style="display: inline-block; width: 40px; height: 20px; border-radius: 4px;"></span></div>
                     </div>
@@ -205,6 +219,7 @@
             txtClassName: '<%= txtClassName.ClientID %>',
             txtClassDescription: '<%= txtClassDescription.ClientID %>',
             txtClassCode: '<%= txtClassCode.ClientID %>',
+            ddlTeacher: '<%= ddlTeacher.ClientID %>',
             hfIcon: '<%= hfIcon.ClientID %>',
             hfColor: '<%= hfColor.ClientID %>',
             hfDraftJson: '<%= hfDraftJson.ClientID %>',

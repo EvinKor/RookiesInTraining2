@@ -42,6 +42,24 @@ namespace RookiesInTraining2.Pages
         protected global::System.Web.UI.WebControls.TextBox txtClassDescription;
 
         /// <summary>
+        /// ddlTeacher control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlTeacher;
+
+        /// <summary>
+        /// rfvTeacher control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.RequiredFieldValidator rfvTeacher;
+
+        /// <summary>
         /// txtClassCode control.
         /// </summary>
         /// <remarks>

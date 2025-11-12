@@ -377,35 +377,87 @@ namespace RookiesInTraining2.Pages
                 try
                 {
                     using (var con = new SqlConnection(ConnStr))
-                    using (var cmd = con.CreateCommand())
                     {
                         con.Open();
-
-                        // Get reply content for logging
-                        string replyContent = "";
-                        cmd.CommandText = "SELECT content FROM ForumReplies WHERE reply_slug = @slug";
-                        cmd.Parameters.AddWithValue("@slug", replySlug);
-                        var content = cmd.ExecuteScalar();
-                        if (content != null)
+                        using (var tx = con.BeginTransaction())
                         {
-                            replyContent = content.ToString();
-                            if (replyContent.Length > 50) replyContent = replyContent.Substring(0, 50) + "...";
+                            try
+                            {
+                                using (var cmd = con.CreateCommand())
+                                {
+                                    cmd.Transaction = tx;
+
+                                    // Check if reply exists and get content for logging
+                                    string replyContent = "";
+                                    cmd.CommandText = @"
+                                        SELECT content, is_deleted 
+                                        FROM ForumReplies 
+                                        WHERE reply_slug = @slug";
+                                    cmd.Parameters.AddWithValue("@slug", replySlug);
+                                    
+                                    using (var reader = cmd.ExecuteReader())
+                                    {
+                                        if (reader.Read())
+                                        {
+                                            replyContent = reader["content"]?.ToString() ?? "";
+                                            bool isDeleted = Convert.ToBoolean(reader["is_deleted"]);
+                                            
+                                            if (isDeleted)
+                                            {
+                                                tx.Rollback();
+                                                ClientScript.RegisterStartupScript(this.GetType(), "showError",
+                                                    "alert('This reply has already been deleted.');", true);
+                                                LoadReplies();
+                                                return;
+                                            }
+                                            
+                                            if (replyContent.Length > 50) 
+                                                replyContent = replyContent.Substring(0, 50) + "...";
+                                        }
+                                        else
+                                        {
+                                            tx.Rollback();
+                                            ClientScript.RegisterStartupScript(this.GetType(), "showError",
+                                                "alert('Reply not found.');", true);
+                                            LoadReplies();
+                                            return;
+                                        }
+                                    }
+
+                                    // Soft delete the reply
+                                    cmd.Parameters.Clear();
+                                    cmd.CommandText = @"
+                                        UPDATE ForumReplies 
+                                        SET is_deleted = 1, updated_at = SYSUTCDATETIME()
+                                        WHERE reply_slug = @replySlug AND is_deleted = 0";
+                                    cmd.Parameters.AddWithValue("@replySlug", replySlug);
+                                    
+                                    int rowsAffected = cmd.ExecuteNonQuery();
+                                    
+                                    if (rowsAffected == 0)
+                                    {
+                                        tx.Rollback();
+                                        ClientScript.RegisterStartupScript(this.GetType(), "showError",
+                                            "alert('Failed to delete reply. It may have already been deleted.');", true);
+                                        LoadReplies();
+                                        return;
+                                    }
+
+                                    // Log admin action
+                                    AdminAuditLogger.LogAction(adminSlug, "delete_reply", "reply", replySlug, 
+                                        $"Deleted reply: {replyContent}");
+
+                                    tx.Commit();
+                                }
+
+                                LoadReplies();
+                            }
+                            catch (Exception ex)
+                            {
+                                tx.Rollback();
+                                throw;
+                            }
                         }
-
-                        // Soft delete the reply
-                        cmd.Parameters.Clear();
-                        cmd.CommandText = @"
-                            UPDATE ForumReplies 
-                            SET is_deleted = 1, updated_at = SYSUTCDATETIME()
-                            WHERE reply_slug = @replySlug";
-                        cmd.Parameters.AddWithValue("@replySlug", replySlug);
-                        cmd.ExecuteNonQuery();
-
-                        // Log admin action
-                        AdminAuditLogger.LogAction(adminSlug, "delete_reply", "reply", replySlug, 
-                            $"Deleted reply: {replyContent}");
-
-                        LoadReplies();
                     }
                 }
                 catch (Exception ex)
@@ -413,6 +465,7 @@ namespace RookiesInTraining2.Pages
                     System.Diagnostics.Debug.WriteLine($"[Forum] Error deleting reply: {ex.Message}");
                     ClientScript.RegisterStartupScript(this.GetType(), "showError",
                         $"alert('Error deleting reply: {Server.HtmlEncode(ex.Message)}');", true);
+                    LoadReplies();
                 }
             }
         }

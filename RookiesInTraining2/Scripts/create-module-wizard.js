@@ -12,7 +12,9 @@
             description: '',
             icon: 'book',
             color: '#667eea',
-            classCode: ''
+            classCode: '',
+            teacherSlug: '',
+            teacherName: ''
         },
         levels: []
     };
@@ -144,6 +146,14 @@
             return false;
         }
 
+        // Validate teacher selection
+        const teacherSelect = document.getElementById(window.WIZARD_IDS.ddlTeacher);
+        if (teacherSelect && (!teacherSelect.value || teacherSelect.value === '')) {
+            alert('Please select a teacher for this class.');
+            teacherSelect.focus();
+            return false;
+        }
+
         return true;
     }
 
@@ -152,6 +162,40 @@
             draft.classInfo.name = document.getElementById(window.WIZARD_IDS.txtClassName).value.trim();
             draft.classInfo.description = document.getElementById(window.WIZARD_IDS.txtClassDescription).value.trim();
             draft.classInfo.classCode = document.getElementById(window.WIZARD_IDS.txtClassCode).value.trim();
+            
+            // Capture teacher selection
+            const teacherSelect = document.getElementById(window.WIZARD_IDS.ddlTeacher);
+            if (teacherSelect) {
+                const selectedIndex = teacherSelect.selectedIndex;
+                const selectedOption = teacherSelect.options[selectedIndex];
+                
+                console.log('[captureStepData] Teacher dropdown found');
+                console.log('[captureStepData] Selected index:', selectedIndex);
+                console.log('[captureStepData] Selected option:', selectedOption);
+                
+                if (selectedOption && selectedOption.value && selectedOption.value !== '') {
+                    draft.classInfo.teacherSlug = selectedOption.value;
+                    // Get the display text, excluding placeholder options
+                    let teacherText = selectedOption.text;
+                    console.log('[captureStepData] Raw teacher text:', teacherText);
+                    
+                    // Remove common placeholder text patterns
+                    if (teacherText.includes('-- Select') || teacherText.includes('-- Error') || teacherText.includes('No teachers')) {
+                        teacherText = '';
+                        console.log('[captureStepData] Filtered out placeholder text');
+                    }
+                    draft.classInfo.teacherName = teacherText;
+                    console.log('[captureStepData] Final teacher name:', teacherText);
+                    console.log('[captureStepData] Final teacher slug:', selectedOption.value);
+                } else {
+                    draft.classInfo.teacherSlug = '';
+                    draft.classInfo.teacherName = '';
+                    console.log('[captureStepData] No valid teacher selected');
+                }
+            } else {
+                console.error('[captureStepData] Teacher dropdown not found!');
+            }
+            
             // icon and color already captured via event listeners
             
             // Note: No levels are captured - levels will be added later in Story Mode
@@ -384,6 +428,45 @@
         document.getElementById('reviewClassName').textContent = draft.classInfo.name || 'N/A';
         document.getElementById('reviewClassCode').textContent = draft.classInfo.classCode || 'N/A';
         document.getElementById('reviewDescription').textContent = draft.classInfo.description || 'No description provided';
+        
+        // Teacher - use draft data (captured when moving from step 1 to step 2)
+        const teacherEl = document.getElementById('reviewTeacher');
+        if (teacherEl) {
+            let teacherName = draft.classInfo.teacherName || '';
+            
+            // Try to get from dropdown if still visible (step 1), otherwise use draft
+            const teacherSelect = document.getElementById(window.WIZARD_IDS.ddlTeacher);
+            if (teacherSelect) {
+                // Check if dropdown is visible (not hidden by step content)
+                const isVisible = teacherSelect.offsetParent !== null || 
+                                 teacherSelect.style.display !== 'none';
+                
+                if (isVisible && teacherSelect.selectedIndex > 0) {
+                    const selectedOption = teacherSelect.options[teacherSelect.selectedIndex];
+                    if (selectedOption && selectedOption.value && selectedOption.value !== '') {
+                        teacherName = selectedOption.text;
+                        // Update draft
+                        draft.classInfo.teacherName = teacherName;
+                        draft.classInfo.teacherSlug = selectedOption.value;
+                    }
+                }
+            }
+            
+            // Display the teacher name
+            if (teacherName && teacherName.trim() !== '' && 
+                !teacherName.includes('-- Select') && 
+                !teacherName.includes('-- Error') && 
+                !teacherName.includes('No teachers')) {
+                teacherEl.textContent = teacherName;
+            } else {
+                teacherEl.textContent = 'Not selected';
+            }
+            
+            // Debug logging
+            console.log('[generateReview] Teacher name:', teacherName);
+            console.log('[generateReview] Draft teacherName:', draft.classInfo.teacherName);
+            console.log('[generateReview] Draft teacherSlug:', draft.classInfo.teacherSlug);
+        }
         
         // Icon and Color
         const iconEl = document.getElementById('reviewIcon');

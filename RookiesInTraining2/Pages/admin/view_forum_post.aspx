@@ -140,6 +140,7 @@
                                                             CommandArgument='<%# Eval("ReplySlug") %>'
                                                             CssClass="btn btn-sm btn-outline-danger"
                                                             OnClientClick="return confirm('Are you sure you want to delete this reply? This action cannot be undone.');"
+                                                            CausesValidation="false"
                                                             title="Delete Reply">
                                                 <i class="bi bi-trash"></i>
                                             </asp:LinkButton>

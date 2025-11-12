@@ -30,20 +30,24 @@ namespace RookiesInTraining2.Pages.admin
                 return;
             }
 
+            // Always get post and class slug from query string or hidden field
+            string postSlug = Request.QueryString["post"] ?? hfPostSlug.Value;
+            string classSlug = Request.QueryString["class"] ?? hfClassSlug.Value;
+            
+            if (string.IsNullOrWhiteSpace(postSlug) || string.IsNullOrWhiteSpace(classSlug))
+            {
+                Response.Redirect("~/Pages/admin/manage_classes.aspx", false);
+                return;
+            }
+
+            // Set hidden fields if not already set
+            if (string.IsNullOrWhiteSpace(hfPostSlug.Value))
+                hfPostSlug.Value = postSlug;
+            if (string.IsNullOrWhiteSpace(hfClassSlug.Value))
+                hfClassSlug.Value = classSlug;
+
             if (!IsPostBack)
             {
-                string postSlug = Request.QueryString["post"];
-                string classSlug = Request.QueryString["class"];
-                
-                if (string.IsNullOrWhiteSpace(postSlug) || string.IsNullOrWhiteSpace(classSlug))
-                {
-                    Response.Redirect("~/Pages/admin/manage_classes.aspx", false);
-                    return;
-                }
-
-                hfPostSlug.Value = postSlug;
-                hfClassSlug.Value = classSlug;
-                
                 // Set back link
                 lnkBack.NavigateUrl = $"~/Pages/admin/manage_classes.aspx?class={classSlug}";
 
@@ -54,6 +58,11 @@ namespace RookiesInTraining2.Pages.admin
                 // Populate edit post modal fields
                 txtEditPostTitle.Text = lblPostTitle.Text;
                 txtEditPostContent.Text = lblContent.Text;
+            }
+            else
+            {
+                // On postback, reload replies to ensure data is fresh
+                LoadReplies(postSlug);
             }
         }
 
@@ -380,46 +389,112 @@ namespace RookiesInTraining2.Pages.admin
 
         protected void rptReplies_ItemCommand(object source, System.Web.UI.WebControls.RepeaterCommandEventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine($"[ViewPost] rptReplies_ItemCommand called: CommandName={e.CommandName}, CommandArgument={e.CommandArgument}");
+            
             if (e.CommandName == "DeleteReply")
             {
                 string adminSlug = Session["UserSlug"]?.ToString();
-                string replySlug = e.CommandArgument.ToString();
-                string postSlug = hfPostSlug.Value;
-                string classSlug = hfClassSlug.Value;
+                string replySlug = e.CommandArgument?.ToString() ?? "";
+                
+                // Get post and class slug from query string or hidden field
+                string postSlug = Request.QueryString["post"] ?? hfPostSlug.Value;
+                string classSlug = Request.QueryString["class"] ?? hfClassSlug.Value;
+
+                System.Diagnostics.Debug.WriteLine($"[ViewPost] DeleteReply: replySlug={replySlug}, postSlug={postSlug}, classSlug={classSlug}");
+
+                if (string.IsNullOrWhiteSpace(replySlug))
+                {
+                    System.Diagnostics.Debug.WriteLine($"[ViewPost] ERROR: replySlug is empty!");
+                    ClientScript.RegisterStartupScript(this.GetType(), "showError",
+                        "alert('Error: Reply identifier is missing.');", true);
+                    return;
+                }
 
                 try
                 {
                     using (var con = new SqlConnection(ConnStr))
-                    using (var cmd = con.CreateCommand())
                     {
                         con.Open();
-
-                        // Get reply content for logging
-                        string replyContent = "";
-                        cmd.CommandText = "SELECT content FROM ForumReplies WHERE reply_slug = @slug";
-                        cmd.Parameters.AddWithValue("@slug", replySlug);
-                        var content = cmd.ExecuteScalar();
-                        if (content != null)
+                        using (var tx = con.BeginTransaction())
                         {
-                            replyContent = content.ToString();
-                            if (replyContent.Length > 50) replyContent = replyContent.Substring(0, 50) + "...";
+                            try
+                            {
+                                using (var cmd = con.CreateCommand())
+                                {
+                                    cmd.Transaction = tx;
+
+                                    // Check if reply exists and get content for logging
+                                    string replyContent = "";
+                                    cmd.CommandText = @"
+                                        SELECT content, is_deleted 
+                                        FROM ForumReplies 
+                                        WHERE reply_slug = @slug";
+                                    cmd.Parameters.AddWithValue("@slug", replySlug);
+                                    
+                                    using (var reader = cmd.ExecuteReader())
+                                    {
+                                        if (reader.Read())
+                                        {
+                                            replyContent = reader["content"]?.ToString() ?? "";
+                                            bool isDeleted = Convert.ToBoolean(reader["is_deleted"]);
+                                            
+                                            if (isDeleted)
+                                            {
+                                                tx.Rollback();
+                                                ClientScript.RegisterStartupScript(this.GetType(), "showError",
+                                                    "alert('This reply has already been deleted.');", true);
+                                                return;
+                                            }
+                                            
+                                            if (replyContent.Length > 50) 
+                                                replyContent = replyContent.Substring(0, 50) + "...";
+                                        }
+                                        else
+                                        {
+                                            tx.Rollback();
+                                            ClientScript.RegisterStartupScript(this.GetType(), "showError",
+                                                "alert('Reply not found.');", true);
+                                            return;
+                                        }
+                                    }
+
+                                    // Soft delete the reply
+                                    cmd.Parameters.Clear();
+                                    cmd.CommandText = @"
+                                        UPDATE ForumReplies 
+                                        SET is_deleted = 1, updated_at = SYSUTCDATETIME()
+                                        WHERE reply_slug = @replySlug AND is_deleted = 0";
+                                    cmd.Parameters.AddWithValue("@replySlug", replySlug);
+                                    
+                                    int rowsAffected = cmd.ExecuteNonQuery();
+                                    
+                                    System.Diagnostics.Debug.WriteLine($"[ViewPost] Delete reply: replySlug={replySlug}, rowsAffected={rowsAffected}");
+                                    
+                                    if (rowsAffected == 0)
+                                    {
+                                        tx.Rollback();
+                                        ClientScript.RegisterStartupScript(this.GetType(), "showError",
+                                            "alert('Failed to delete reply. It may have already been deleted.');", true);
+                                        return;
+                                    }
+
+                                    // Log admin action
+                                    AdminAuditLogger.LogAction(adminSlug, "delete_reply", "reply", replySlug, 
+                                        $"Deleted reply: {replyContent}");
+
+                                    tx.Commit();
+                                    System.Diagnostics.Debug.WriteLine($"[ViewPost] Reply deleted successfully: {replySlug}");
+                                }
+
+                                // Reload the page
+                                Response.Redirect($"~/Pages/admin/view_forum_post.aspx?post={postSlug}&class={classSlug}", false);
+                            }
+                            catch (Exception ex)
+                            {
+                                tx.Rollback();
+                                throw;
+                            }
                         }
-
-                        // Soft delete the reply
-                        cmd.Parameters.Clear();
-                        cmd.CommandText = @"
-                            UPDATE ForumReplies 
-                            SET is_deleted = 1, updated_at = SYSUTCDATETIME()
-                            WHERE reply_slug = @replySlug";
-                        cmd.Parameters.AddWithValue("@replySlug", replySlug);
-                        cmd.ExecuteNonQuery();
-
-                        // Log admin action
-                        AdminAuditLogger.LogAction(adminSlug, "delete_reply", "reply", replySlug, 
-                            $"Deleted reply: {replyContent}");
-
-                        // Reload the page
-                        Response.Redirect($"~/Pages/admin/view_forum_post.aspx?post={postSlug}&class={classSlug}", false);
                     }
                 }
                 catch (Exception ex)
