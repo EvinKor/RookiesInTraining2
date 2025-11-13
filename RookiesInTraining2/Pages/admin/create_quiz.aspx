@@ -1,184 +1,162 @@
 <%@ Page Title="Create Quiz - Admin"
     Language="C#"
-    MasterPageFile="~/MasterPages/dashboard.Master"
+    MasterPageFile="~/MasterPages/MyMain.Master"
     AutoEventWireup="true"
     CodeBehind="create_quiz.aspx.cs"
     Inherits="RookiesInTraining2.Pages.admin.create_quiz" %>
 
-<asp:Content ID="Content1" ContentPlaceHolderID="DashboardContent" runat="server">
-    
-    <style>
-        body {
-            background: #f5f7fa !important;
-        }
-        .card {
-            background: white;
-            border: 1px solid #e8ecf1;
-        }
-        h2, h3, h4, h5, h6 {
-            color: #2d3748 !important;
-        }
-        .text-muted {
-            color: #6c757d !important;
-        }
-        .card-header.bg-light {
-            background-color: #f8f9fa !important;
-            color: #2d3748 !important;
-        }
-        .form-control {
-            background-color: white;
-            border-color: #ced4da;
-            color: #212529;
-        }
-        .form-control:focus {
-            background-color: white;
-            border-color: #80bdff;
-            color: #212529;
-        }
-        .btn-outline-secondary {
-            color: #6c757d;
-            border-color: #6c757d;
-        }
-        .btn-outline-secondary:hover {
-            background-color: #6c757d;
-            border-color: #6c757d;
-            color: white;
-        }
-        .text-primary {
-            color: #0d6efd !important;
-        }
-        .bg-primary {
-            background-color: #0d6efd !important;
-        }
-        .bg-warning {
-            background-color: #ffc107 !important;
-        }
-    </style>
+<asp:Content ID="Content1" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     
     <div class="container mt-4">
         <!-- Header -->
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body p-4">
+        <div class="card border-0 shadow-sm mb-4" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);">
+            <div class="card-body text-white p-4">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h2 class="mb-2"><i class="bi bi-question-circle-fill me-2 text-primary"></i>Create Quiz</h2>
-                        <p class="mb-0 text-muted">Create a new quiz for <strong id="className"></strong></p>
+                        <h2 class="mb-2"><i class="bi bi-question-circle-fill me-2"></i><asp:Label ID="lblPageTitle" runat="server" Text="Create Quiz" /></h2>
+                        <p class="mb-0 opacity-90">
+                            <strong><asp:Label ID="lblQuizTitle" runat="server" /></strong>
+                        </p>
                     </div>
-                    <asp:HyperLink ID="lnkBack" runat="server" CssClass="btn btn-outline-secondary btn-lg">
-                        <i class="bi bi-arrow-left me-2"></i>Back to Storymode
+                    <asp:HyperLink ID="lnkBack" runat="server" CssClass="btn btn-light btn-lg">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Story Mode
                     </asp:HyperLink>
                 </div>
             </div>
         </div>
 
-        <!-- Error Message -->
-        <asp:Label ID="lblError" runat="server" CssClass="alert alert-danger" Visible="false" />
-
-        <!-- Form -->
-        <div class="card border-0 shadow-sm">
+        <!-- Quiz Settings -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-light border-0 py-3">
+                <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Quiz Settings</h5>
+            </div>
             <div class="card-body p-4">
+                <asp:Label ID="lblError" runat="server" CssClass="alert alert-danger" Visible="false" />
                 
-                <div class="mb-4">
-                    <label class="form-label fw-bold">
-                        <i class="bi bi-layers me-1"></i>Select Level <span class="text-danger">*</span>
-                    </label>
-                    <asp:DropDownList ID="ddlLevelForQuiz" runat="server" 
-                                      CssClass="form-select form-select-lg" />
-                    <asp:RequiredFieldValidator ID="rfvLevel" runat="server" 
-                                               ControlToValidate="ddlLevelForQuiz"
-                                               ErrorMessage="Please select a level"
-                                               CssClass="text-danger small"
-                                               Display="Dynamic" />
-                    <small class="text-muted">Select the level this quiz belongs to</small>
-                </div>
-
-                <div class="mb-4">
-                    <label class="form-label fw-bold">
-                        Quiz Title <span class="text-danger">*</span>
-                    </label>
-                    <asp:TextBox ID="txtQuizTitle" runat="server" 
-                                 CssClass="form-control form-control-lg"
-                                 placeholder="e.g., Variables Quiz" MaxLength="200" />
-                    <asp:RequiredFieldValidator ID="rfvQuizTitle" runat="server" 
-                                               ControlToValidate="txtQuizTitle"
-                                               ErrorMessage="Quiz title is required"
-                                               CssClass="text-danger small"
-                                               Display="Dynamic" />
-                </div>
-
-                <div class="row g-3 mb-4">
-                    <div class="col-md-4">
+                <asp:Panel ID="pnlLevelSelection" runat="server" Visible="true">
+                    <div class="mb-3">
                         <label class="form-label fw-bold">
-                            <i class="bi bi-clock text-info me-1"></i>Time Limit (min)
+                            <i class="bi bi-layers me-1"></i>Select Level <span class="text-danger">*</span>
                         </label>
-                        <asp:TextBox ID="txtTimeLimit" runat="server" 
-                                     CssClass="form-control"
-                                     TextMode="Number" Text="30" />
+                        <asp:DropDownList ID="ddlLevelForQuiz" runat="server" 
+                                          CssClass="form-select form-select-lg" />
+                        <asp:RequiredFieldValidator ID="rfvLevel" runat="server" 
+                                                   ControlToValidate="ddlLevelForQuiz"
+                                                   ErrorMessage="Please select a level"
+                                                   CssClass="text-danger small"
+                                                   Display="Dynamic" />
+                        <small class="text-muted">Select the level this quiz belongs to</small>
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">
-                            <i class="bi bi-graph-up text-success me-1"></i>Passing Score (%)
-                        </label>
-                        <asp:TextBox ID="txtPassingScore" runat="server" 
-                                     CssClass="form-control"
-                                     TextMode="Number" Text="70" />
+                </asp:Panel>
+                
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Quiz Title <span class="text-danger">*</span></label>
+                        <asp:TextBox ID="txtTitle" runat="server" 
+                                     CssClass="form-control form-control-lg"
+                                     MaxLength="200" />
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">
-                            <i class="bi bi-controller me-1"></i>Mode
-                        </label>
-                        <asp:DropDownList ID="ddlQuizMode" runat="server" CssClass="form-select">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Quiz Mode</label>
+                        <asp:DropDownList ID="ddlMode" runat="server" CssClass="form-select form-select-lg">
                             <asp:ListItem Value="story" Selected="True">Story Mode</asp:ListItem>
                             <asp:ListItem Value="battle">Battle Mode</asp:ListItem>
                         </asp:DropDownList>
                     </div>
                 </div>
-
-                <div class="mb-4">
-                    <div class="form-check form-switch">
-                        <label class="form-check-label fw-bold">
-                            <i class="bi bi-eye me-1"></i>Publish immediately
-                        </label>
+                
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Time Limit (minutes)</label>
+                        <asp:TextBox ID="txtTimeLimit" runat="server" 
+                                     CssClass="form-control" TextMode="Number" Text="30" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Passing Score (%)</label>
+                        <asp:TextBox ID="txtPassingScore" runat="server" 
+                                     CssClass="form-control" TextMode="Number" Text="70" />
                     </div>
                 </div>
-
-                <div class="alert alert-info border-0 shadow-sm">
-                    <div class="d-flex align-items-start">
-                        <i class="bi bi-lightbulb-fill text-info me-3 fs-4"></i>
-                        <div>
-                            <strong>Tip:</strong> After creating the quiz, you'll be able to add questions to it.
-                        </div>
-                    </div>
+                
+                <div class="form-check form-switch">
+                    <label class="form-check-label fw-bold">Published</label>
                 </div>
-
-                <!-- Hidden Fields -->
+                
+                <asp:HiddenField ID="hfQuizSlug" runat="server" />
+                <asp:HiddenField ID="hfLevelSlug" runat="server" />
                 <asp:HiddenField ID="hfClassSlug" runat="server" />
-
-            </div>
-            
-            <!-- Footer -->
-            <div class="card-footer bg-light p-4">
-                <div class="d-flex justify-content-between align-items-center">
-                    <asp:HyperLink ID="lnkCancel" runat="server" CssClass="btn btn-outline-secondary btn-lg">
-                        <i class="bi bi-x-circle me-2"></i>Cancel
-                    </asp:HyperLink>
-                    <asp:Button ID="btnCreateQuiz" runat="server" 
-                                Text="Create Quiz & Add Questions" 
-                                CssClass="btn btn-warning text-dark btn-lg px-5 fw-bold"
-                                OnClick="btnCreateQuiz_Click" />
+                
+                <div class="mt-4">
+                    <asp:Button ID="btnSaveSettings" runat="server" 
+                                Text="Save Settings" 
+                                CssClass="btn btn-success btn-lg" 
+                                OnClick="btnSaveSettings_Click" />
                 </div>
             </div>
         </div>
-    </div>
 
-    <script>
-        // Display class name from query string
-        const urlParams = new URLSearchParams(window.location.search);
-        const className = urlParams.get('className');
-        if (className) {
-            document.getElementById('className').textContent = decodeURIComponent(className);
-        }
-    </script>
+        <!-- Questions List -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-light border-0 py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-list-check me-2"></i>Quiz Questions</h5>
+                    <asp:HyperLink ID="lnkAddQuestions" runat="server" CssClass="btn btn-success">
+                        <i class="bi bi-plus-circle me-2"></i>Add Questions
+                    </asp:HyperLink>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <asp:Repeater ID="rptQuestions" runat="server">
+                    <ItemTemplate>
+                        <div class="card mb-3 border-start border-success border-4">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start">
+                                    <div class="flex-shrink-0 me-3">
+                                        <span class="badge bg-success" style="font-size: 1rem; padding: 0.5rem 0.75rem;">
+                                            Q<%# Eval("QuestionNumber") %>
+                                        </span>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <p class="mb-2 fw-semibold"><%# Eval("QuestionText") %></p>
+                                        <small class="text-muted">
+                                            <i class="bi bi-bookmark me-1"></i>Type: <%# Eval("QuestionType") %>
+                                            <i class="bi bi-star ms-3 me-1"></i>Points: <%# Eval("Points") %>
+                                        </small>
+                                    </div>
+                                    <div class="btn-group-vertical btn-group-sm">
+                                        <asp:HyperLink ID="lnkEdit" runat="server" 
+                                                      CssClass="btn btn-outline-primary"
+                                                      NavigateUrl='<%# $"~/Pages/teacher/edit_question.aspx?question={Eval("QuestionSlug")}&quiz={hfQuizSlug.Value}&class={hfClassSlug.Value}" %>'>
+                                            <i class="bi bi-pencil"></i> Edit
+                                        </asp:HyperLink>
+                                        <asp:LinkButton ID="btnDelete" runat="server" 
+                                                       CssClass="btn btn-outline-danger"
+                                                       CommandName="Delete"
+                                                       CommandArgument='<%# Eval("QuestionSlug") %>'
+                                                       OnCommand="DeleteQuestion_Command"
+                                                       OnClientClick="return confirm('Delete this question?');">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </asp:LinkButton>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </ItemTemplate>
+                </asp:Repeater>
+                
+                <asp:Label ID="lblNoQuestions" runat="server" 
+                           CssClass="text-muted text-center d-block py-5"
+                           Visible="false">
+                    <i class="bi bi-question-circle display-4 d-block mb-3 opacity-25"></i>
+                    <h5 class="mb-2">No Questions Yet</h5>
+                    <p class="mb-3">Add questions to make this quiz available to students</p>
+                    <asp:HyperLink ID="lnkAddFirstQuestion" runat="server" CssClass="btn btn-success btn-lg">
+                        <i class="bi bi-plus-circle me-2"></i>Add First Question
+                    </asp:HyperLink>
+                </asp:Label>
+            </div>
+        </div>
+    </div>
 
 </asp:Content>
 

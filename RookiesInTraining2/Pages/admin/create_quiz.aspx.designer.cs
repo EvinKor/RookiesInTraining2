@@ -11,21 +11,29 @@ namespace RookiesInTraining2.Pages.admin
 {
     public partial class create_quiz
     {
+        protected global::System.Web.UI.WebControls.Label lblPageTitle;
+        protected global::System.Web.UI.WebControls.Label lblQuizTitle;
         protected global::System.Web.UI.WebControls.HyperLink lnkBack;
         protected global::System.Web.UI.WebControls.Label lblError;
+        protected global::System.Web.UI.WebControls.Panel pnlLevelSelection;
         protected global::System.Web.UI.WebControls.DropDownList ddlLevelForQuiz;
         protected global::System.Web.UI.WebControls.RequiredFieldValidator rfvLevel;
-        protected global::System.Web.UI.WebControls.TextBox txtQuizTitle;
-        protected global::System.Web.UI.WebControls.RequiredFieldValidator rfvQuizTitle;
+        protected global::System.Web.UI.WebControls.TextBox txtTitle;
+        protected global::System.Web.UI.WebControls.DropDownList ddlMode;
         protected global::System.Web.UI.WebControls.TextBox txtTimeLimit;
         protected global::System.Web.UI.WebControls.TextBox txtPassingScore;
-        protected global::System.Web.UI.WebControls.DropDownList ddlQuizMode;
-        protected global::System.Web.UI.WebControls.CheckBox chkPublishQuiz;
+        protected global::System.Web.UI.WebControls.HiddenField hfQuizSlug;
+        protected global::System.Web.UI.WebControls.HiddenField hfLevelSlug;
         protected global::System.Web.UI.WebControls.HiddenField hfClassSlug;
-        protected global::System.Web.UI.WebControls.HyperLink lnkCancel;
-        protected global::System.Web.UI.WebControls.Button btnCreateQuiz;
+        protected global::System.Web.UI.WebControls.Button btnSaveSettings;
+        protected global::System.Web.UI.WebControls.HyperLink lnkAddQuestions;
+        protected global::System.Web.UI.WebControls.Repeater rptQuestions;
+        protected global::System.Web.UI.WebControls.Label lblNoQuestions;
+        protected global::System.Web.UI.WebControls.HyperLink lnkAddFirstQuestion;
     }
 }
+
+
 
 
 

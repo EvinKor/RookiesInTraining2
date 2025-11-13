@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 namespace RookiesInTraining2.Pages.admin
 {
@@ -31,6 +33,9 @@ namespace RookiesInTraining2.Pages.admin
             if (!IsPostBack)
             {
                 string classSlug = Request.QueryString["class"];
+                string quizSlug = Request.QueryString["quiz"];
+                string levelSlug = Request.QueryString["level"];
+                
                 if (string.IsNullOrWhiteSpace(classSlug))
                 {
                     Response.Redirect("~/Pages/admin/manage_classes.aspx", false);
@@ -41,10 +46,38 @@ namespace RookiesInTraining2.Pages.admin
                 
                 // Set back link to storymode tab
                 lnkBack.NavigateUrl = $"~/Pages/admin/manage_classes.aspx?class={classSlug}&tab=storymode";
-                lnkCancel.NavigateUrl = $"~/Pages/admin/manage_classes.aspx?class={classSlug}&tab=storymode";
 
-                // Load levels for dropdown
-                LoadLevels(classSlug);
+                // If quiz slug exists, we're editing an existing quiz
+                if (!string.IsNullOrWhiteSpace(quizSlug))
+                {
+                    hfQuizSlug.Value = quizSlug;
+                    hfLevelSlug.Value = levelSlug ?? "";
+                    
+                    // Hide level selection, load quiz data
+                    pnlLevelSelection.Visible = false;
+                    LoadQuiz(quizSlug);
+                    LoadQuestions(quizSlug);
+                    
+                    // Update page title
+                    lblPageTitle.Text = "Edit Quiz";
+                    
+                    // Set add questions links
+                    lnkAddQuestions.NavigateUrl = $"~/Pages/admin/add_questions.aspx?quiz={quizSlug}&class={classSlug}";
+                    lnkAddFirstQuestion.NavigateUrl = $"~/Pages/admin/add_questions.aspx?quiz={quizSlug}&class={classSlug}";
+                    lnkAddQuestions.Visible = true;
+                }
+                else
+                {
+                    // Creating new quiz - show level selection
+                    pnlLevelSelection.Visible = true;
+                    // Questions section will show empty state after quiz is created
+                    lblNoQuestions.Visible = false;
+                    rptQuestions.Visible = false;
+                    lnkAddQuestions.Visible = false;
+                    
+                    // Load levels for dropdown
+                    LoadLevels(classSlug);
+                }
             }
         }
 
@@ -91,23 +124,145 @@ namespace RookiesInTraining2.Pages.admin
             }
         }
 
-        protected void btnCreateQuiz_Click(object sender, EventArgs e)
+        private void LoadQuiz(string quizSlug)
+        {
+            try
+            {
+                using (var con = new SqlConnection(ConnStr))
+                {
+                    con.Open();
+                    using (var cmd = con.CreateCommand())
+                    {
+                        cmd.CommandText = @"
+                            SELECT title, mode, time_limit_minutes, passing_score, published, level_slug
+                            FROM Quizzes
+                            WHERE quiz_slug = @quizSlug AND is_deleted = 0";
+
+                        cmd.Parameters.AddWithValue("@quizSlug", quizSlug);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                lblQuizTitle.Text = reader["title"].ToString();
+                                txtTitle.Text = reader["title"].ToString();
+                                ddlMode.SelectedValue = reader["mode"].ToString();
+                                txtTimeLimit.Text = reader["time_limit_minutes"].ToString();
+                                txtPassingScore.Text = reader["passing_score"].ToString();
+                                hfLevelSlug.Value = reader["level_slug"].ToString();
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[CreateQuiz] Error loading quiz: {ex.Message}");
+            }
+        }
+
+        private void LoadQuestions(string quizSlug)
+        {
+            List<dynamic> questions = new List<dynamic>();
+
+            try
+            {
+                using (var con = new SqlConnection(ConnStr))
+                {
+                    con.Open();
+                    using (var cmd = con.CreateCommand())
+                    {
+                        cmd.CommandText = @"
+                            SELECT question_slug, order_no, body_text, question_type, difficulty
+                            FROM Questions
+                            WHERE quiz_slug = @quizSlug AND is_deleted = 0
+                            ORDER BY order_no ASC";
+
+                        cmd.Parameters.AddWithValue("@quizSlug", quizSlug);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                questions.Add(new
+                                {
+                                    QuestionSlug = reader["question_slug"].ToString(),
+                                    QuestionNumber = Convert.ToInt32(reader["order_no"]),
+                                    QuestionText = reader["body_text"].ToString(),
+                                    QuestionType = reader["question_type"].ToString(),
+                                    Points = 10 // Default points
+                                });
+                            }
+                        }
+                    }
+                }
+
+                if (questions.Count > 0)
+                {
+                    rptQuestions.DataSource = questions;
+                    rptQuestions.DataBind();
+                    lblNoQuestions.Visible = false;
+                    rptQuestions.Visible = true;
+                    lnkAddQuestions.Visible = true;
+                }
+                else
+                {
+                    lblNoQuestions.Visible = true;
+                    rptQuestions.Visible = false;
+                    lnkAddQuestions.Visible = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[CreateQuiz] Error loading questions: {ex.Message}");
+                lblNoQuestions.Visible = true;
+                rptQuestions.Visible = false;
+            }
+        }
+
+        protected void btnSaveSettings_Click(object sender, EventArgs e)
+        {
+            string classSlug = hfClassSlug.Value;
+            string quizSlug = hfQuizSlug.Value;
+            bool isEdit = !string.IsNullOrWhiteSpace(quizSlug);
+
+            if (isEdit)
+            {
+                // Update existing quiz
+                UpdateQuiz(quizSlug, classSlug);
+            }
+            else
+            {
+                // Create new quiz
+                CreateQuiz(classSlug);
+            }
+        }
+
+        private void CreateQuiz(string classSlug)
         {
             if (!Page.IsValid) return;
 
-            string classSlug = hfClassSlug.Value;
             string levelSlug = ddlLevelForQuiz.SelectedValue;
-            string quizTitle = txtQuizTitle.Text.Trim();
+            if (string.IsNullOrWhiteSpace(levelSlug))
+            {
+                lblError.Text = "Please select a level.";
+                lblError.Visible = true;
+                return;
+            }
+
+            string quizTitle = txtTitle.Text.Trim();
+            if (string.IsNullOrWhiteSpace(quizTitle))
+            {
+                lblError.Text = "Quiz title is required.";
+                lblError.Visible = true;
+                return;
+            }
+
             int timeLimit = int.Parse(txtTimeLimit.Text);
             int passingScore = int.Parse(txtPassingScore.Text);
-            string mode = ddlQuizMode.SelectedValue;
-            // chkPublishQuiz checkbox removed - default to false
+            string mode = ddlMode.SelectedValue;
             bool publish = false;
             string adminSlug = Session["UserSlug"]?.ToString() ?? "";
-            
-            System.Diagnostics.Debug.WriteLine($"[CreateQuiz] Creating quiz: {quizTitle}");
-            System.Diagnostics.Debug.WriteLine($"[CreateQuiz] Class: {classSlug}, Level: {levelSlug}");
-            System.Diagnostics.Debug.WriteLine($"[CreateQuiz] Mode: {mode}, Publish: {publish}");
 
             try
             {
@@ -162,10 +317,8 @@ namespace RookiesInTraining2.Pages.admin
                         cmd.ExecuteNonQuery();
                     }
 
-                    System.Diagnostics.Debug.WriteLine($"[CreateQuiz] Quiz created successfully: {quizSlug}");
-
-                    // Redirect back to manage classes (storymode tab)
-                    Response.Redirect($"~/Pages/admin/manage_classes.aspx?class={classSlug}&tab=storymode", false);
+                    // Redirect to edit mode with quiz slug
+                    Response.Redirect($"~/Pages/admin/create_quiz.aspx?quiz={quizSlug}&level={levelSlug}&class={classSlug}", false);
                 }
             }
             catch (Exception ex)
@@ -173,6 +326,112 @@ namespace RookiesInTraining2.Pages.admin
                 System.Diagnostics.Debug.WriteLine($"[CreateQuiz] Error: {ex}");
                 lblError.Text = $"Error creating quiz: {Server.HtmlEncode(ex.Message)}";
                 lblError.Visible = true;
+            }
+        }
+
+        private void UpdateQuiz(string quizSlug, string classSlug)
+        {
+            string title = txtTitle.Text.Trim();
+            string mode = ddlMode.SelectedValue;
+            int timeLimit = int.Parse(txtTimeLimit.Text);
+            int passingScore = int.Parse(txtPassingScore.Text);
+            bool published = false;
+
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                lblError.Text = "Quiz title is required.";
+                lblError.Visible = true;
+                return;
+            }
+
+            try
+            {
+                using (var con = new SqlConnection(ConnStr))
+                {
+                    con.Open();
+                    
+                    // Get current published status from database
+                    using (var getPublishedCmd = con.CreateCommand())
+                    {
+                        getPublishedCmd.CommandText = "SELECT published FROM Quizzes WHERE quiz_slug = @quizSlug AND is_deleted = 0";
+                        getPublishedCmd.Parameters.AddWithValue("@quizSlug", quizSlug);
+                        object result = getPublishedCmd.ExecuteScalar();
+                        if (result != null)
+                        {
+                            published = Convert.ToBoolean(result);
+                        }
+                    }
+                    
+                    using (var cmd = con.CreateCommand())
+                    {
+                        cmd.CommandText = @"
+                            UPDATE Quizzes 
+                            SET title = @title,
+                                mode = @mode,
+                                time_limit_minutes = @timeLimit,
+                                passing_score = @passingScore,
+                                published = @published,
+                                updated_at = SYSUTCDATETIME()
+                            WHERE quiz_slug = @quizSlug AND is_deleted = 0";
+
+                        cmd.Parameters.AddWithValue("@quizSlug", quizSlug);
+                        cmd.Parameters.AddWithValue("@title", title);
+                        cmd.Parameters.AddWithValue("@mode", mode);
+                        cmd.Parameters.AddWithValue("@timeLimit", timeLimit);
+                        cmd.Parameters.AddWithValue("@passingScore", passingScore);
+                        cmd.Parameters.AddWithValue("@published", published ? 1 : 0);
+
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                // Reload quiz data and redirect to refresh
+                LoadQuiz(quizSlug);
+                LoadQuestions(quizSlug);
+                lblError.Text = "Quiz settings saved successfully.";
+                lblError.CssClass = "alert alert-success";
+                lblError.Visible = true;
+            }
+            catch (Exception ex)
+            {
+                lblError.Text = $"Error saving quiz settings: {Server.HtmlEncode(ex.Message)}";
+                lblError.Visible = true;
+                System.Diagnostics.Debug.WriteLine($"[CreateQuiz] Error: {ex}");
+            }
+        }
+
+        protected void DeleteQuestion_Command(object sender, CommandEventArgs e)
+        {
+            string questionSlug = e.CommandArgument.ToString();
+            string quizSlug = hfQuizSlug.Value;
+            string classSlug = hfClassSlug.Value;
+            string levelSlug = hfLevelSlug.Value;
+
+            try
+            {
+                using (var con = new SqlConnection(ConnStr))
+                {
+                    con.Open();
+                    using (var cmd = con.CreateCommand())
+                    {
+                        cmd.CommandText = @"
+                            UPDATE Questions 
+                            SET is_deleted = 1, updated_at = SYSUTCDATETIME()
+                            WHERE question_slug = @questionSlug";
+
+                        cmd.Parameters.AddWithValue("@questionSlug", questionSlug);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                // Redirect to refresh
+                Response.Redirect($"~/Pages/admin/create_quiz.aspx?quiz={quizSlug}&level={levelSlug}&class={classSlug}", false);
+            }
+            catch (Exception ex)
+            {
+                lblError.Text = $"Error deleting question: {Server.HtmlEncode(ex.Message)}";
+                lblError.Visible = true;
+                System.Diagnostics.Debug.WriteLine($"[CreateQuiz] Delete error: {ex}");
             }
         }
 
