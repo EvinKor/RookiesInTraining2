@@ -79,6 +79,12 @@
             margin-top: 0.3rem;
         }
 
+        .form-description i {
+            color: #667eea;
+            margin-right: 0.5rem;
+            width: 16px;
+        }
+
         .quiz-source-options {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -148,6 +154,12 @@
         .mode-icon {
             font-size: 2rem;
             margin-bottom: 0.5rem;
+            color: #667eea;
+        }
+
+        .page-header h1 i {
+            margin-right: 0.5rem;
+            color: #667eea;
         }
 
         .mode-name {
@@ -185,13 +197,46 @@
         .class-select-container {
             margin-top: 1rem;
         }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            margin-bottom: 2rem;
+        }
+
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            background: #f8f9fa;
+        }
+
+        .mb-4 {
+            margin-bottom: 1.5rem;
+        }
     </style>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="ContentPlaceHolder1" runat="server">
     <div class="create-lobby-container">
+        <!-- Back Button -->
+        <div class="mb-4">
+            <a href="<%= ResolveUrl("~/Pages/game/game_dashboard.aspx") %>" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                Back to Game Dashboard
+            </a>
+        </div>
+
         <div class="page-header">
-            <h1>🎮 Create Game Lobby</h1>
+            <h1><i class="fas fa-gamepad"></i> Create Game Lobby</h1>
             <p>Set up your multiplayer quiz battle</p>
         </div>
 
@@ -252,14 +297,14 @@
                 <!-- Class Quiz Selection -->
                 <div id="classQuizSection" class="form-group hidden">
                     <label class="form-label">Select Class</label>
-                    <select id="classSelect" class="form-select" onchange="loadClassQuizzes()">
+                    <select id="classSelect" class="form-select" onchange="loadClassLevels()">
                         <option value="">Select a class...</option>
                     </select>
                     
-                    <div id="quizSelectContainer" class="class-select-container hidden">
-                        <label class="form-label">Select Quiz</label>
-                        <select id="quizSelect" class="form-select">
-                            <option value="">Select a quiz...</option>
+                    <div id="levelSelectContainer" class="class-select-container hidden">
+                        <label class="form-label">Select Level</label>
+                        <select id="levelSelect" class="form-select">
+                            <option value="">Select a level...</option>
                         </select>
                     </div>
                 </div>
@@ -276,22 +321,22 @@
                     <label class="form-label">Game Mode</label>
                     <div class="game-mode-grid">
                         <div class="mode-card selected" data-mode="fastest_finger" onclick="selectGameMode('fastest_finger')">
-                            <div class="mode-icon">⚡</div>
+                            <div class="mode-icon"><i class="fas fa-bolt"></i></div>
                             <div class="mode-name">Fastest Finger</div>
                         </div>
                         <div class="mode-card" data-mode="all_answer" onclick="selectGameMode('all_answer')">
-                            <div class="mode-icon">⏱️</div>
+                            <div class="mode-icon"><i class="fas fa-clock"></i></div>
                             <div class="mode-name">All Answer</div>
                         </div>
                         <div class="mode-card" data-mode="survival" onclick="selectGameMode('survival')">
-                            <div class="mode-icon">💀</div>
+                            <div class="mode-icon"><i class="fas fa-skull"></i></div>
                             <div class="mode-name">Survival</div>
                         </div>
                     </div>
                     <div class="form-description">
-                        • <strong>Fastest Finger:</strong> First correct answer gets most points<br>
-                        • <strong>All Answer:</strong> Everyone gets time to answer<br>
-                        • <strong>Survival:</strong> Wrong answer = elimination
+                        <i class="fas fa-bolt"></i> <strong>Fastest Finger:</strong> First correct answer gets most points<br>
+                        <i class="fas fa-clock"></i> <strong>All Answer:</strong> Everyone gets time to answer<br>
+                        <i class="fas fa-skull"></i> <strong>Survival:</strong> Wrong answer = elimination
                     </div>
                 </div>
 
@@ -415,11 +460,11 @@
             }
         }
 
-        // Load quizzes from selected class
-        async function loadClassQuizzes() {
+        // Load levels from selected class
+        async function loadClassLevels() {
             const classSlug = document.getElementById('classSelect').value;
-            const container = document.getElementById('quizSelectContainer');
-            const select = document.getElementById('quizSelect');
+            const container = document.getElementById('levelSelectContainer');
+            const select = document.getElementById('levelSelect');
 
             if (!classSlug) {
                 container.classList.add('hidden');
@@ -427,15 +472,37 @@
             }
 
             try {
-                const response = await fetch(`/api/GetClassQuizzes.ashx?classSlug=${classSlug}`);
-                const quizzes = await response.json();
+                console.log('[CreateLobby] Loading levels for class:', classSlug);
+                const response = await fetch(`/api/GetClassLevels.ashx?classSlug=${classSlug}`);
                 
-                select.innerHTML = '<option value="">Select a quiz...</option>' +
-                    quizzes.map(q => `<option value="${q.quiz_slug}">${q.quiz_title}</option>`).join('');
+                if (!response.ok) {
+                    console.error('[CreateLobby] HTTP error:', response.status, response.statusText);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
                 
+                const levels = await response.json();
+                console.log('[CreateLobby] Received levels:', levels);
+                
+                if (!Array.isArray(levels)) {
+                    console.error('[CreateLobby] Invalid response format:', levels);
+                    throw new Error('Invalid response from server');
+                }
+                
+                if (levels.length === 0) {
+                    console.warn('[CreateLobby] No levels with questions found for class:', classSlug);
+                    select.innerHTML = '<option value="">No levels with questions available</option>';
+                    container.classList.remove('hidden');
+                    return;
+                }
+                
+                select.innerHTML = '<option value="">Select a level...</option>' +
+                    levels.map(l => `<option value="${l.level_slug}" data-quiz-slug="${l.quiz_slug}">Level ${l.level_number}: ${l.title} (${l.question_count} questions)</option>`).join('');
+                
+                console.log('[CreateLobby] Populated dropdown with', levels.length, 'levels');
                 container.classList.remove('hidden');
             } catch (error) {
-                console.error('[CreateLobby] Error loading quizzes:', error);
+                console.error('[CreateLobby] Error loading levels:', error);
+                alert('Failed to load levels: ' + error.message);
             }
         }
 
@@ -453,6 +520,7 @@
 
             let quizId = null;
             let classSlug = null;
+            let levelSlug = null;
 
             if (selectedQuizSource === 'multiplayer') {
                 quizId = document.getElementById('multiplayerQuizSet').value;
@@ -462,9 +530,20 @@
                 }
             } else {
                 classSlug = document.getElementById('classSelect').value;
-                quizId = document.getElementById('quizSelect').value;
-                if (!classSlug || !quizId) {
-                    alert('Please select a class and quiz');
+                const levelSelect = document.getElementById('levelSelect');
+                levelSlug = levelSelect.value;
+                
+                if (!classSlug || !levelSlug) {
+                    alert('Please select a class and level');
+                    return;
+                }
+                
+                // Get quiz_slug from selected level option
+                const selectedOption = levelSelect.options[levelSelect.selectedIndex];
+                quizId = selectedOption.getAttribute('data-quiz-slug');
+                
+                if (!quizId) {
+                    alert('Selected level does not have a quiz. Please select another level.');
                     return;
                 }
             }

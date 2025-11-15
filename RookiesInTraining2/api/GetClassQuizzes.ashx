@@ -23,7 +23,12 @@ public class GetClassQuizzes : IHttpHandler
             }
 
             var quizzes = new List<object>();
-            string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["RookiesConnectionString"].ConnectionString;
+            var connStringConfig = System.Configuration.ConfigurationManager.ConnectionStrings["ConnectionString"];
+            if (connStringConfig == null)
+            {
+                throw new Exception("Connection string 'ConnectionString' not found in web.config");
+            }
+            string connectionString = connStringConfig.ConnectionString;
 
             using (var con = new SqlConnection(connectionString))
             {

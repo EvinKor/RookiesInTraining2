@@ -416,10 +416,12 @@
         });
 
         // Load available lobbies
+        // This function loads ALL lobbies regardless of who created them (student, teacher, or admin)
         async function loadLobbies() {
             try {
                 console.log('[GameDashboard] Loading lobbies...');
                 
+                // Fetch all active lobbies - no filtering by creator role
                 const { data, error } = await supabase
                     .from('game_lobbies')
                     .select('*')

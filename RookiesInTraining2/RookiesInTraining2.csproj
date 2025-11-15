@@ -259,6 +259,11 @@
     <Content Include="Content\bootstrap-grid.min.css.map" />
     <Content Include="Content\bootstrap-grid.css.map" />
     <Content Include="MasterPages\GameMaster.Master" />
+    <Content Include="api\GetClassLevels.ashx" />
+    <Content Include="api\GetClassQuizzes.ashx" />
+    <Content Include="api\GetQuizQuestions.ashx" />
+    <Content Include="api\GetUserClasses.ashx" />
+    <Content Include="api\SaveQuizAttempt.ashx" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />

@@ -171,6 +171,11 @@
             color: #333;
         }
 
+        .info-value i {
+            margin-right: 0.5rem;
+            color: #667eea;
+        }
+
         .ready-button {
             width: 100%;
             padding: 1rem;
@@ -518,7 +523,7 @@
                 document.getElementById('lobbyCode').textContent = lobby.lobby_code;
                 document.getElementById('maxPlayers').textContent = lobby.max_players;
                 document.getElementById('quizSource').textContent = lobby.quiz_source === 'multiplayer' ? 'Multiplayer Quiz' : 'Class Quiz';
-                document.getElementById('gameMode').textContent = formatGameMode(lobby.game_mode);
+                document.getElementById('gameMode').innerHTML = formatGameMode(lobby.game_mode);
                 document.getElementById('timePerQuestion').textContent = lobby.time_per_question + ' seconds';
                 document.getElementById('hostName').textContent = lobby.host_name;
 
@@ -902,9 +907,9 @@
         // Utility functions
         function formatGameMode(mode) {
             const modes = {
-                'fastest_finger': '⚡ Fastest Finger',
-                'all_answer': '⏱️ All Answer',
-                'survival': '💀 Survival'
+                'fastest_finger': '<i class="fas fa-bolt"></i> Fastest Finger',
+                'all_answer': '<i class="fas fa-clock"></i> All Answer',
+                'survival': '<i class="fas fa-skull"></i> Survival'
             };
             return modes[mode] || mode;
         }

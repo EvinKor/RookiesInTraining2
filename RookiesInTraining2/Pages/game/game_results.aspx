@@ -24,6 +24,16 @@
             font-size: 8rem;
             animation: bounce 1s infinite;
             margin-bottom: 1rem;
+            color: #ffd700;
+        }
+
+        .trophy-icon i {
+            display: block;
+        }
+
+        .player-stats i {
+            margin-right: 0.3rem;
+            color: #667eea;
         }
 
         @keyframes bounce {
@@ -234,17 +244,20 @@
             display: flex;
             gap: 1rem;
             margin-top: 2rem;
+            justify-content: center;
         }
 
         .btn-action {
-            flex: 1;
-            padding: 1rem;
+            padding: 1rem 2rem;
             border: none;
             border-radius: 12px;
             font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .btn-primary {
@@ -277,12 +290,19 @@
             width: 10px;
             height: 10px;
             background: #ffd700;
-            position: absolute;
+            top: -10px;
             animation: fall 3s linear infinite;
         }
 
         @keyframes fall {
-            to { transform: translateY(100vh) rotate(360deg); }
+            from { 
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            to { 
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
         }
     </style>
 </asp:Content>
@@ -292,7 +312,7 @@
         <div class="results-content">
             <!-- Winner Section -->
             <div class="winner-section" id="winnerSection">
-                <div class="trophy-icon">🏆</div>
+                <div class="trophy-icon"><i class="fas fa-trophy"></i></div>
                 <div class="winner-title">Winner!</div>
                 <div class="winner-name" id="winnerName">Loading...</div>
                 <div class="winner-score" id="winnerScore">0 pts</div>
@@ -349,11 +369,8 @@
 
             <!-- Action Buttons -->
             <div class="action-buttons">
-                <button class="btn-action btn-secondary" onclick="window.location.href='game_dashboard.aspx'">
-                    <i class="fas fa-home"></i> Back to Dashboard
-                </button>
-                <button class="btn-action btn-primary" onclick="shareResults()">
-                    <i class="fas fa-share"></i> Share Results
+                <button type="button" class="btn-action btn-secondary" id="backToDashboardBtn">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
                 </button>
             </div>
         </div>
@@ -393,6 +410,17 @@
                 alert('Invalid game session');
                 window.location.href = 'game_dashboard.aspx';
                 return;
+            }
+
+            // Setup back to dashboard button
+            const backBtn = document.getElementById('backToDashboardBtn');
+            if (backBtn) {
+                backBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    window.location.href = 'game_dashboard.aspx';
+                    return false;
+                });
             }
 
             loadResults();
@@ -454,9 +482,9 @@
                                 ${isMe ? '<span style="color: #2196f3; margin-left: 0.5rem;">(You)</span>' : ''}
                             </div>
                             <div class="player-stats">
-                                <span>✓ ${result.correct_answers}/${result.total_questions}</span>
-                                <span>📊 ${result.accuracy.toFixed(1)}%</span>
-                                <span>⏱️ ${result.avg_time_per_question.toFixed(1)}s</span>
+                                <span><i class="fas fa-check"></i> ${result.correct_answers || 0}/${result.total_questions || 0}</span>
+                                <span><i class="fas fa-chart-bar"></i> ${(result.accuracy != null ? result.accuracy.toFixed(1) : '0.0')}%</span>
+                                <span><i class="fas fa-clock"></i> ${(result.avg_time_per_question != null ? result.avg_time_per_question.toFixed(1) : '0.0')}s</span>
                             </div>
                         </div>
                         <div class="final-score">${result.total_score}</div>
@@ -467,14 +495,16 @@
 
         // Update my stats
         function updateMyStats(result) {
-            document.getElementById('myRank').textContent = '#' + result.final_rank;
-            document.getElementById('myScore').textContent = result.total_score;
-            document.getElementById('accuracyPercent').textContent = result.accuracy.toFixed(1) + '%';
-            document.getElementById('correctAnswers').textContent = `${result.correct_answers}/${result.total_questions}`;
-            document.getElementById('avgTime').textContent = result.avg_time_per_question.toFixed(1) + 's';
+            document.getElementById('myRank').textContent = '#' + (result.final_rank || 0);
+            document.getElementById('myScore').textContent = result.total_score || 0;
+            const accuracy = result.accuracy != null ? result.accuracy : 0;
+            document.getElementById('accuracyPercent').textContent = accuracy.toFixed(1) + '%';
+            document.getElementById('correctAnswers').textContent = `${result.correct_answers || 0}/${result.total_questions || 0}`;
+            const avgTime = result.avg_time_per_question != null ? result.avg_time_per_question : 0;
+            document.getElementById('avgTime').textContent = avgTime.toFixed(1) + 's';
 
             // Update accuracy circle
-            const accuracyDeg = (result.accuracy / 100) * 360;
+            const accuracyDeg = (accuracy / 100) * 360;
             document.getElementById('accuracyCircle').style.setProperty('--accuracy', accuracyDeg + 'deg');
         }
 
@@ -487,33 +517,28 @@
                     const confetti = document.createElement('div');
                     confetti.className = 'confetti';
                     confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.top = '-10px'; // Start from top
                     confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-                    confetti.style.animationDelay = Math.random() * 3 + 's';
+                    confetti.style.animationDelay = Math.random() * 1 + 's';
                     confetti.style.animationDuration = (Math.random() * 2 + 3) + 's';
                     document.body.appendChild(confetti);
 
                     setTimeout(() => confetti.remove(), 6000);
-                }, i * 100);
+                }, i * 50);
             }
         }
 
-        // Share results
-        function shareResults() {
-            if (!myResult) return;
-
-            const text = `I scored ${myResult.total_score} points and ranked #${myResult.final_rank} in the quiz game! 🎮🏆`;
-            
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Quiz Game Results',
-                    text: text
-                }).catch(err => console.log('Share canceled'));
-            } else {
-                // Fallback: copy to clipboard
-                navigator.clipboard.writeText(text);
-                alert('Results copied to clipboard!');
+        // Navigate to dashboard
+        function goToDashboard(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
             }
+            window.location.href = 'game_dashboard.aspx';
+            return false;
         }
+
     </script>
 </asp:Content>
+
 

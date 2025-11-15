@@ -23,24 +23,57 @@ public class GetUserClasses : IHttpHandler
             }
 
             var classes = new List<object>();
-            string connectionString = System.Configuration.ConfigurationManager.ConnectionStrings["RookiesConnectionString"].ConnectionString;
+            var connStringConfig = System.Configuration.ConfigurationManager.ConnectionStrings["ConnectionString"];
+            if (connStringConfig == null)
+            {
+                throw new Exception("Connection string 'ConnectionString' not found in web.config");
+            }
+            string connectionString = connStringConfig.ConnectionString;
 
             using (var con = new SqlConnection(connectionString))
             {
                 con.Open();
 
-                // Get classes based on user role
-                string query = @"
-                    SELECT DISTINCT c.class_slug, c.class_name, c.description
-                    FROM Classes c
-                    LEFT JOIN Enrollments e ON c.class_slug = e.class_slug
-                    WHERE c.is_deleted = 0 
-                      AND (c.teacher_slug = @userSlug OR e.user_slug = @userSlug)
-                    ORDER BY c.class_name";
+                // Check if user is admin
+                bool isAdmin = false;
+                using (var roleCmd = new SqlCommand("SELECT role_global FROM dbo.Users WHERE user_slug = @userSlug AND is_deleted = 0", con))
+                {
+                    roleCmd.Parameters.AddWithValue("@userSlug", userSlug);
+                    object roleResult = roleCmd.ExecuteScalar();
+                    if (roleResult != null && roleResult.ToString().ToLowerInvariant() == "admin")
+                    {
+                        isAdmin = true;
+                    }
+                }
+
+                string query;
+                if (isAdmin)
+                {
+                    // Admin can see all classes
+                    query = @"
+                        SELECT DISTINCT c.class_slug, c.class_name, c.description
+                        FROM Classes c
+                        WHERE c.is_deleted = 0
+                        ORDER BY c.class_name";
+                }
+                else
+                {
+                    // Regular users see only classes they teach or are enrolled in
+                    query = @"
+                        SELECT DISTINCT c.class_slug, c.class_name, c.description
+                        FROM Classes c
+                        LEFT JOIN Enrollments e ON c.class_slug = e.class_slug
+                        WHERE c.is_deleted = 0 
+                          AND (c.teacher_slug = @userSlug OR e.user_slug = @userSlug)
+                        ORDER BY c.class_name";
+                }
 
                 using (var cmd = new SqlCommand(query, con))
                 {
-                    cmd.Parameters.AddWithValue("@userSlug", userSlug);
+                    if (!isAdmin)
+                    {
+                        cmd.Parameters.AddWithValue("@userSlug", userSlug);
+                    }
 
                     using (var reader = cmd.ExecuteReader())
                     {
