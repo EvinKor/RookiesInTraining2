@@ -148,15 +148,7 @@
         <!-- Class Management Area (Hidden initially) -->
         <div id="classManagement" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <div class="d-flex align-items-center">
-                    <h3 class="mb-0">
-                        <i class="bi bi-collection me-2"></i>
-                        <span id="currentClassName">Class Name</span>
-                    </h3>
-                    <button type="button" class="btn btn-sm btn-outline-primary ms-3" onclick="openEditClassModal()">
-                        <i class="bi bi-pencil-square me-1"></i>Edit
-                    </button>
-                </div>
+                <h3><i class="bi bi-collection me-2"></i><span id="currentClassName">Class Name</span></h3>
                 <button type="button" class="btn btn-outline-secondary" onclick="backToSelection()">
                     <i class="bi bi-arrow-left me-2"></i>Choose Different Class
                 </button>
@@ -337,47 +329,6 @@
             </div>
         </div>
 
-        <!-- EDIT CLASS MODAL -->
-        <div class="modal fade" id="editClassModal" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Edit Class</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label">Class Name</label>
-                            <input type="text" id="editClassName" class="form-control" maxlength="100" />
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Description</label>
-                            <textarea id="editClassDesc" class="form-control" rows="3" maxlength="500"></textarea>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Icon (Bootstrap Icons, e.g., bi-lightbulb)</label>
-                                <input type="text" id="editClassIcon" class="form-control" placeholder="bi-lightbulb" />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Color (HEX)</label>
-                                <input type="text" id="editClassColor" class="form-control" placeholder="#667eea" />
-                            </div>
-                        </div>
-                        <div class="text-danger small" id="editClassError" style="display:none;"></div>
-                    </div>
-                    <div class="modal-footer bg-light">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            <i class="bi bi-x-circle me-1"></i>Cancel
-                        </button>
-                        <button type="button" class="btn btn-primary" onclick="saveClassEdits()">
-                            <i class="bi bi-check2-circle me-1"></i>Save Changes
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Hidden Fields -->
         <asp:HiddenField ID="hfSelectedClassSlug" runat="server" />
         <asp:HiddenField ID="hfClassesJson" runat="server" />
@@ -513,65 +464,6 @@
             document.getElementById('classSelection').style.display = 'block';
             document.getElementById('classManagement').style.display = 'none';
             selectedClass = null;
-        }
-
-        // ===== Edit Class =====
-        function openEditClassModal() {
-            if (!selectedClass) return;
-            document.getElementById('editClassName').value = selectedClass.ClassName || selectedClass.name || '';
-            document.getElementById('editClassDesc').value = selectedClass.Description || '';
-            document.getElementById('editClassIcon').value = selectedClass.Icon || 'bi-lightbulb';
-            document.getElementById('editClassColor').value = selectedClass.Color || '#667eea';
-            document.getElementById('editClassError').style.display = 'none';
-            const modal = new bootstrap.Modal(document.getElementById('editClassModal'));
-            modal.show();
-        }
-
-        async function saveClassEdits() {
-            if (!selectedClass) return;
-            const payload = {
-                classSlug: selectedClass.ClassSlug || selectedClass.slug,
-                name: document.getElementById('editClassName').value.trim(),
-                description: document.getElementById('editClassDesc').value.trim(),
-                icon: document.getElementById('editClassIcon').value.trim(),
-                color: document.getElementById('editClassColor').value.trim()
-            };
-
-            if (!payload.name) {
-                const err = document.getElementById('editClassError');
-                err.textContent = 'Class name is required.';
-                err.style.display = 'block';
-                return;
-            }
-
-            try {
-                const res = await fetch('manage_classes.aspx/UpdateClass', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json; charset=utf-8' },
-                    body: JSON.stringify({ model: payload })
-                });
-                const data = await res.json();
-                if (!data || data.d !== 'OK') {
-                    throw new Error((data && data.d) || 'Unknown error');
-                }
-
-                // Update UI
-                selectedClass.ClassName = payload.name;
-                selectedClass.Description = payload.description;
-                selectedClass.Icon = payload.icon.startsWith('bi ') ? payload.icon : (payload.icon.startsWith('bi-') ? 'bi ' + payload.icon : payload.icon);
-                selectedClass.Color = payload.color;
-                document.getElementById('currentClassName').textContent = payload.name;
-
-                // Close modal
-                bootstrap.Modal.getInstance(document.getElementById('editClassModal')).hide();
-
-                // Optionally refresh the page to reflect repeater updates
-                // location.reload();
-            } catch (e) {
-                const err = document.getElementById('editClassError');
-                err.textContent = 'Failed to save: ' + e.message;
-                err.style.display = 'block';
-            }
         }
 
         function loadLevelsForClass(classSlug) {

@@ -9,8 +9,6 @@ using System.Text.RegularExpressions;
 using System.Web.Script.Serialization;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using System.Web.Services;
-using System.Web;
 
 namespace RookiesInTraining2.Pages.teacher
 {
@@ -48,67 +46,6 @@ namespace RookiesInTraining2.Pages.teacher
                 LoadAllLevels();
                 LoadAllForumPosts();
             }
-        }
-
-        [WebMethod(EnableSession = true)]
-        public static string UpdateClass(ClassUpdateModel model)
-        {
-            if (model == null || string.IsNullOrWhiteSpace(model.classSlug) || string.IsNullOrWhiteSpace(model.name))
-                return "Invalid payload";
-
-            try
-            {
-                string teacherSlug = (HttpContext.Current.Session["UserSlug"] ?? "").ToString();
-                string role = (HttpContext.Current.Session["Role"] ?? "").ToString().ToLowerInvariant();
-                if (string.IsNullOrEmpty(teacherSlug))
-                    return "Not authenticated";
-
-                var connStr = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-                using (var con = new SqlConnection(connStr))
-                using (var cmd = con.CreateCommand())
-                {
-                    con.Open();
-                    // Only allow owner teacher or admin to update
-                    cmd.CommandText = @"
-                        UPDATE Classes
-                        SET class_name = @name,
-                            description = @desc,
-                            icon = @icon,
-                            color = @color,
-                            updated_at = SYSUTCDATETIME()
-                        WHERE class_slug = @slug
-                          AND is_deleted = 0
-                          AND (@isAdmin = 1 OR teacher_slug = @teacher)";
-
-                    cmd.Parameters.AddWithValue("@name", model.name);
-                    cmd.Parameters.AddWithValue("@desc", (object)(model.description ?? "") ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@icon", (object)(model.icon ?? "bi-lightbulb") ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@color", (object)(model.color ?? "#667eea") ?? DBNull.Value);
-                    cmd.Parameters.AddWithValue("@slug", model.classSlug);
-                    cmd.Parameters.AddWithValue("@teacher", teacherSlug);
-                    cmd.Parameters.AddWithValue("@isAdmin", role == "admin" ? 1 : 0);
-
-                    int affected = cmd.ExecuteNonQuery();
-                    if (affected == 0)
-                        return "Update failed (no permission or class not found)";
-                }
-
-                return "OK";
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("[UpdateClass] Error: " + ex);
-                return "Error: " + ex.Message;
-            }
-        }
-
-        public class ClassUpdateModel
-        {
-            public string classSlug { get; set; }
-            public string name { get; set; }
-            public string description { get; set; }
-            public string icon { get; set; }
-            public string color { get; set; }
         }
 
         private void LoadClasses()
