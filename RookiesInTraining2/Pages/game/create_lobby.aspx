@@ -377,6 +377,10 @@
         // Selected values
         let selectedQuizSource = 'multiplayer';
         let selectedGameMode = 'fastest_finger';
+        // Preset from query params
+        const urlParams = new URLSearchParams(window.location.search);
+        const presetSource = (urlParams.get('source') || '').toLowerCase();
+        const presetQuiz = urlParams.get('quiz') ? decodeURIComponent(urlParams.get('quiz')) : '';
 
         // Load data on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -386,7 +390,8 @@
                 return;
             }
 
-            loadMultiplayerQuizSets();
+            // Load data, then apply preset
+            loadMultiplayerQuizSets().then(applyPresetFromQuery);
             loadUserClasses();
         });
 
@@ -443,6 +448,27 @@
                 }
             } catch (error) {
                 console.error('[CreateLobby] Error loading quiz sets:', error);
+            }
+        }
+
+        function applyPresetFromQuery() {
+            if (presetSource === 'multiplayer') {
+                selectQuizSource('multiplayer');
+                if (presetQuiz) {
+                    const select = document.getElementById('multiplayerQuizSet');
+                    // Try to select existing option; if not present, add temporarily
+                    const hasOption = Array.from(select.options).some(o => o.value === presetQuiz);
+                    if (!hasOption) {
+                        const opt = document.createElement('option');
+                        opt.value = presetQuiz;
+                        opt.textContent = presetQuiz;
+                        select.appendChild(opt);
+                    }
+                    select.value = presetQuiz;
+                }
+            } else if (presetSource === 'class_level') {
+                // Future: support presetting class/level via query
+                selectQuizSource('class_level');
             }
         }
 

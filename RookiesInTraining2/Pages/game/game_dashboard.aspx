@@ -351,6 +351,9 @@
             <button type="button" class="tab-btn active" data-tab="available">
                 Available Lobbies
             </button>
+            <button type="button" class="tab-btn" data-tab="quizzes">
+                Available Quizzes
+            </button>
         </div>
 
         <!-- Lobby Grid -->
@@ -363,6 +366,18 @@
             <i class="fas fa-ghost"></i>
             <h3>No active lobbies</h3>
             <p>Be the first to create a game lobby!</p>
+        </div>
+
+        <!-- Quizzes Grid (new tab content) -->
+        <div id="quizzesGrid" class="lobby-grid" style="display: none;">
+            <!-- Quizzes will be loaded here -->
+        </div>
+
+        <!-- Quizzes Empty State -->
+        <div id="quizzesEmpty" class="empty-state" style="display: none;">
+            <i class="fas fa-book"></i>
+            <h3>No quizzes available</h3>
+            <p>Create a quiz set first to host a game.</p>
         </div>
     </div>
 
@@ -410,6 +425,7 @@
             loadLobbies();
             setupRealtimeSubscription();
             setupCodeInput();
+            setupTabs();
         });
 
         // Load available lobbies
@@ -558,6 +574,120 @@
                     </div>
                 </div>
             `;
+        }
+
+        // ===== Quizzes Tab =====
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab-btn');
+            tabs.forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    tabs.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+
+                    const tab = this.getAttribute('data-tab');
+                    const lobbyGrid = document.getElementById('lobbyGrid');
+                    const emptyState = document.getElementById('emptyState');
+                    const quizzesGrid = document.getElementById('quizzesGrid');
+                    const quizzesEmpty = document.getElementById('quizzesEmpty');
+
+                    if (tab === 'available') {
+                        lobbyGrid.style.display = 'grid';
+                        emptyState.style.display = 'none';
+                        quizzesGrid.style.display = 'none';
+                        quizzesEmpty.style.display = 'none';
+                        loadLobbies();
+                    } else if (tab === 'quizzes') {
+                        lobbyGrid.style.display = 'none';
+                        emptyState.style.display = 'none';
+                        quizzesGrid.style.display = 'grid';
+                        quizzesEmpty.style.display = 'none';
+                        loadQuizzes();
+                    }
+                });
+            });
+        }
+
+        async function loadQuizzes() {
+            try {
+                console.log('[GameDashboard] Loading quizzes...');
+                const { data, error } = await supabase
+                    .from('multiplayer_questions')
+                    .select('quiz_set_name, is_active')
+                    .eq('is_active', true);
+
+                if (error) throw error;
+
+                const setsMap = {};
+                (data || []).forEach(function(row) {
+                    const key = row.quiz_set_name || 'Untitled Set';
+                    setsMap[key] = (setsMap[key] || 0) + 1;
+                });
+
+                const sets = Object.keys(setsMap).map(function(name) {
+                    return { name: name, count: setsMap[name] };
+                }).sort(function(a, b) { return a.name.localeCompare(b.name); });
+
+                renderQuizzes(sets);
+            } catch (err) {
+                console.error('[GameDashboard] Error loading quizzes:', err);
+                renderQuizzes([]);
+            }
+        }
+
+        function renderQuizzes(sets) {
+            const grid = document.getElementById('quizzesGrid');
+            const empty = document.getElementById('quizzesEmpty');
+
+            if (!sets || sets.length === 0) {
+                grid.style.display = 'none';
+                empty.style.display = 'block';
+                return;
+            }
+
+            grid.style.display = 'grid';
+            empty.style.display = 'none';
+
+            grid.innerHTML = sets.map(createQuizCard).join('');
+        }
+
+        function createQuizCard(set) {
+            return `
+                <div class="lobby-card">
+                    <div class="lobby-header">
+                        <div>
+                            <div class="lobby-name">${escapeHtml(set.name)}</div>
+                            <div class="lobby-status status-waiting">${set.count} question${set.count !== 1 ? 's' : ''}</div>
+                        </div>
+                    </div>
+
+                    <div class="lobby-info">
+                        <div class="info-row">
+                            <i class="fas fa-layer-group"></i>
+                            <span>Source: Multiplayer Quiz Set</span>
+                        </div>
+                    </div>
+
+                    <div class="lobby-footer">
+                        <button type="button" class="btn-join-lobby" onclick="createLobbyWithSet('${encodeURIComponent(set.name)}')">
+                            Create Lobby with this Quiz
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function createLobbyWithSet(encodedName) {
+            const setName = decodeURIComponent(encodedName);
+            // Navigate to create lobby with preselected source and quiz id
+            window.location.href = `create_lobby.aspx?source=multiplayer&quiz=${encodeURIComponent(setName)}`;
+        }
+
+        // Simple escape for display text
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/[&<>"']/g, function(m) {
+                return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]);
+            });
         }
 
         // Join lobby
