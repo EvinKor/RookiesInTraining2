@@ -351,9 +351,6 @@
             <button type="button" class="tab-btn active" data-tab="available">
                 Available Lobbies
             </button>
-            <button type="button" class="tab-btn" data-tab="my-games">
-                My Games
-            </button>
         </div>
 
         <!-- Lobby Grid -->

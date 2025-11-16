@@ -649,7 +649,7 @@
 
         // Check if all players ready
         function checkAllReady() {
-            const allReady = participants.length >= 2 && 
+            const allReady = participants.length >= 1 && 
                            participants.every(p => p.is_ready || p.user_slug === currentLobby.host_user_slug);
             
             document.getElementById('startButton').disabled = !allReady;

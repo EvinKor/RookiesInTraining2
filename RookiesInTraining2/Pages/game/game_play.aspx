@@ -577,7 +577,7 @@
             ].filter(a => a.text);
 
             answersGrid.innerHTML = answers.map(answer => `
-                <button class="answer-button" onclick="selectAnswer('${answer.letter}')">
+                <button type="button" class="answer-button" onclick="selectAnswer('${answer.letter}', event)">
                     <div class="answer-letter">${answer.letter}</div>
                     <div>${answer.text}</div>
                 </button>
@@ -620,14 +620,21 @@
         }
 
         // Select answer
-        function selectAnswer(letter) {
+        function selectAnswer(letter, evt) {
             if (hasAnswered) return;
+            if (evt && typeof evt.preventDefault === 'function') {
+                evt.preventDefault();
+                evt.stopPropagation();
+            }
 
             // Visual feedback
             document.querySelectorAll('.answer-button').forEach(btn => {
                 btn.classList.remove('selected');
             });
-            event.target.closest('.answer-button').classList.add('selected');
+            const targetBtn = (evt && evt.target) ? evt.target.closest('.answer-button') : null;
+            if (targetBtn) {
+                targetBtn.classList.add('selected');
+            }
 
             // Submit answer
             submitAnswer(letter);
@@ -706,12 +713,12 @@
             const pointsEl = document.getElementById('feedbackPoints');
 
             if (isCorrect) {
-                icon.textContent = '✓';
+                icon.textContent = '';
                 icon.className = 'feedback-icon feedback-correct';
                 title.textContent = 'Correct!';
                 pointsEl.textContent = `+${points} points`;
             } else {
-                icon.textContent = '✗';
+                icon.textContent = '';
                 icon.className = 'feedback-icon feedback-wrong';
                 title.textContent = 'Wrong!';
                 pointsEl.textContent = `Correct answer: ${correctAnswer}`;
