@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using RookiesInTraining2.Helpers;
 
 namespace RookiesInTraining2.Pages
@@ -371,59 +372,144 @@ namespace RookiesInTraining2.Pages
             try
             {
                 using (var con = new SqlConnection(ConnStr))
-                using (var cmd = con.CreateCommand())
                 {
                     con.Open();
-
-                    // Check if email already exists
-                    cmd.CommandText = "SELECT TOP (1) 1 FROM dbo.Users WHERE email = @e AND is_deleted = 0";
-                    cmd.Parameters.AddWithValue("@e", email);
-                    if (cmd.ExecuteScalar() != null)
+                    using (var transaction = con.BeginTransaction())
                     {
-                        lblCreateError.Text = "Email already registered.";
-                        return;
+                        try
+                        {
+                            using (var cmd = con.CreateCommand())
+                            {
+                                cmd.Transaction = transaction;
+
+                                // Check if email already exists
+                                cmd.CommandText = "SELECT TOP (1) 1 FROM dbo.Users WHERE email = @e AND is_deleted = 0";
+                                cmd.Parameters.AddWithValue("@e", email);
+                                if (cmd.ExecuteScalar() != null)
+                                {
+                                    transaction.Rollback();
+                                    lblCreateError.Text = "Email already registered.";
+                                    return;
+                                }
+
+                                // Generate unique slug within transaction to avoid race conditions
+                                string slug = GenerateUniqueSlugInTransaction(fullName, con, transaction, maxLen: 40);
+                                string passwordHash = HashPassword(password);
+
+                                // Insert new user
+                                cmd.Parameters.Clear();
+                                cmd.CommandText = @"
+                                    INSERT INTO dbo.Users
+                                    ( user_slug, full_name, display_name, email, password_hash, 
+                                      role, role_global, avatar_url,
+                                      created_at, updated_at, is_deleted, is_blocked )
+                                    VALUES
+                                    ( @slug, @name, @name, @e, @hash,
+                                      @role, @role, @avatar,
+                                      SYSUTCDATETIME(), SYSUTCDATETIME(), 0, 0 )";
+
+                                cmd.Parameters.AddWithValue("@slug", slug);
+                                cmd.Parameters.AddWithValue("@name", fullName);
+                                cmd.Parameters.AddWithValue("@e", email);
+                                cmd.Parameters.AddWithValue("@hash", passwordHash);
+                                cmd.Parameters.AddWithValue("@role", role);
+                                cmd.Parameters.AddWithValue("@avatar", DBNull.Value);
+                                cmd.ExecuteNonQuery();
+
+                                transaction.Commit();
+
+                                // Log admin action
+                                AdminAuditLogger.LogAction(adminSlug, "create_user", "user", slug, 
+                                    $"Created {role} user: {fullName} ({email})");
+
+                                // Clear form and reload
+                                txtCreateFullName.Text = "";
+                                txtCreateEmail.Text = "";
+                                txtCreatePassword.Text = "";
+                                txtCreateConfirmPassword.Text = "";
+                                lblCreateError.Text = "";
+
+                                // Close modal using JavaScript
+                                ClientScript.RegisterStartupScript(this.GetType(), "closeModal", 
+                                    "setTimeout(function() { var modal = bootstrap.Modal.getInstance(document.getElementById('createUserModal')); if(modal) modal.hide(); }, 100);", true);
+
+                                LoadUsers();
+                            }
+                        }
+                        catch (SqlException sqlEx)
+                        {
+                            transaction.Rollback();
+                            // Check if it's a primary key violation
+                            if (sqlEx.Number == 2627 || sqlEx.Message.Contains("PRIMARY KEY"))
+                            {
+                                // Retry with a new transaction and new slug
+                                using (var retryTransaction = con.BeginTransaction())
+                                {
+                                    try
+                                    {
+                                        using (var retryCmd = con.CreateCommand())
+                                        {
+                                            retryCmd.Transaction = retryTransaction;
+                                            string retrySlug = GenerateUniqueSlugInTransaction(fullName, con, retryTransaction, maxLen: 40);
+                                            string passwordHash = HashPassword(password);
+
+                                            retryCmd.CommandText = @"
+                                                INSERT INTO dbo.Users
+                                                ( user_slug, full_name, display_name, email, password_hash, 
+                                                  role, role_global, avatar_url,
+                                                  created_at, updated_at, is_deleted, is_blocked )
+                                                VALUES
+                                                ( @slug, @name, @name, @e, @hash,
+                                                  @role, @role, @avatar,
+                                                  SYSUTCDATETIME(), SYSUTCDATETIME(), 0, 0 )";
+
+                                            retryCmd.Parameters.AddWithValue("@slug", retrySlug);
+                                            retryCmd.Parameters.AddWithValue("@name", fullName);
+                                            retryCmd.Parameters.AddWithValue("@e", email);
+                                            retryCmd.Parameters.AddWithValue("@hash", passwordHash);
+                                            retryCmd.Parameters.AddWithValue("@role", role);
+                                            retryCmd.Parameters.AddWithValue("@avatar", DBNull.Value);
+                                            retryCmd.ExecuteNonQuery();
+
+                                            retryTransaction.Commit();
+
+                                            // Log admin action
+                                            AdminAuditLogger.LogAction(adminSlug, "create_user", "user", retrySlug, 
+                                                $"Created {role} user: {fullName} ({email})");
+
+                                            // Clear form and reload
+                                            txtCreateFullName.Text = "";
+                                            txtCreateEmail.Text = "";
+                                            txtCreatePassword.Text = "";
+                                            txtCreateConfirmPassword.Text = "";
+                                            lblCreateError.Text = "";
+
+                                            // Close modal using JavaScript
+                                            ClientScript.RegisterStartupScript(this.GetType(), "closeModal", 
+                                                "setTimeout(function() { var modal = bootstrap.Modal.getInstance(document.getElementById('createUserModal')); if(modal) modal.hide(); }, 100);", true);
+
+                                            LoadUsers();
+                                            return;
+                                        }
+                                    }
+                                    catch (Exception retryEx)
+                                    {
+                                        retryTransaction.Rollback();
+                                        throw retryEx;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                throw;
+                            }
+                        }
+                        catch
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
                     }
-
-                    // Generate unique slug
-                    string slug = NewSlugUnique(fullName, SlugExists, maxLen: 40);
-                    string passwordHash = HashPassword(password);
-
-                    // Insert new user
-                    cmd.Parameters.Clear();
-                    cmd.CommandText = @"
-                        INSERT INTO dbo.Users
-                        ( user_slug, full_name, display_name, email, password_hash, 
-                          role, role_global, avatar_url,
-                          created_at, updated_at, is_deleted, is_blocked )
-                        VALUES
-                        ( @slug, @name, @name, @e, @hash,
-                          @role, @role, @avatar,
-                          SYSUTCDATETIME(), SYSUTCDATETIME(), 0, 0 )";
-
-                    cmd.Parameters.AddWithValue("@slug", slug);
-                    cmd.Parameters.AddWithValue("@name", fullName);
-                    cmd.Parameters.AddWithValue("@e", email);
-                    cmd.Parameters.AddWithValue("@hash", passwordHash);
-                    cmd.Parameters.AddWithValue("@role", role);
-                    cmd.Parameters.AddWithValue("@avatar", DBNull.Value);
-                    cmd.ExecuteNonQuery();
-
-                    // Log admin action
-                    AdminAuditLogger.LogAction(adminSlug, "create_user", "user", slug, 
-                        $"Created {role} user: {fullName} ({email})");
-
-                    // Clear form and reload
-                    txtCreateFullName.Text = "";
-                    txtCreateEmail.Text = "";
-                    txtCreatePassword.Text = "";
-                    txtCreateConfirmPassword.Text = "";
-                    lblCreateError.Text = "";
-
-                    // Close modal using JavaScript
-                    ClientScript.RegisterStartupScript(this.GetType(), "closeModal", 
-                        "setTimeout(function() { var modal = bootstrap.Modal.getInstance(document.getElementById('createUserModal')); if(modal) modal.hide(); }, 100);", true);
-
-                    LoadUsers();
                 }
             }
             catch (Exception ex)
@@ -577,17 +663,43 @@ namespace RookiesInTraining2.Pages
 
         protected void btnUpdateUser_Click(object sender, EventArgs e)
         {
+            try
+            {
+                // Get values from Request.Form (most reliable on postback)
+                // Search for form keys that end with our control IDs
+                string userSlug = GetFormValue("hfEditUserSlug") ?? string.Empty;
+                string displayName = (GetFormValue("txtEditDisplayName") ?? string.Empty).Trim();
+                string isBlockedValue = GetFormValue("chkEditIsBlocked") ?? "false";
+                bool isBlocked = isBlockedValue.Equals("on", StringComparison.OrdinalIgnoreCase) || 
+                                isBlockedValue.Equals("true", StringComparison.OrdinalIgnoreCase);
+
+                // Try to find error label for displaying messages
+                Label lblEditErrorControl = lblEditError;
+                if (lblEditErrorControl == null && pnlEditUser != null)
+                    lblEditErrorControl = pnlEditUser.FindControl("lblEditError") as Label;
+                if (lblEditErrorControl == null)
+                    lblEditErrorControl = FindControlRecursive(this, "lblEditError") as Label;
+
             string adminSlug = Session["UserSlug"]?.ToString();
-            string userSlug = hfEditUserSlug.Value;
-            string displayName = txtEditDisplayName.Text.Trim();
-            string email = txtEditEmail.Text.Trim().ToLowerInvariant();
-            bool isBlocked = chkEditIsBlocked.Checked;
+            
+            // Validate required fields
+            if (string.IsNullOrEmpty(userSlug))
+            {
+                ShowErrorMessage(lblEditErrorControl, "User information is missing. Please try again.");
+                return;
+            }
+
+            // Validate admin session
+            if (string.IsNullOrEmpty(adminSlug))
+            {
+                ShowErrorMessage(lblEditErrorControl, "Your session has expired. Please log in again.");
+                return;
+            }
 
             // Prevent admin from editing their own account
             if (userSlug == adminSlug)
             {
-                lblEditError.Text = "You cannot edit your own account from this page. Please use the Settings page to update your profile.";
-                lblEditError.Visible = true;
+                ShowErrorMessage(lblEditErrorControl, "You cannot edit your own account from this page. Please use the Settings page to update your profile.");
                 return;
             }
 
@@ -598,39 +710,20 @@ namespace RookiesInTraining2.Pages
                 {
                     con.Open();
 
-                    // Check if email is being changed and if it already exists
-                    if (!string.IsNullOrEmpty(email))
-                    {
-                        cmd.CommandText = @"
-                            SELECT TOP (1) user_slug 
-                            FROM dbo.Users 
-                            WHERE email = @e AND user_slug != @slug AND is_deleted = 0";
-                        cmd.Parameters.AddWithValue("@e", email);
-                        cmd.Parameters.AddWithValue("@slug", userSlug);
-                        if (cmd.ExecuteScalar() != null)
-                        {
-                            lblEditError.Text = "Email already registered to another user.";
-                            return;
-                        }
-                    }
-
                     // Get old values for logging
                     string oldName = GetUserName(userSlug);
                     bool oldBlocked = IsUserBlocked(userSlug);
 
-                    // Update user
-                    cmd.Parameters.Clear();
+                    // Update user - only display name and blocked status (email cannot be changed)
                     cmd.CommandText = @"
                         UPDATE dbo.Users
                         SET display_name = @name,
-                            email = @email,
                             is_blocked = @blocked,
                             updated_at = SYSUTCDATETIME()
                         WHERE user_slug = @slug";
 
                     cmd.Parameters.AddWithValue("@slug", userSlug);
                     cmd.Parameters.AddWithValue("@name", displayName);
-                    cmd.Parameters.AddWithValue("@email", email);
                     cmd.Parameters.AddWithValue("@blocked", isBlocked);
                     cmd.ExecuteNonQuery();
 
@@ -650,8 +743,57 @@ namespace RookiesInTraining2.Pages
             }
             catch (Exception ex)
             {
-                lblEditError.Text = "Error updating user: " + Server.HtmlEncode(ex.Message);
+                // Catch database and other errors
+                ShowError("Error updating user: " + Server.HtmlEncode(ex.Message));
                 System.Diagnostics.Debug.WriteLine($"[Users] Error updating user: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[Users] Stack trace: {ex.StackTrace}");
+            }
+            }
+            catch (Exception ex)
+            {
+                // Catch any exceptions from control access (like NullReferenceException)
+                System.Diagnostics.Debug.WriteLine($"[Users] Unexpected error in btnUpdateUser_Click: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[Users] Stack trace: {ex.StackTrace}");
+                Label errorLabel = lblEditError;
+                if (errorLabel == null && pnlEditUser != null)
+                    errorLabel = pnlEditUser.FindControl("lblEditError") as Label;
+                if (errorLabel == null)
+                    errorLabel = FindControlRecursive(this, "lblEditError") as Label;
+                ShowErrorMessage(errorLabel, "An unexpected error occurred. Please refresh the page and try again.");
+            }
+        }
+
+        private void ShowError(string message)
+        {
+            Label errorLabel = lblEditError;
+            if (errorLabel == null && pnlEditUser != null)
+                errorLabel = pnlEditUser.FindControl("lblEditError") as Label;
+            if (errorLabel == null)
+                errorLabel = FindControlRecursive(this, "lblEditError") as Label;
+
+            if (errorLabel != null)
+            {
+                errorLabel.Text = message;
+                errorLabel.Visible = true;
+            }
+            else if (ClientScript != null)
+            {
+                ClientScript.RegisterStartupScript(this.GetType(), "showError",
+                    $"alert('{Server.HtmlEncode(message)}');", true);
+            }
+        }
+
+        private void ShowErrorMessage(Label errorLabel, string message)
+        {
+            if (errorLabel != null)
+            {
+                errorLabel.Text = message;
+                errorLabel.Visible = true;
+            }
+            else if (ClientScript != null)
+            {
+                ClientScript.RegisterStartupScript(this.GetType(), "showError",
+                    $"alert('{Server.HtmlEncode(message)}');", true);
             }
         }
 
@@ -837,6 +979,50 @@ namespace RookiesInTraining2.Pages
             }
         }
 
+        private Control FindControlRecursive(Control parent, string id)
+        {
+            if (parent == null) return null;
+            if (parent.ID == id) return parent;
+            
+            foreach (Control control in parent.Controls)
+            {
+                Control found = FindControlRecursive(control, id);
+                if (found != null) return found;
+            }
+            return null;
+        }
+
+        private string GetFormValue(string controlId)
+        {
+            if (Request.Form == null) return null;
+
+            // Try direct match first
+            string value = Request.Form[controlId];
+            if (!string.IsNullOrEmpty(value)) return value;
+
+            // Try with common ASP.NET naming container prefixes
+            // Format: ContentPlaceHolder$ControlID or Panel$ControlID
+            foreach (string key in Request.Form.AllKeys)
+            {
+                if (key != null && key.EndsWith("$" + controlId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return Request.Form[key];
+                }
+                // Also try exact match with underscore (some ASP.NET versions use _)
+                if (key != null && key.EndsWith("_" + controlId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return Request.Form[key];
+                }
+                // Try ending with just the control ID
+                if (key != null && key.EndsWith(controlId, StringComparison.OrdinalIgnoreCase))
+                {
+                    return Request.Form[key];
+                }
+            }
+
+            return null;
+        }
+
         protected string GetRoleBadgeColor(string role)
         {
             if (string.IsNullOrEmpty(role))
@@ -886,11 +1072,42 @@ namespace RookiesInTraining2.Pages
             using (var con = new SqlConnection(ConnStr))
             using (var cmd = con.CreateCommand())
             {
-                cmd.CommandText = "SELECT 1 FROM dbo.Users WHERE user_slug = @slug AND is_deleted = 0";
+                // Check ALL users (including deleted) because PRIMARY KEY constraint applies to all rows
+                cmd.CommandText = "SELECT 1 FROM dbo.Users WHERE user_slug = @slug";
                 cmd.Parameters.AddWithValue("@slug", slug);
                 con.Open();
                 return cmd.ExecuteScalar() != null;
             }
+        }
+
+        private string GenerateUniqueSlugInTransaction(string fullName, SqlConnection con, SqlTransaction transaction, int maxLen = 40)
+        {
+            var baseSlug = SlugifyName(fullName, maxLen);
+            var slug = baseSlug;
+            int i = 2;
+
+            using (var cmd = con.CreateCommand())
+            {
+                cmd.Transaction = transaction;
+                cmd.CommandText = "SELECT 1 FROM dbo.Users WHERE user_slug = @slug";
+                cmd.Parameters.Add("@slug", SqlDbType.NVarChar, 50);
+
+                while (true)
+                {
+                    cmd.Parameters["@slug"].Value = slug;
+                    if (cmd.ExecuteScalar() == null)
+                    {
+                        // Slug is available
+                        break;
+                    }
+                    // Slug exists, try next variation
+                    var suffix = "-" + i.ToString(CultureInfo.InvariantCulture);
+                    var cutLen = Math.Max(1, maxLen - suffix.Length);
+                    slug = baseSlug.Length > cutLen ? baseSlug.Substring(0, cutLen).Trim('-') + suffix : baseSlug + suffix;
+                    i++;
+                }
+            }
+            return slug;
         }
 
         private static string NewSlugUnique(string fullName, Func<string, bool> exists, int maxLen = 40)
