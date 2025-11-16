@@ -26,6 +26,7 @@
             transition: all 0.3s ease;
             margin-bottom: 1rem;
             background: white;
+            min-height: 150px;
         }
         .class-option:hover {
             border-color: #0d6efd;
@@ -127,7 +128,7 @@
                                         </div>
                                         <div class="flex-grow-1">
                                             <h5 class="mb-1"><%# Eval("ClassName") %></h5>
-                                            <p class="text-muted small mb-2"><%# Eval("Description") %></p>
+                                            <p class="text-muted small mb-2" style="min-height: 40px;"><%# Eval("Description") %></p>
                                             <div class="d-flex gap-2">
                                                 <span class="badge bg-light text-dark">
                                                     <i class="bi bi-people me-1"></i><%# Eval("StudentCount") %> students
