@@ -63,7 +63,7 @@
                                 </div>
                             </div>
                             <div class="flex-grow-1 ms-3">
-                                <h6 class="text-muted mb-1 small">Total Courses</h6>
+                                <h6 class="text-muted mb-1 small">Total Classes</h6>
                                 <h3 class="mb-0">
                                     <asp:Label ID="lblTotalCourses" runat="server" Text="0" />
                                 </h3>
@@ -221,7 +221,7 @@
                             <i class="bi bi-person-plus me-2"></i>Add New User
                         </a>
                         <a href="<%= ResolveUrl("~/Pages/admin/admin_create_module.aspx") %>" class="btn btn-outline-secondary text-start">
-                            <i class="bi bi-book me-2"></i>Create Course
+                            <i class="bi bi-book me-2"></i>Create Class
                         </a>
                         <a href="Reports.aspx" class="btn btn-outline-info text-start" style="border: 2px solid #0dcaf0;">
                             <i class="bi bi-file-earmark-bar-graph me-2"></i>Generate Report
